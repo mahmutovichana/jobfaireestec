@@ -252,6 +252,51 @@ export type Database = {
         }
         Relationships: []
       }
+      partners: {
+        Row: {
+          category: Database["public"]["Enums"]["partner_category"]
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          logo_url: string | null
+          name: string
+          package: Database["public"]["Enums"]["partner_package"] | null
+          updated_at: string
+          user_id: string
+          visible: boolean
+          website: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["partner_category"]
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          logo_url?: string | null
+          name: string
+          package?: Database["public"]["Enums"]["partner_package"] | null
+          updated_at?: string
+          user_id: string
+          visible?: boolean
+          website?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["partner_category"]
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          logo_url?: string | null
+          name?: string
+          package?: Database["public"]["Enums"]["partner_package"] | null
+          updated_at?: string
+          user_id?: string
+          visible?: boolean
+          website?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -363,6 +408,8 @@ export type Database = {
       app_role: "admin" | "editor" | "viewer"
       email_template_type: "confirmation" | "reminder" | "followup"
       event_status: "draft" | "live" | "past"
+      partner_category: "company" | "media" | "sponsor"
+      partner_package: "standard" | "silver" | "gold" | "promo"
       registration_status: "registered" | "checked_in" | "cancelled"
     }
     CompositeTypes: {
@@ -494,6 +541,8 @@ export const Constants = {
       app_role: ["admin", "editor", "viewer"],
       email_template_type: ["confirmation", "reminder", "followup"],
       event_status: ["draft", "live", "past"],
+      partner_category: ["company", "media", "sponsor"],
+      partner_package: ["standard", "silver", "gold", "promo"],
       registration_status: ["registered", "checked_in", "cancelled"],
     },
   },
