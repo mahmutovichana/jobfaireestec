@@ -1,0 +1,132 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+
+export type PartnerCategory = "company" | "media" | "sponsor";
+export type PartnerPackage = "standard" | "silver" | "gold" | "promo";
+
+export interface Partner {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  website: string | null;
+  description: string | null;
+  category: PartnerCategory;
+  package: PartnerPackage | null;
+  display_order: number;
+  visible: boolean;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const PACKAGE_LABELS: Record<PartnerPackage, string> = {
+  gold: "Zlatni",
+  silver: "Srebrni",
+  standard: "Standardni",
+  promo: "Promo",
+};
+
+export const PACKAGE_ORDER: PartnerPackage[] = ["gold", "silver", "standard", "promo"];
+
+export const CATEGORY_LABELS: Record<PartnerCategory, string> = {
+  company: "Kompanije",
+  media: "Mediji",
+  sponsor: "Sponzori",
+};
+
+export function usePartners(onlyVisible = false) {
+  return useQuery({
+    queryKey: ["partners", onlyVisible],
+    queryFn: async () => {
+      let query = supabase
+        .from("partners")
+        .select("*")
+        .order("display_order", { ascending: true });
+
+      if (onlyVisible) {
+        query = query.eq("visible", true);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as Partner[];
+    },
+  });
+}
+
+export function useCreatePartner() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (partner: Omit<Partner, "id" | "user_id" | "created_at" | "updated_at">) => {
+      const { data, error } = await supabase
+        .from("partners")
+        .insert({ ...partner, user_id: user!.id } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partners"] });
+      toast.success("Partner dodan!");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+}
+
+export function useUpdatePartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<Partner> & { id: string }) => {
+      const { data, error } = await supabase
+        .from("partners")
+        .update(updates as any)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partners"] });
+      toast.success("Partner ažuriran!");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+}
+
+export function useDeletePartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("partners").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partners"] });
+      toast.success("Partner obrisan!");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+}
+
+export async function uploadPartnerLogo(file: File): Promise<string> {
+  const ext = file.name.split(".").pop();
+  const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage.from("partner-logos").upload(path, file, {
+    cacheControl: "3600",
+    upsert: false,
+  });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage.from("partner-logos").getPublicUrl(path);
+  return data.publicUrl;
+}

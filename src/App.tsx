@@ -16,6 +16,7 @@ import CompanyPage from "./pages/CompanyPage";
 import Novosti from "./pages/Novosti";
 import NovostDetail from "./pages/NovostDetail";
 import Oglasi from "./pages/Oglasi";
+import Partneri from "./pages/Partneri";
 import Events from "./pages/dashboard/Events";
 import CreateEvent from "./pages/dashboard/CreateEvent";
 import EventDetail from "./pages/dashboard/EventDetail";
@@ -25,6 +26,7 @@ import Integrations from "./pages/dashboard/Integrations";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import NewsManager from "./pages/dashboard/NewsManager";
 import JobAdsManager from "./pages/dashboard/JobAdsManager";
+import PartnersManager from "./pages/dashboard/PartnersManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +57,7 @@ const App = () => (
               <Route path="/novosti" element={<Novosti />} />
               <Route path="/novost/:id" element={<NovostDetail />} />
               <Route path="/oglasi" element={<Oglasi />} />
+              <Route path="/partneri" element={<Partneri />} />
 
               {/* Dashboard (protected) */}
               <Route path="/dashboard" element={<Navigate to="/dashboard/events" replace />} />
@@ -72,6 +75,7 @@ const App = () => (
                       <Route path="settings" element={<SettingsPage />} />
                       <Route path="news" element={<NewsManager />} />
                       <Route path="job-ads" element={<JobAdsManager />} />
+                      <Route path="partners" element={<PartnersManager />} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>
