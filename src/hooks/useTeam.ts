@@ -55,12 +55,10 @@ export function useUpdateTeamMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...u }: Partial<TeamMember> & { id: string }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("team_members")
         .update(u as any)
-        .eq("id", id)
-        .select()
-        .single();
+        .eq("id", id);
       if (error) throw error;
       return data;
     },
