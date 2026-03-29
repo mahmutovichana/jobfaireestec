@@ -84,8 +84,8 @@ const Oglasi = () => {
                 </button>
               )}
             </div>
-            <div className="flex gap-2">
-              {(["all", "active", "expired"] as const).map((filter) => (
+             <div className="flex gap-2">
+              {(Object.keys(JOB_AD_FILTERS) as JobAdFilterKey[]).map((filter) => (
                 <Button
                   key={filter}
                   variant={showActive === filter ? "default" : "outline"}
@@ -93,7 +93,7 @@ const Oglasi = () => {
                   className="rounded-full"
                   onClick={() => setShowActive(filter)}
                 >
-                  {filter === "all" ? "Svi" : filter === "active" ? "Aktivni" : "Istekli"}
+                  {JOB_AD_FILTERS[filter]}
                 </Button>
               ))}
             </div>
