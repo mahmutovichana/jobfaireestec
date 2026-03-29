@@ -368,6 +368,48 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          committee: string
+          created_at: string
+          display_order: number
+          id: string
+          linkedin_url: string | null
+          name: string
+          photo_url: string | null
+          role: string
+          updated_at: string
+          user_id: string
+          visible: boolean
+        }
+        Insert: {
+          committee?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          linkedin_url?: string | null
+          name: string
+          photo_url?: string | null
+          role?: string
+          updated_at?: string
+          user_id: string
+          visible?: boolean
+        }
+        Update: {
+          committee?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          linkedin_url?: string | null
+          name?: string
+          photo_url?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
