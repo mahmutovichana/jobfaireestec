@@ -657,7 +657,7 @@ const Landing = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  Spreman za JobFAIR <span className="text-primary">'26</span>?
+                  Spreman za JobFAIR <span className="text-primary">{NEXT_EVENT_YEAR_SHORT}</span>?
                 </motion.h2>
                 <motion.p
                   className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto text-balance"
