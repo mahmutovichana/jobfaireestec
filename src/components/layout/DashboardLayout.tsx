@@ -13,10 +13,12 @@ import {
   Settings,
   LogOut,
   Eye,
+  Newspaper,
 } from "lucide-react";
 
 const navItems = [
   { title: "Events", url: "/dashboard/events", icon: CalendarDays },
+  { title: "Novosti", url: "/dashboard/news", icon: Newspaper },
   { title: "Attendees", url: "/dashboard/attendees", icon: Users },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Integrations", url: "/dashboard/integrations", icon: Puzzle },
