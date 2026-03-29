@@ -1,23 +1,23 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNewsPosts } from "@/hooks/useNews";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
+import { ROUTES } from "@/lib/constants";
 import { CalendarDays, ArrowRight, ArrowLeft, Search, X } from "lucide-react";
 import { format } from "date-fns";
 
+const navItems = [
+  { label: "Oglasi", to: ROUTES.OGLASI },
+  { label: "Prijava", to: ROUTES.AUTH },
+];
+
 const Novosti = () => {
   const { data: posts, isLoading } = useNewsPosts(true);
-  const [navVisible, setNavVisible] = useState(false);
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    const handleScroll = () => setNavVisible(window.scrollY > 80);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const filtered = useMemo(() => {
     if (!posts) return [];
@@ -33,25 +33,7 @@ const Novosti = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar */}
-      <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-white/[0.06]"
-        initial={{ y: -100 }}
-        animate={{ y: navVisible ? 0 : -100 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-[64px] px-6 lg:px-8">
-          <Link to="/"><Logo size="md" /></Link>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/oglasi">Oglasi</Link>
-            </Button>
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/auth">Prijava</Link>
-            </Button>
-          </div>
-        </div>
-      </motion.nav>
+      <PublicNavbar items={navItems} showRegister={false} />
 
       {/* Header */}
       <section className="pt-24 pb-8 lg:pt-32 lg:pb-12">
@@ -158,13 +140,7 @@ const Novosti = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 lg:px-8 border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
-          <span className="text-sm text-muted-foreground">© 2026 JobFAIR. Sva prava zadržana.</span>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };

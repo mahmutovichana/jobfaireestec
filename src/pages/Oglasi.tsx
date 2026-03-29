@@ -1,26 +1,26 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useJobAds } from "@/hooks/useJobAds";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
+import { ROUTES, JOB_AD_FILTERS, type JobAdFilterKey } from "@/lib/constants";
 import {
   CalendarDays, ArrowLeft, ExternalLink, Building2, Search, X,
 } from "lucide-react";
 import { format, isPast } from "date-fns";
 
+const navItems = [
+  { label: "Novosti", to: ROUTES.NOVOSTI },
+  { label: "Prijava", to: ROUTES.AUTH },
+];
+
 const Oglasi = () => {
   const { data: ads, isLoading } = useJobAds(true);
-  const [navVisible, setNavVisible] = useState(false);
   const [search, setSearch] = useState("");
-  const [showActive, setShowActive] = useState<"all" | "active" | "expired">("all");
-
-  useEffect(() => {
-    const handleScroll = () => setNavVisible(window.scrollY > 80);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [showActive, setShowActive] = useState<JobAdFilterKey>("all");
 
   const filtered = useMemo(() => {
     if (!ads) return [];
@@ -47,25 +47,7 @@ const Oglasi = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar */}
-      <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-white/[0.06]"
-        initial={{ y: -100 }}
-        animate={{ y: navVisible ? 0 : -100 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-[64px] px-6 lg:px-8">
-          <Link to="/"><Logo size="md" /></Link>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/novosti">Novosti</Link>
-            </Button>
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/auth">Prijava</Link>
-            </Button>
-          </div>
-        </div>
-      </motion.nav>
+      <PublicNavbar items={navItems} showRegister={false} />
 
       {/* Header */}
       <section className="pt-24 pb-8 lg:pt-32 lg:pb-12">
@@ -102,8 +84,8 @@ const Oglasi = () => {
                 </button>
               )}
             </div>
-            <div className="flex gap-2">
-              {(["all", "active", "expired"] as const).map((filter) => (
+             <div className="flex gap-2">
+              {(Object.keys(JOB_AD_FILTERS) as JobAdFilterKey[]).map((filter) => (
                 <Button
                   key={filter}
                   variant={showActive === filter ? "default" : "outline"}
@@ -111,7 +93,7 @@ const Oglasi = () => {
                   className="rounded-full"
                   onClick={() => setShowActive(filter)}
                 >
-                  {filter === "all" ? "Svi" : filter === "active" ? "Aktivni" : "Istekli"}
+                  {JOB_AD_FILTERS[filter]}
                 </Button>
               ))}
             </div>
@@ -195,13 +177,7 @@ const Oglasi = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 lg:px-8 border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
-          <span className="text-sm text-muted-foreground">© 2026 JobFAIR. Sva prava zadržana.</span>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };
