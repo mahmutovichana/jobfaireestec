@@ -41,9 +41,14 @@ const emptyForm = {
 
 const JobAdsManager = () => {
   const { data: ads, isLoading } = useJobAds(false);
+  const { data: partners = [] } = usePartners();
   const createAd = useCreateJobAd();
   const updateAd = useUpdateJobAd();
   const deleteAd = useDeleteJobAd();
+  const companyNames = useMemo(() => {
+    const set = new Set(partners.map((p) => p.name));
+    return Array.from(set).sort();
+  }, [partners]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
