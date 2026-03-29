@@ -17,6 +17,8 @@ import Novosti from "./pages/Novosti";
 import NovostDetail from "./pages/NovostDetail";
 import Oglasi from "./pages/Oglasi";
 import Partneri from "./pages/Partneri";
+import OstaviCV from "./pages/OstaviCV";
+import Kontakt from "./pages/Kontakt";
 import Events from "./pages/dashboard/Events";
 import CreateEvent from "./pages/dashboard/CreateEvent";
 import EventDetail from "./pages/dashboard/EventDetail";
@@ -28,6 +30,8 @@ import NewsManager from "./pages/dashboard/NewsManager";
 import JobAdsManager from "./pages/dashboard/JobAdsManager";
 import PartnersManager from "./pages/dashboard/PartnersManager";
 import TeamManager from "./pages/dashboard/TeamManager";
+import CVDatabase from "./pages/dashboard/CVDatabase";
+import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +63,8 @@ const App = () => (
               <Route path="/novost/:id" element={<NovostDetail />} />
               <Route path="/oglasi" element={<Oglasi />} />
               <Route path="/partneri" element={<Partneri />} />
+              <Route path="/ostavi-cv" element={<OstaviCV />} />
+              <Route path="/kontakt" element={<Kontakt />} />
 
               {/* Dashboard (protected) */}
               <Route path="/dashboard" element={<Navigate to="/dashboard/events" replace />} />
@@ -78,6 +84,8 @@ const App = () => (
                       <Route path="job-ads" element={<JobAdsManager />} />
                       <Route path="partners" element={<PartnersManager />} />
                       <Route path="team" element={<TeamManager />} />
+                      <Route path="cv-database" element={<CVDatabase />} />
+                      <Route path="company-inquiries" element={<CompanyInquiries />} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>

@@ -17,7 +17,7 @@ import {
   type TeamMember,
 } from "@/hooks/useTeam";
 
-const DEFAULT_COMMITTEES = ["Predsjedništvo", "Marketing", "Fundraising", "Logistika", "IT", "Human Resources"];
+const DEFAULT_COMMITTEES = ["Organizacioni odbor"];
 
 const emptyForm = {
   name: "",
