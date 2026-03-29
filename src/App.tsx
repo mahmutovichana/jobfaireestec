@@ -66,6 +66,7 @@ const App = () => (
               <Route path="/partneri" element={<Partneri />} />
               <Route path="/ostavi-cv" element={<OstaviCV />} />
               <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
 
               {/* Dashboard (protected) */}
               <Route path="/dashboard" element={<Navigate to="/dashboard/events" replace />} />
