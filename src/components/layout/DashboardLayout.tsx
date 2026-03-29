@@ -15,6 +15,7 @@ import {
   Eye,
   Newspaper,
   Megaphone,
+  Handshake,
 } from "lucide-react";
 
 const navItems = [
