@@ -89,9 +89,7 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
   useEffect(() => {
     if (!isInView) return;
     let start = 0;
-    const duration = 2000;
-    const stepTime = 20;
-    const steps = duration / stepTime;
+    const steps = COUNTER_DURATION / COUNTER_STEP_TIME;
     const increment = numericValue / steps;
     const timer = setInterval(() => {
       start += increment;
@@ -101,7 +99,7 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
       } else {
         setCount(Math.floor(start));
       }
-    }, stepTime);
+    }, COUNTER_STEP_TIME);
     return () => clearInterval(timer);
   }, [isInView, numericValue]);
 
