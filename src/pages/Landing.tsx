@@ -116,6 +116,7 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
 
 const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
+  const { data: teamMembers = [] } = useTeamMembers(true);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
