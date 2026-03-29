@@ -241,8 +241,7 @@ const Landing = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
             >
-              Sajam zapošljavanja za studente i diplomce tehničko-tehnoloških
-              fakulteta i ekonomije
+              {HERO_SUBTITLE}
             </motion.p>
 
             <motion.div
