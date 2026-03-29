@@ -11,9 +11,7 @@ import { toast } from "sonner";
 import { Loader2, Send, UserPlus, Plus, Trash2, Sun, Moon, Monitor, Copy, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
 
-const SOCIAL_PLATFORMS = [
-  "Twitter / X", "LinkedIn", "Instagram", "Facebook", "YouTube", "TikTok", "GitHub",
-];
+import { SOCIAL_PLATFORMS } from "@/lib/constants";
 
 type SocialLink = { platform: string; url: string };
 

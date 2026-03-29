@@ -9,11 +9,7 @@ import { useEvents } from "@/hooks/useEvents";
 import { useRegistrations } from "@/hooks/useRegistrations";
 import { format } from "date-fns";
 
-const statusColors: Record<string, string> = {
-  live: "bg-success text-success-foreground",
-  draft: "bg-muted text-muted-foreground",
-  past: "bg-secondary/20 text-secondary",
-};
+import { EVENT_STATUS_COLORS } from "@/lib/constants";
 
 const Events = () => {
   const navigate = useNavigate();

@@ -10,15 +10,10 @@ import { useRegistrations, Registration } from "@/hooks/useRegistrations";
 import { useRegistrationStats } from "@/hooks/useRegistrations";
 import { format } from "date-fns";
 
-const statusStyle: Record<string, string> = {
-  registered: "bg-primary/10 text-primary border-0",
-  checked_in: "bg-success/10 text-success border-0",
-  cancelled: "bg-destructive/10 text-destructive border-0",
-};
+import { REGISTRATION_STATUS_STYLES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 type SortColumn = "name" | "email" | "event" | "status" | "date";
 type SortDir = "asc" | "desc";
-const PAGE_SIZE = 15;
 
 const Attendees = () => {
   const [search, setSearch] = useState("");

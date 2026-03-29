@@ -7,15 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, MapPin, Users, Globe, ExternalLink, Mail, ArrowRight, LayoutGrid, List } from "lucide-react";
 import { format } from "date-fns";
 
-const SOCIAL_ICONS: Record<string, string> = {
-  "Twitter / X": "https://cdn.simpleicons.org/x/ffffff",
-  "LinkedIn": "https://cdn.simpleicons.org/linkedin/ffffff",
-  "Instagram": "https://cdn.simpleicons.org/instagram/ffffff",
-  "Facebook": "https://cdn.simpleicons.org/facebook/ffffff",
-  "YouTube": "https://cdn.simpleicons.org/youtube/ffffff",
-  "TikTok": "https://cdn.simpleicons.org/tiktok/ffffff",
-  "GitHub": "https://cdn.simpleicons.org/github/ffffff",
-};
+import { SOCIAL_ICON_URLS } from "@/lib/constants";
 
 type SocialLink = { platform: string; url: string };
 
