@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { usePartners } from "@/hooks/usePartners";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const emptyForm = {
   title: "",
