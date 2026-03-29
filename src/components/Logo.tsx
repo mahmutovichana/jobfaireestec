@@ -1,23 +1,22 @@
-import logoGlyph from "@/assets/logo-glyph.png";
-
 interface LogoProps {
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 const sizes = {
-  sm: { glyph: "w-7 h-7", text: "text-lg" },
-  md: { glyph: "w-9 h-9", text: "text-[22px]" },
-  lg: { glyph: "w-12 h-12", text: "text-2xl" },
+  sm: { text: "text-lg", x: "text-base" },
+  md: { text: "text-[22px]", x: "text-[20px]" },
+  lg: { text: "text-3xl", x: "text-2xl" },
 };
 
 export function Logo({ size = "md", className = "" }: LogoProps) {
   const s = sizes[size];
   return (
-    <span className={`inline-flex items-center gap-0.5 ${className}`}>
-      <img src={logoGlyph} alt="" className={`${s.glyph} object-contain`} />
-      <span className={`font-display font-bold text-primary tracking-tight ${s.text}`}>
-        eventspark
+    <span className={`inline-flex items-center ${className}`}>
+      <span className={`font-display tracking-tight ${s.text}`}>
+        <span className="text-primary font-bold italic">{`X`}</span>
+        <span className="text-foreground font-bold">job</span>
+        <span className="text-primary font-extrabold">FAIR</span>
       </span>
     </span>
   );
