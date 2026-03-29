@@ -2,92 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
     --background: 0 0% 98%;
-    --foreground: 240 30% 14%;
+    --foreground: 220 20% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 30% 14%;
+    --card-foreground: 220 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 30% 14%;
+    --popover-foreground: 220 20% 12%;
 
-    --primary: 340 75% 58%;
+    --primary: 4 80% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 10% 94%;
-    --secondary-foreground: 240 30% 14%;
+    --secondary: 220 10% 94%;
+    --secondary-foreground: 220 20% 12%;
 
-    --muted: 240 10% 96%;
-    --muted-foreground: 240 5% 46%;
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 5% 46%;
 
-    --accent: 240 10% 94%;
-    --accent-foreground: 240 30% 14%;
+    --accent: 220 10% 94%;
+    --accent-foreground: 220 20% 12%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 91%;
     --input: 0 0% 91%;
-    --ring: 340 75% 58%;
+    --ring: 4 80% 50%;
 
     --radius: 0.5rem;
 
-    --success: 172 50% 40%;
+    --success: 160 50% 40%;
     --success-foreground: 0 0% 100%;
     --warning: 38 80% 55%;
     --warning-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 30% 14%;
-    --sidebar-primary: 340 75% 58%;
+    --sidebar-foreground: 220 20% 12%;
+    --sidebar-primary: 4 80% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 240 30% 14%;
+    --sidebar-accent-foreground: 220 20% 12%;
     --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 340 75% 58%;
+    --sidebar-ring: 4 80% 50%;
   }
 
   .dark {
-    --background: 240 25% 8%;
-    --foreground: 240 5% 95%;
+    --background: 220 25% 6%;
+    --foreground: 220 5% 95%;
 
-    --card: 240 25% 11%;
-    --card-foreground: 240 5% 95%;
+    --card: 220 25% 9%;
+    --card-foreground: 220 5% 95%;
 
-    --popover: 240 25% 11%;
-    --popover-foreground: 240 5% 95%;
+    --popover: 220 25% 9%;
+    --popover-foreground: 220 5% 95%;
 
-    --primary: 340 75% 58%;
+    --primary: 4 80% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 15% 18%;
+    --secondary: 220 15% 18%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 15% 18%;
-    --muted-foreground: 240 5% 55%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 5% 55%;
 
-    --accent: 240 15% 18%;
-    --accent-foreground: 240 5% 95%;
+    --accent: 220 15% 18%;
+    --accent-foreground: 220 5% 95%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 15% 20%;
-    --input: 240 15% 20%;
-    --ring: 340 75% 58%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 4 80% 50%;
 
-    --sidebar-background: 240 25% 8%;
-    --sidebar-foreground: 240 5% 85%;
-    --sidebar-primary: 340 75% 58%;
+    --sidebar-background: 220 25% 6%;
+    --sidebar-foreground: 220 5% 85%;
+    --sidebar-primary: 4 80% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 15% 14%;
-    --sidebar-accent-foreground: 240 5% 95%;
-    --sidebar-border: 240 15% 16%;
-    --sidebar-ring: 340 75% 58%;
+    --sidebar-accent: 220 15% 14%;
+    --sidebar-accent-foreground: 220 5% 95%;
+    --sidebar-border: 220 15% 16%;
+    --sidebar-ring: 4 80% 50%;
   }
 }
 
@@ -98,11 +98,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 }
 
