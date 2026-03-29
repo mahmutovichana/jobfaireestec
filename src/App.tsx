@@ -19,6 +19,7 @@ import Oglasi from "./pages/Oglasi";
 import Partneri from "./pages/Partneri";
 import OstaviCV from "./pages/OstaviCV";
 import Kontakt from "./pages/Kontakt";
+import Unsubscribe from "./pages/Unsubscribe";
 import Events from "./pages/dashboard/Events";
 import CreateEvent from "./pages/dashboard/CreateEvent";
 import EventDetail from "./pages/dashboard/EventDetail";
