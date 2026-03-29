@@ -14,6 +14,7 @@ import {
   LogOut,
   Eye,
   Newspaper,
+  Megaphone,
 } from "lucide-react";
 
 const navItems = [
