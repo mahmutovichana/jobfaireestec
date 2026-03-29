@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   ArrowRight,
   CalendarDays,
@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 
 import heroImg from "@/assets/hero-jobfair.jpg";
+import teamPhoto1 from "@/assets/team-photo-1.jpg";
+import teamPhoto2 from "@/assets/team-photo-2.jpg";
+import teamPhoto3 from "@/assets/team-photo-3.png";
 import activityPresentation from "@/assets/activity-presentation.jpg";
 import activityNetworking from "@/assets/activity-networking.jpg";
 import activityWorkshop from "@/assets/activity-workshop.jpg";
@@ -57,8 +60,51 @@ const timelineYears = [
   2021, 2022, 2023, 2024, 2025,
 ];
 
+const AnimatedCounter = ({ value, label }: { value: string; label: string }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  const numericValue = parseInt(value.replace(/[^0-9]/g, ""));
+  const suffix = value.replace(/[0-9]/g, "");
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isInView) return;
+    let start = 0;
+    const duration = 2000;
+    const stepTime = 20;
+    const steps = duration / stepTime;
+    const increment = numericValue / steps;
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= numericValue) {
+        setCount(numericValue);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [isInView, numericValue]);
+
+  return (
+    <div ref={ref} className="text-center">
+      <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-primary mb-1">
+        {isInView ? `${count}${suffix}` : "0"}
+      </div>
+      <p className="text-sm sm:text-base text-muted-foreground font-medium">{label}</p>
+    </div>
+  );
+};
+
 const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   useEffect(() => {
     const handleScroll = () => setNavVisible(window.scrollY > 80);
@@ -70,7 +116,7 @@ const Landing = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Navbar */}
       <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md"
+        className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md border-b border-border/50"
         initial={{ y: -100 }}
         animate={{ y: navVisible ? 0 : -100 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
@@ -94,160 +140,233 @@ const Landing = () => {
       </motion.nav>
 
       {/* Hero */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background image */}
-        <div className="absolute inset-0">
+      <section ref={heroRef} className="relative min-h-screen flex items-center overflow-hidden">
+        <motion.div className="absolute inset-0" style={{ y: heroY }}>
           <img
             src={heroImg}
             alt="JobFAIR sajam"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover scale-110"
             width={1920}
             height={1080}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-foreground/40" />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/60 to-foreground/90" />
+        </motion.div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 w-full">
+        <motion.div
+          className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 w-full"
+          style={{ opacity: heroOpacity }}
+        >
           <motion.div
-            className="max-w-2xl"
-            initial={{ opacity: 0, y: 30 }}
+            className="max-w-3xl mx-auto text-center"
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="mb-6">
-              <Logo size="lg" className="[&_span]:text-white [&_.text-foreground]:text-white" />
-            </div>
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Logo size="lg" className="[&_span]:text-white [&_.text-foreground]:text-white justify-center" />
+            </motion.div>
 
-            <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm border border-primary/30 rounded-full px-4 py-1.5 mb-6">
+            <motion.div
+              className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full px-5 py-2 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               <CalendarDays className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-white">
                 03. i 04. novembar 2026.
               </span>
-            </div>
+            </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-white tracking-tight leading-[1.1] mb-4">
+            <motion.h1
+              className="text-5xl sm:text-6xl lg:text-8xl font-display font-bold text-white tracking-tight leading-[1.05] mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
               Iskoristi svoju{" "}
-              <span className="text-primary">šansu!</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-white/80 max-w-lg mb-8 leading-relaxed">
+              <span className="text-primary relative">
+                šansu!
+                <motion.div
+                  className="absolute -bottom-2 left-0 right-0 h-1.5 bg-primary rounded-full"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 1.2 }}
+                />
+              </span>
+            </motion.h1>
+
+            <motion.p
+              className="text-lg sm:text-xl text-white/75 max-w-xl mx-auto mb-10 leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
               Sajam zapošljavanja za studente i diplomce tehničko-tehnoloških
               fakulteta i ekonomije
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            </motion.p>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
               <Button
                 size="lg"
-                className="text-base font-semibold px-8 h-12"
+                className="text-base font-semibold px-10 h-14 rounded-full shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all"
                 asChild
               >
                 <Link to="/auth">
-                  Ostavi svoj CV <ArrowRight className="ml-2 w-4 h-4" />
+                  Ostavi svoj CV <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="text-base font-semibold px-8 h-12 border-white/30 text-white hover:bg-white/10 bg-white/5"
+                className="text-base font-semibold px-10 h-14 rounded-full border-white/25 text-white hover:bg-white/10 bg-white/5 backdrop-blur-sm"
                 asChild
               >
                 <a href="#o-projektu">Saznaj više</a>
               </Button>
-            </div>
+            </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
 
-        {/* Decorative network dots */}
-        <div className="absolute top-0 right-0 w-1/2 h-full pointer-events-none opacity-20">
-          <svg
-            viewBox="0 0 400 400"
-            className="w-full h-full"
-            fill="none"
-          >
-            {[...Array(20)].map((_, i) => {
-              const cx = 50 + Math.random() * 300;
-              const cy = 50 + Math.random() * 300;
-              return (
-                <circle
-                  key={i}
-                  cx={cx}
-                  cy={cy}
-                  r={2}
-                  fill="white"
-                />
-              );
-            })}
-          </svg>
-        </div>
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+          animate={{ y: [0, 12, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-1.5">
+            <motion.div
+              className="w-1.5 h-1.5 rounded-full bg-white/60"
+              animate={{ y: [0, 16, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </div>
+        </motion.div>
       </section>
 
       {/* Stats */}
-      <section className="py-16 lg:py-20 bg-card">
+      <section className="py-20 lg:py-28 bg-card relative">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16">
             {stats.map((stat, i) => (
               <motion.div
                 key={stat.label}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="w-7 h-7 text-primary" />
-                </div>
-                <div className="text-3xl sm:text-4xl font-display font-bold text-foreground mb-1">
-                  {stat.value}
-                </div>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <AnimatedCounter value={stat.value} label={stat.label} />
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* About / O projektu */}
-      <section id="o-projektu" className="py-20 lg:py-28">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4 text-foreground tracking-tight">
-              O projektu
-            </h2>
-            <div className="w-16 h-1 bg-primary rounded-full mx-auto" />
-          </motion.div>
+      {/* Full-width team photo band */}
+      <section className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+        <motion.img
+          src={teamPhoto1}
+          alt="JobFAIR tim"
+          className="w-full h-full object-cover"
+          initial={{ scale: 1.1 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+      </section>
 
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="space-y-6 text-muted-foreground text-base sm:text-lg leading-relaxed"
-          >
-            <p>
-              JobFAIR je najznačajniji projekat Udruženja studenata
-              elektrotehnike Evrope, EESTEC LC Sarajevo. Ove godine održava se
-              po sedamnaesti put, dokazujući da u Bosni i Hercegovini postoje
-              mladi koji ne čekaju prilike, nego ih stvaraju sami!
-            </p>
-            <p>
-              Osnovni cilj JobFAIR-a je direktan kontakt između studenata i
-              poslodavaca. Tokom dva dana trajanja Sajma, posjetioci su u
-              mogućnosti razgovarati s predstavnicima kompanija, informisati se o
-              tome šta poslodavci očekuju od njih te koje su vještine poželjne za
-              njihovu struku.
-            </p>
-            <p>
-              Ovaj projekat direktno stimuliše zapošljavanje mladih u uspješnim
-              domaćim kompanijama. Kroz različita predavanja i savjete
-              profesionalaca pruža se podrška mladima koji imaju ambicije da
-              započnu sopstveni biznis.
-            </p>
-          </motion.div>
+      {/* About / O projektu */}
+      <section id="o-projektu" className="py-24 lg:py-36">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Text */}
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+            >
+              <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">
+                O projektu
+              </span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-8 text-foreground tracking-tight leading-tight">
+                Spajamo mlade sa{" "}
+                <span className="text-primary">njihovom budućnošću</span>
+              </h2>
+
+              <div className="space-y-5 text-muted-foreground text-base sm:text-lg leading-relaxed">
+                <p>
+                  JobFAIR je najznačajniji projekat Udruženja studenata
+                  elektrotehnike Evrope, EESTEC LC Sarajevo. Ove godine održava se
+                  po sedamnaesti put, dokazujući da u Bosni i Hercegovini postoje
+                  mladi koji ne čekaju prilike, nego ih stvaraju sami!
+                </p>
+                <p>
+                  Osnovni cilj JobFAIR-a je direktan kontakt između studenata i
+                  poslodavaca. Tokom dva dana trajanja Sajma, posjetioci su u
+                  mogućnosti razgovarati s predstavnicima kompanija, informisati se o
+                  tome šta poslodavci očekuju od njih te koje su vještine poželjne za
+                  njihovu struku.
+                </p>
+                <p>
+                  Ovaj projekat direktno stimuliše zapošljavanje mladih u uspješnim
+                  domaćim kompanijama. Kroz različita predavanja i savjete
+                  profesionalaca pruža se podrška mladima koji imaju ambicije da
+                  započnu sopstveni biznis.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Image collage */}
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              <div className="relative">
+                <div className="rounded-3xl overflow-hidden shadow-2xl">
+                  <img
+                    src={teamPhoto2}
+                    alt="EESTEC LC Sarajevo štand"
+                    className="w-full aspect-[3/4] object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                {/* Floating accent card */}
+                <motion.div
+                  className="absolute -bottom-8 -left-8 w-48 h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-background"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                >
+                  <img
+                    src={teamPhoto3}
+                    alt="JobFAIR arhiva"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </motion.div>
+                {/* Decorative element */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-2xl -z-10" />
+                <div className="absolute -bottom-4 right-8 w-16 h-16 bg-primary/20 rounded-full -z-10" />
+              </div>
+            </motion.div>
+          </div>
 
           {/* Timeline */}
           <motion.div
@@ -255,20 +374,27 @@ const Landing = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-14"
+            className="mt-24"
           >
-            <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none">
+            <p className="text-center text-sm text-muted-foreground font-medium mb-6 tracking-wider uppercase">
+              Naša historija
+            </p>
+            <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none justify-center flex-wrap">
               {timelineYears.map((year, i) => (
-                <div
+                <motion.div
                   key={year}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: i * 0.03 }}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-default ${
                     i === timelineYears.length - 1
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-110"
+                      : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
                   }`}
                 >
                   {year}
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -276,19 +402,21 @@ const Landing = () => {
       </section>
 
       {/* Organizer */}
-      <section className="py-20 lg:py-28 bg-card">
+      <section className="py-24 lg:py-32 bg-card">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-14"
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4 text-foreground tracking-tight">
+            <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">
+              Ko stoji iza svega
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">
               Organizator
             </h2>
-            <div className="w-16 h-1 bg-primary rounded-full mx-auto" />
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -311,16 +439,16 @@ const Landing = () => {
             ].map((item, i) => (
               <motion.div
                 key={item.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-background rounded-2xl p-8 text-center"
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="group bg-background rounded-3xl p-8 text-center hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 border border-transparent hover:border-primary/10"
               >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                  <item.icon className="w-7 h-7 text-primary" />
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-500">
+                  <item.icon className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-display font-bold text-lg mb-3 text-foreground">
+                <h3 className="font-display font-bold text-xl mb-3 text-foreground">
                   {item.title}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -332,51 +460,80 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Full-width photo band 2 */}
+      <section className="relative h-[40vh] md:h-[50vh] overflow-hidden">
+        <motion.img
+          src={teamPhoto3}
+          alt="JobFAIR kroz historiju"
+          className="w-full h-full object-cover"
+          initial={{ scale: 1.1 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-card via-transparent to-background" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h3 className="text-3xl sm:text-5xl font-display font-bold text-white drop-shadow-2xl">
+              17 godina <span className="text-primary">tradicije</span>
+            </h3>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Activities */}
-      <section className="py-20 lg:py-28">
+      <section className="py-24 lg:py-32">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-14"
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4 text-foreground tracking-tight">
+            <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">
+              Šta te čeka
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">
               Aktivnosti
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Tokom dva dana Sajma studenti imaju mogućnost učestvovati u nizu
               aktivnosti koje će im pomoći u razvoju karijere.
             </p>
-            <div className="w-16 h-1 bg-primary rounded-full mx-auto mt-4" />
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {activities.map((activity, i) => (
               <motion.div
                 key={activity.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="group"
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="group cursor-default"
               >
-                <div className="rounded-2xl overflow-hidden bg-card border border-border hover:shadow-lg transition-shadow">
+                <div className="rounded-3xl overflow-hidden bg-card border border-border/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 hover:border-primary/20">
                   <div className="aspect-[4/3] overflow-hidden">
                     <img
                       src={activity.img}
                       alt={activity.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       loading="lazy"
                       width={800}
                       height={600}
                     />
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <activity.icon className="w-5 h-5 text-primary" />
+                  <div className="p-7">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                        <activity.icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
                       </div>
                       <h3 className="font-display font-bold text-lg text-foreground">
                         {activity.title}
@@ -394,51 +551,62 @@ const Landing = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto px-6 lg:px-8">
-          <div className="bg-foreground rounded-3xl relative overflow-hidden px-8 py-16 lg:px-14 lg:py-20 text-center">
-            {/* Decorative dots */}
-            <div className="absolute inset-0 opacity-5">
-              <svg className="w-full h-full" viewBox="0 0 400 200">
-                {[...Array(30)].map((_, i) => (
-                  <circle
-                    key={i}
-                    cx={Math.random() * 400}
-                    cy={Math.random() * 200}
-                    r={1.5}
-                    fill="white"
-                  />
-                ))}
-              </svg>
-            </div>
+      <section className="py-20 lg:py-28">
+        <div className="max-w-5xl mx-auto px-6 lg:px-8">
+          <motion.div
+            className="relative rounded-[2rem] overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            {/* BG image */}
+            <img
+              src={teamPhoto1}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-hidden="true"
+            />
+            <div className="absolute inset-0 bg-foreground/85 backdrop-blur-sm" />
 
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative z-10"
-            >
-              <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4 text-background tracking-tight">
-                Spreman za JobFAIR '26?
-              </h2>
-              <p className="text-background/70 text-lg mb-8 max-w-lg mx-auto text-balance">
+            <div className="relative z-10 px-8 py-20 lg:px-16 lg:py-28 text-center">
+              <motion.h2
+                className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-5 text-white tracking-tight"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                Spreman za JobFAIR <span className="text-primary">'26</span>?
+              </motion.h2>
+              <motion.p
+                className="text-white/70 text-lg mb-10 max-w-lg mx-auto text-balance"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 Pridruži se hiljadama studenata i diplomaca koji grade svoju
                 karijeru kroz JobFAIR. Ne čekaj prilike — stvori ih sam!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
                 <Button
                   size="lg"
-                  className="text-base font-semibold px-8 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="text-base font-semibold px-10 h-14 rounded-full shadow-lg shadow-primary/30"
                   asChild
                 >
                   <Link to="/auth">
-                    Registruj se <ArrowRight className="ml-2 w-4 h-4" />
+                    Registruj se <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
                 </Button>
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
