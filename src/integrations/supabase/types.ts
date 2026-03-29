@@ -168,6 +168,48 @@ export type Database = {
           },
         ]
       }
+      job_ads: {
+        Row: {
+          company_name: string
+          created_at: string
+          deadline: string | null
+          description: string | null
+          external_link: string | null
+          id: string
+          image_url: string | null
+          published: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          external_link?: string | null
+          id?: string
+          image_url?: string | null
+          published?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          external_link?: string | null
+          id?: string
+          image_url?: string | null
+          published?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       news_posts: {
         Row: {
           content: string | null
