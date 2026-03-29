@@ -16,6 +16,7 @@ import CompanyPage from "./pages/CompanyPage";
 import Novosti from "./pages/Novosti";
 import NovostDetail from "./pages/NovostDetail";
 import Oglasi from "./pages/Oglasi";
+import Partneri from "./pages/Partneri";
 import Events from "./pages/dashboard/Events";
 import CreateEvent from "./pages/dashboard/CreateEvent";
 import EventDetail from "./pages/dashboard/EventDetail";
