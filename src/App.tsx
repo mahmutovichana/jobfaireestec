@@ -26,6 +26,7 @@ import Integrations from "./pages/dashboard/Integrations";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import NewsManager from "./pages/dashboard/NewsManager";
 import JobAdsManager from "./pages/dashboard/JobAdsManager";
+import PartnersManager from "./pages/dashboard/PartnersManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
