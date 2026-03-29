@@ -22,7 +22,7 @@ const faculties = [
   "Ostalo",
 ];
 
-const years = ["1. godina", "2. godina", "3. godina", "4. godina", "Master", "Diplomant/ica"];
+const years = ["1", "2", "3", "4", "5", "Ostalo"];
 
 export default function OstaviCV() {
   const createCV = useCreateCVSubmission();
@@ -33,6 +33,8 @@ export default function OstaviCV() {
     faculty: "",
     year_of_study: "",
   });
+  const [customFaculty, setCustomFaculty] = useState("");
+  const [customYear, setCustomYear] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -42,14 +44,18 @@ export default function OstaviCV() {
     if (!file) { toast.error("Molimo priložite svoj CV (PDF)"); return; }
     if (!form.full_name.trim() || !form.email.trim()) { toast.error("Ime i email su obavezni"); return; }
 
+    const finalFaculty = form.faculty === "Ostalo" ? (customFaculty.trim() || "Ostalo") : form.faculty;
+    const finalYear = form.year_of_study === "Ostalo" ? (customYear.trim() || "Ostalo") : (form.year_of_study ? `${form.year_of_study}. godina` : null);
+
     setUploading(true);
     try {
       const cvPath = await uploadCV(file);
       await createCV.mutateAsync({
-        ...form,
+        full_name: form.full_name,
+        email: form.email,
         phone: form.phone || null,
-        faculty: form.faculty || null,
-        year_of_study: form.year_of_study || null,
+        faculty: finalFaculty || null,
+        year_of_study: finalYear,
         cv_url: cvPath,
       });
       setSubmitted(true);
@@ -84,7 +90,6 @@ export default function OstaviCV() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="border-b border-border/50">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -144,6 +149,14 @@ export default function OstaviCV() {
                   {faculties.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {form.faculty === "Ostalo" && (
+                <Input
+                  className="mt-2"
+                  value={customFaculty}
+                  onChange={(e) => setCustomFaculty(e.target.value)}
+                  placeholder="Unesite naziv fakulteta"
+                />
+              )}
             </div>
 
             <div>
@@ -151,9 +164,21 @@ export default function OstaviCV() {
               <Select value={form.year_of_study} onValueChange={(v) => setForm((f) => ({ ...f, year_of_study: v }))}>
                 <SelectTrigger><SelectValue placeholder="Odaberite godinu" /></SelectTrigger>
                 <SelectContent>
-                  {years.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                  {years.map((y) => (
+                    <SelectItem key={y} value={y}>
+                      {y === "Ostalo" ? "Ostalo" : `${y}. godina`}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {form.year_of_study === "Ostalo" && (
+                <Input
+                  className="mt-2"
+                  value={customYear}
+                  onChange={(e) => setCustomYear(e.target.value)}
+                  placeholder="Unesite godinu studija (npr. Master, Diplomant)"
+                />
+              )}
             </div>
 
             <div>
