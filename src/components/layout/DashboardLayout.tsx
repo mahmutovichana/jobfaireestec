@@ -16,6 +16,7 @@ import {
   Newspaper,
   Megaphone,
   Handshake,
+  UsersRound,
 } from "lucide-react";
 
 const navItems = [
