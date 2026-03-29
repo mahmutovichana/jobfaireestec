@@ -53,11 +53,9 @@ export function useCreateJobAd() {
       external_link?: string;
       published?: boolean;
     }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("job_ads")
-        .insert({ ...ad, user_id: user!.id } as any)
-        .select()
-        .single();
+        .insert({ ...ad, user_id: user!.id } as any);
       if (error) throw error;
       return data;
     },
