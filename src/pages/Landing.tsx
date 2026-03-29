@@ -31,6 +31,7 @@ import activityNetworking from "@/assets/activity-networking.jpg";
 import activityWorkshop from "@/assets/activity-workshop.jpg";
 
 import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NAV_SCROLL_THRESHOLD, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE, COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME, ROUTES } from "@/lib/constants";
+import { useTeamMembers, type TeamMember } from "@/hooks/useTeam";
 
 const stats = LANDING_STATS.map((s, i) => ({
   icon: [Users, Briefcase, Building2, Camera][i],
