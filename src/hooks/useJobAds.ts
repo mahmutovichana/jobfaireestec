@@ -71,12 +71,10 @@ export function useUpdateJobAd() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<Omit<JobAd, "id" | "user_id" | "created_at" | "updated_at">>) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("job_ads")
         .update(updates as any)
-        .eq("id", id)
-        .select()
-        .single();
+        .eq("id", id);
       if (error) throw error;
       return data;
     },
