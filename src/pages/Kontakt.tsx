@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,19 @@ export default function Kontakt() {
       await createInquiry.mutateAsync({
         ...form,
         phone: form.phone || null,
+      });
+      // Send confirmation email to the company
+      const inquiryId = crypto.randomUUID();
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "contact-inquiry-confirmation",
+          recipientEmail: form.email,
+          idempotencyKey: `inquiry-confirm-${inquiryId}`,
+          templateData: {
+            company_name: form.company_name,
+            contact_person: form.contact_person,
+          },
+        },
       });
       setSubmitted(true);
     } catch (err: any) {
