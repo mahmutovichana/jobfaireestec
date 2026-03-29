@@ -445,7 +445,7 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Timeline */}
+          {/* Timeline — horizontal line with dots */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -453,26 +453,51 @@ const Landing = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-24"
           >
-            <p className="text-center text-sm text-muted-foreground font-medium mb-6 tracking-wider uppercase">
+            <p className="text-center text-sm text-muted-foreground font-medium mb-10 tracking-wider uppercase">
               Naša historija
             </p>
-            <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none justify-center flex-wrap">
-              {timelineYears.map((year, i) => (
-                <motion.div
-                  key={year}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-default ${
-                    i === timelineYears.length - 1
-                      ? "bg-primary text-primary-foreground scale-110"
-                      : "bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/20"
-                  }`}
-                >
-                  {year}
-                </motion.div>
-              ))}
+            <div className="relative max-w-5xl mx-auto">
+              {/* Line */}
+              <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
+              <div className="flex items-start justify-between">
+                {timelineYears.map((year, i) => {
+                  const isLast = i === timelineYears.length - 1;
+                  const isRecent = i >= timelineYears.length - 5;
+                  return (
+                    <motion.div
+                      key={year}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
+                      className="flex flex-col items-center group cursor-default"
+                    >
+                      {/* Dot */}
+                      <div className={`relative w-[9px] h-[9px] rounded-full transition-all duration-300 ${
+                        isLast
+                          ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
+                          : isRecent
+                          ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150"
+                          : "bg-white/20 group-hover:bg-white/50 group-hover:scale-125"
+                      }`}>
+                        {isLast && (
+                          <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-30" />
+                        )}
+                      </div>
+                      {/* Year label */}
+                      <span className={`mt-4 text-xs font-medium transition-all duration-300 ${
+                        isLast
+                          ? "text-primary font-bold text-sm"
+                          : isRecent
+                          ? "text-muted-foreground group-hover:text-primary"
+                          : "text-muted-foreground/50 group-hover:text-muted-foreground"
+                      }`}>
+                        {year}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         </div>
