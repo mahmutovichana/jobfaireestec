@@ -30,7 +30,7 @@ const LOGO_SIZE: Record<PartnerPackage, string> = {
 };
 
 /* ── Infinite marquee row ── */
-function MarqueeRow({ partners, reverse = false, speed = 30 }: { partners: Partner[]; reverse?: boolean; speed?: number }) {
+function MarqueeRow({ partners, reverse = false, speed = 12 }: { partners: Partner[]; reverse?: boolean; speed?: number }) {
   if (partners.length === 0) return null;
   // Duplicate for seamless loop
   const items = [...partners, ...partners, ...partners];
