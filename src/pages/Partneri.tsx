@@ -133,7 +133,7 @@ function CategorySection({ title, partners, showPackages = false }: { title: str
                 </div>
 
                 {/* Marquee for this package */}
-                <MarqueeRow partners={pkgPartners} reverse={pkgIdx % 2 === 1} speed={pkg === "gold" ? 40 : 30} />
+                <MarqueeRow partners={pkgPartners} reverse={pkgIdx % 2 === 1} speed={pkg === "gold" ? 18 : 12} />
 
                 {/* Grid underneath for gold/silver */}
                 {(pkg === "gold" || pkg === "silver") && (
