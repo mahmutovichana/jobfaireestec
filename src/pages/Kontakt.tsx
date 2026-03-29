@@ -43,6 +43,19 @@ export default function Kontakt() {
         ...form,
         phone: form.phone || null,
       });
+      // Send confirmation email to the company
+      const inquiryId = crypto.randomUUID();
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "contact-inquiry-confirmation",
+          recipientEmail: form.email,
+          idempotencyKey: `inquiry-confirm-${inquiryId}`,
+          templateData: {
+            company_name: form.company_name,
+            contact_person: form.contact_person,
+          },
+        },
+      });
       setSubmitted(true);
     } catch (err: any) {
       toast.error(err.message || "Greška pri slanju upita");
