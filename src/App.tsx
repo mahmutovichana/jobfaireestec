@@ -75,6 +75,7 @@ const App = () => (
                       <Route path="settings" element={<SettingsPage />} />
                       <Route path="news" element={<NewsManager />} />
                       <Route path="job-ads" element={<JobAdsManager />} />
+                      <Route path="partners" element={<PartnersManager />} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>

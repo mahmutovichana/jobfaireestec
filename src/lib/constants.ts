@@ -113,4 +113,6 @@ export const ROUTES = {
   DASHBOARD_ANALYTICS: "/dashboard/analytics",
   DASHBOARD_INTEGRATIONS: "/dashboard/integrations",
   DASHBOARD_SETTINGS: "/dashboard/settings",
+  DASHBOARD_PARTNERS: "/dashboard/partners",
+  PARTNERI: "/partneri",
 } as const;

@@ -22,6 +22,7 @@ const navItems = [
   { title: "Events", url: "/dashboard/events", icon: CalendarDays },
   { title: "Novosti", url: "/dashboard/news", icon: Newspaper },
   { title: "Oglasi", url: "/dashboard/job-ads", icon: Megaphone },
+  { title: "Partneri", url: "/dashboard/partners", icon: Handshake },
   { title: "Attendees", url: "/dashboard/attendees", icon: Users },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Integrations", url: "/dashboard/integrations", icon: Puzzle },
