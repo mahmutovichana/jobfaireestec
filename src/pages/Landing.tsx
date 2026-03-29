@@ -679,6 +679,107 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* ── Meet the Team ── */}
+      {teamMembers.length > 0 && (() => {
+        const committees = [...new Set(teamMembers.map(m => m.committee))];
+        return (
+          <section className="py-24 lg:py-32">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="text-center mb-16"
+              >
+                <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">
+                  Upoznaj nas
+                </span>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">
+                  Naš <span className="text-primary">tim</span>
+                </h2>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                  Ljudi koji stoje iza najznačajnijeg sajma zapošljavanja u BiH.
+                </p>
+              </motion.div>
+
+              <div className="space-y-16">
+                {committees.map((committee, ci) => {
+                  const members = teamMembers.filter(m => m.committee === committee);
+                  return (
+                    <div key={committee}>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="flex items-center gap-3 mb-8"
+                      >
+                        <div className="h-px flex-1 max-w-12 bg-primary/40" />
+                        <span className="text-sm font-semibold text-primary tracking-wider uppercase">{committee}</span>
+                        <div className="h-px flex-1 bg-white/[0.06]" />
+                      </motion.div>
+
+                      <div className={`grid gap-6 ${
+                        members.length <= 3 ? "grid-cols-2 sm:grid-cols-3 max-w-3xl mx-auto" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                      }`}>
+                        {members.map((member, i) => (
+                          <motion.div
+                            key={member.id}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: i * 0.08 }}
+                            className="group cursor-default"
+                            style={{ perspective: "800px" }}
+                          >
+                            <div className="relative transition-transform duration-500 group-hover:[transform:rotateY(6deg)_rotateX(-3deg)_scale(1.05)]">
+                              <div className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/[0.06] group-hover:border-primary/20 group-hover:shadow-xl group-hover:shadow-primary/5 transition-all duration-500">
+                                <div className="aspect-[3/4] overflow-hidden bg-muted/20">
+                                  {member.photo_url ? (
+                                    <img
+                                      src={member.photo_url}
+                                      alt={member.name}
+                                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-500">
+                                      {member.name.split(" ").map(n => n[0]).join("")}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="p-4 text-center">
+                                  <p className="font-display font-bold text-sm text-foreground">{member.name}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">{member.role}</p>
+                                  {member.linkedin_url && member.linkedin_url !== "https://linkedin.com" && (
+                                    <a
+                                      href={member.linkedin_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex mt-2 text-primary/60 hover:text-primary transition-colors"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                              {/* 3D shadow */}
+                              <div className="absolute -inset-1 rounded-2xl bg-primary/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
       {/* ── CTA ── */}
       <section className="py-20 lg:py-28">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
