@@ -15,7 +15,6 @@ const interestTypes = [
   { value: "participation", label: "Učešće na JobFAIR-u" },
   { value: "sponsorship", label: "Sponzorstvo" },
   { value: "media_partnership", label: "Medijsko partnerstvo" },
-  { value: "presentation", label: "Prezentacija kompanije" },
   { value: "other", label: "Ostalo" },
 ];
 

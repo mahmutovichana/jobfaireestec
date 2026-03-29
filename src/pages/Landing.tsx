@@ -186,15 +186,28 @@ const Landing = () => {
       </motion.nav>
 
       {/* ── Hero with animated beams ── */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center overflow-hidden">
+      <section ref={heroRef} className="relative min-h-[110vh] flex items-center overflow-hidden">
         {/* Dark base with subtle grid */}
         <div className="absolute inset-0 bg-[#070709]">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:80px_80px]" />
         </div>
 
-        {/* Gradient glow spots */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/[0.08] rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 left-1/3 w-[400px] h-[300px] bg-primary/[0.05] rounded-full blur-[120px]" />
+        {/* Gradient glow spots with hover-reactive feel */}
+        <motion.div
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/[0.08] rounded-full blur-[150px]"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.12, 0.08] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-1/3 w-[400px] h-[300px] bg-primary/[0.05] rounded-full blur-[120px]"
+          animate={{ scale: [1, 1.2, 1], x: [0, 30, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-primary/[0.04] rounded-full blur-[130px]"
+          animate={{ scale: [1, 1.3, 1], y: [0, -20, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
 
         {/* Animated beams */}
         <Beam delay={0} duration={5} angle={-12} top="15%" width="500px" />
@@ -226,8 +239,8 @@ const Landing = () => {
           transition={{ duration: 10, repeat: Infinity, delay: 4, ease: "linear" }}
         />
 
-        {/* Bottom gradient fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+        {/* Bottom gradient fade — extended */}
+        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
 
         <motion.div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 w-full" style={{ opacity: heroOpacity }}>
           <motion.div
