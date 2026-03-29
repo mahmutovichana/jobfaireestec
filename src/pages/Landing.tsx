@@ -152,6 +152,9 @@ const Landing = () => {
               <Link to="/novosti">Novosti</Link>
             </Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
+              <Link to="/oglasi">Oglasi</Link>
+            </Button>
+            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
               <Link to="/auth">Prijava</Link>
             </Button>
             <Button className="hidden sm:inline-flex text-sm font-semibold rounded-full" asChild>
