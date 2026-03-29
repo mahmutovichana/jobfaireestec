@@ -81,6 +81,9 @@ const Landing = () => {
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="ghost" className="text-sm font-medium" asChild>
+              <Link to="/novosti">Novosti</Link>
+            </Button>
+            <Button variant="ghost" className="text-sm font-medium" asChild>
               <Link to="/auth">Prijava</Link>
             </Button>
             <Button className="hidden sm:inline-flex text-sm font-semibold" asChild>
