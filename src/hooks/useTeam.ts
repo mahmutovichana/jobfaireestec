@@ -38,13 +38,10 @@ export function useCreateTeamMember() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (m: Omit<TeamMember, "id" | "user_id" | "created_at" | "updated_at">) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("team_members")
-        .insert({ ...m, user_id: user!.id } as any)
-        .select()
-        .single();
+        .insert({ ...m, user_id: user!.id } as any);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["team-members"] }); toast.success("Član dodan!"); },
     onError: (e: any) => toast.error(e.message),
@@ -55,14 +52,11 @@ export function useUpdateTeamMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...u }: Partial<TeamMember> & { id: string }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("team_members")
         .update(u as any)
-        .eq("id", id)
-        .select()
-        .single();
+        .eq("id", id);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["team-members"] }); toast.success("Član ažuriran!"); },
     onError: (e: any) => toast.error(e.message),

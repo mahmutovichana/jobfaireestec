@@ -53,13 +53,10 @@ export function useCreateJobAd() {
       external_link?: string;
       published?: boolean;
     }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("job_ads")
-        .insert({ ...ad, user_id: user!.id } as any)
-        .select()
-        .single();
+        .insert({ ...ad, user_id: user!.id } as any);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job-ads"] });
@@ -74,14 +71,11 @@ export function useUpdateJobAd() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<Omit<JobAd, "id" | "user_id" | "created_at" | "updated_at">>) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("job_ads")
         .update(updates as any)
-        .eq("id", id)
-        .select()
-        .single();
+        .eq("id", id);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job-ads"] });

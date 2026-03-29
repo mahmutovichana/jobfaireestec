@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { usePartners } from "@/hooks/usePartners";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const emptyForm = {
   title: "",
@@ -39,9 +41,14 @@ const emptyForm = {
 
 const JobAdsManager = () => {
   const { data: ads, isLoading } = useJobAds(false);
+  const { data: partners = [] } = usePartners();
   const createAd = useCreateJobAd();
   const updateAd = useUpdateJobAd();
   const deleteAd = useDeleteJobAd();
+  const companyNames = useMemo(() => {
+    const set = new Set(partners.map((p) => p.name));
+    return Array.from(set).sort();
+  }, [partners]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -218,7 +225,18 @@ const JobAdsManager = () => {
 
             <div className="space-y-1.5">
               <Label htmlFor="ad-company">Firma *</Label>
-              <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
+              {companyNames.length > 0 ? (
+                <Select value={form.company_name} onValueChange={(v) => setForm((f) => ({ ...f, company_name: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Odaberi kompaniju" /></SelectTrigger>
+                  <SelectContent>
+                    {companyNames.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
+              )}
             </div>
 
             <div className="space-y-1.5">
