@@ -312,30 +312,54 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Photo mosaic band ── */}
+      {/* ── Photo bento grid ── */}
       <section className="py-4 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { src: teamPhoto1, alt: "JobFAIR tim", span: "md:col-span-2 aspect-[2/1]" },
-            { src: eventInstagram, alt: "Event atmosfera", span: "aspect-square" },
-            { src: sponsorsMerch, alt: "Sponzori i merch", span: "aspect-square" },
-          ].map((photo, i) => (
-            <motion.div
-              key={photo.alt}
-              className={`rounded-2xl overflow-hidden ${photo.span}`}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                loading="lazy"
-              />
-            </motion.div>
-          ))}
+        <div className="max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-6 grid-rows-2 gap-3 auto-rows-[200px] md:auto-rows-[260px]">
+          <motion.div
+            className="col-span-2 row-span-2 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <img src={teamPhoto1} alt="JobFAIR tim" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-2 row-span-1 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <img src={activityPresentation} alt="Prezentacija" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-2 row-span-2 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <img src={sponsorsMerch} alt="Sponzori i merch" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-1 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <img src={eventInstagram} alt="Event atmosfera" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-1 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <img src={activityNetworking} alt="Networking" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
         </div>
       </section>
 
