@@ -76,7 +76,6 @@ export function useUpdateJobAd() {
         .update(updates as any)
         .eq("id", id);
       if (error) throw error;
-      },
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job-ads"] });
