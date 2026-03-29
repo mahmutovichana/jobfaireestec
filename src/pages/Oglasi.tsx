@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useJobAds } from "@/hooks/useJobAds";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
+import { ROUTES, JOB_AD_FILTERS, type JobAdFilterKey } from "@/lib/constants";
 import {
   CalendarDays, ArrowLeft, ExternalLink, Building2, Search, X,
 } from "lucide-react";
