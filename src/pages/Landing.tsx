@@ -30,12 +30,12 @@ import activityPresentation from "@/assets/activity-presentation.jpg";
 import activityNetworking from "@/assets/activity-networking.jpg";
 import activityWorkshop from "@/assets/activity-workshop.jpg";
 
-const stats = [
-  { icon: Users, value: "5000+", label: "Posjetitelja godišnje" },
-  { icon: Briefcase, value: "3000+", label: "Unosa u CV bazu" },
-  { icon: Building2, value: "100+", label: "Kompanija učesnica" },
-  { icon: Camera, value: "50+", label: "Medijskih partnera" },
-];
+import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NAV_SCROLL_THRESHOLD, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE, COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME, ROUTES } from "@/lib/constants";
+
+const stats = LANDING_STATS.map((s, i) => ({
+  icon: [Users, Briefcase, Building2, Camera][i],
+  ...s,
+}));
 
 const activities = [
   {
@@ -61,10 +61,7 @@ const activities = [
   },
 ];
 
-const timelineYears = [
-  2008, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020,
-  2021, 2022, 2023, 2024, 2025,
-];
+const timelineYears = [...TIMELINE_YEARS];
 
 /* ── Glassmorphism card component ── */
 const GlassCard = ({
