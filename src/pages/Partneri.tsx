@@ -201,7 +201,7 @@ function CategorySection({ title, partners, showPackages = false }: { title: str
         </h2>
       </motion.div>
 
-      <MarqueeRow partners={partners} speed={25} />
+      <MarqueeRow partners={partners} speed={10} />
 
       <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-5xl mx-auto px-6">
         {partners.map((partner, i) => (
