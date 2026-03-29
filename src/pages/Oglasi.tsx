@@ -47,25 +47,7 @@ const Oglasi = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar */}
-      <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-white/[0.06]"
-        initial={{ y: -100 }}
-        animate={{ y: navVisible ? 0 : -100 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-[64px] px-6 lg:px-8">
-          <Link to="/"><Logo size="md" /></Link>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/novosti">Novosti</Link>
-            </Button>
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/auth">Prijava</Link>
-            </Button>
-          </div>
-        </div>
-      </motion.nav>
+      <PublicNavbar items={navItems} showRegister={false} />
 
       {/* Header */}
       <section className="pt-24 pb-8 lg:pt-32 lg:pb-12">
