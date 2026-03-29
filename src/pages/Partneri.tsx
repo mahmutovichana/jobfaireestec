@@ -30,7 +30,7 @@ const LOGO_SIZE: Record<PartnerPackage, string> = {
 };
 
 /* ── Infinite marquee row ── */
-function MarqueeRow({ partners, reverse = false, speed = 30 }: { partners: Partner[]; reverse?: boolean; speed?: number }) {
+function MarqueeRow({ partners, reverse = false, speed = 12 }: { partners: Partner[]; reverse?: boolean; speed?: number }) {
   if (partners.length === 0) return null;
   // Duplicate for seamless loop
   const items = [...partners, ...partners, ...partners];
@@ -133,7 +133,7 @@ function CategorySection({ title, partners, showPackages = false }: { title: str
                 </div>
 
                 {/* Marquee for this package */}
-                <MarqueeRow partners={pkgPartners} reverse={pkgIdx % 2 === 1} speed={pkg === "gold" ? 40 : 30} />
+                <MarqueeRow partners={pkgPartners} reverse={pkgIdx % 2 === 1} speed={pkg === "gold" ? 18 : 12} />
 
                 {/* Grid underneath for gold/silver */}
                 {(pkg === "gold" || pkg === "silver") && (
@@ -201,7 +201,7 @@ function CategorySection({ title, partners, showPackages = false }: { title: str
         </h2>
       </motion.div>
 
-      <MarqueeRow partners={partners} speed={25} />
+      <MarqueeRow partners={partners} speed={10} />
 
       <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-5xl mx-auto px-6">
         {partners.map((partner, i) => (
