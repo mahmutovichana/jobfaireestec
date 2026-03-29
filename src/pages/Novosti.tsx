@@ -140,13 +140,7 @@ const Novosti = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 lg:px-8 border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
-          <span className="text-sm text-muted-foreground">© 2026 JobFAIR. Sva prava zadržana.</span>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };
