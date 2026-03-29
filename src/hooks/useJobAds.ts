@@ -57,7 +57,6 @@ export function useCreateJobAd() {
         .from("job_ads")
         .insert({ ...ad, user_id: user!.id } as any);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["job-ads"] });
