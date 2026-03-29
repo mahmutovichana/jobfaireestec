@@ -697,14 +697,14 @@ const Landing = () => {
           <Logo size="md" />
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <a
-              href="https://www.eestec-sa.ba/"
+              href={EESTEC_WEBSITE}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-foreground transition-colors"
             >
-              EESTEC LC Sarajevo
+              {EESTEC_ORG_NAME}
             </a>
-            <span>© 2026 JobFAIR. Sva prava zadržana.</span>
+            <span>{COPYRIGHT_TEXT}</span>
           </div>
         </div>
       </footer>
