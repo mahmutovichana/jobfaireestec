@@ -16,6 +16,7 @@ import {
   Newspaper,
   Megaphone,
   Handshake,
+  UsersRound,
 } from "lucide-react";
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { title: "Novosti", url: "/dashboard/news", icon: Newspaper },
   { title: "Oglasi", url: "/dashboard/job-ads", icon: Megaphone },
   { title: "Partneri", url: "/dashboard/partners", icon: Handshake },
+  { title: "Tim", url: "/dashboard/team", icon: UsersRound },
   { title: "Attendees", url: "/dashboard/attendees", icon: Users },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Integrations", url: "/dashboard/integrations", icon: Puzzle },

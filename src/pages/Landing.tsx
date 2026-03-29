@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -31,6 +31,7 @@ import activityNetworking from "@/assets/activity-networking.jpg";
 import activityWorkshop from "@/assets/activity-workshop.jpg";
 
 import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NAV_SCROLL_THRESHOLD, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE, COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME, ROUTES } from "@/lib/constants";
+import { useTeamMembers, type TeamMember } from "@/hooks/useTeam";
 
 const stats = LANDING_STATS.map((s, i) => ({
   icon: [Users, Briefcase, Building2, Camera][i],
@@ -115,6 +116,7 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
 
 const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
+  const { data: teamMembers = [] } = useTeamMembers(true);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -311,30 +313,54 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Photo mosaic band ── */}
+      {/* ── Photo bento grid ── */}
       <section className="py-4 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { src: teamPhoto1, alt: "JobFAIR tim", span: "md:col-span-2 aspect-[2/1]" },
-            { src: eventInstagram, alt: "Event atmosfera", span: "aspect-square" },
-            { src: sponsorsMerch, alt: "Sponzori i merch", span: "aspect-square" },
-          ].map((photo, i) => (
-            <motion.div
-              key={photo.alt}
-              className={`rounded-2xl overflow-hidden ${photo.span}`}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                loading="lazy"
-              />
-            </motion.div>
-          ))}
+        <div className="max-w-7xl mx-auto grid grid-cols-4 md:grid-cols-6 grid-rows-2 gap-3 auto-rows-[200px] md:auto-rows-[260px]">
+          <motion.div
+            className="col-span-2 row-span-2 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <img src={teamPhoto1} alt="JobFAIR tim" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-2 row-span-1 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <img src={activityPresentation} alt="Prezentacija" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-2 row-span-2 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <img src={sponsorsMerch} alt="Sponzori i merch" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-1 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <img src={eventInstagram} alt="Event atmosfera" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
+          <motion.div
+            className="col-span-1 rounded-3xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <img src={activityNetworking} alt="Networking" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
+          </motion.div>
         </div>
       </section>
 
@@ -420,7 +446,7 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Timeline */}
+          {/* Timeline — horizontal line with dots */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -428,26 +454,51 @@ const Landing = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-24"
           >
-            <p className="text-center text-sm text-muted-foreground font-medium mb-6 tracking-wider uppercase">
+            <p className="text-center text-sm text-muted-foreground font-medium mb-10 tracking-wider uppercase">
               Naša historija
             </p>
-            <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none justify-center flex-wrap">
-              {timelineYears.map((year, i) => (
-                <motion.div
-                  key={year}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.3, delay: i * 0.03 }}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-default ${
-                    i === timelineYears.length - 1
-                      ? "bg-primary text-primary-foreground scale-110"
-                      : "bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/20"
-                  }`}
-                >
-                  {year}
-                </motion.div>
-              ))}
+            <div className="relative max-w-5xl mx-auto">
+              {/* Line */}
+              <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
+              <div className="flex items-start justify-between">
+                {timelineYears.map((year, i) => {
+                  const isLast = i === timelineYears.length - 1;
+                  const isRecent = i >= timelineYears.length - 5;
+                  return (
+                    <motion.div
+                      key={year}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3, delay: i * 0.04 }}
+                      className="flex flex-col items-center group cursor-default"
+                    >
+                      {/* Dot */}
+                      <div className={`relative w-[9px] h-[9px] rounded-full transition-all duration-300 ${
+                        isLast
+                          ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
+                          : isRecent
+                          ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150"
+                          : "bg-white/20 group-hover:bg-white/50 group-hover:scale-125"
+                      }`}>
+                        {isLast && (
+                          <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-30" />
+                        )}
+                      </div>
+                      {/* Year label */}
+                      <span className={`mt-4 text-xs font-medium transition-all duration-300 ${
+                        isLast
+                          ? "text-primary font-bold text-sm"
+                          : isRecent
+                          ? "text-muted-foreground group-hover:text-primary"
+                          : "text-muted-foreground/50 group-hover:text-muted-foreground"
+                      }`}>
+                        {year}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         </div>
@@ -627,6 +678,107 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Meet the Team ── */}
+      {teamMembers.length > 0 && (() => {
+        const committees = [...new Set(teamMembers.map(m => m.committee))];
+        return (
+          <section className="py-24 lg:py-32">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="text-center mb-16"
+              >
+                <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">
+                  Upoznaj nas
+                </span>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">
+                  Naš <span className="text-primary">tim</span>
+                </h2>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                  Ljudi koji stoje iza najznačajnijeg sajma zapošljavanja u BiH.
+                </p>
+              </motion.div>
+
+              <div className="space-y-16">
+                {committees.map((committee, ci) => {
+                  const members = teamMembers.filter(m => m.committee === committee);
+                  return (
+                    <div key={committee}>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="flex items-center gap-3 mb-8"
+                      >
+                        <div className="h-px flex-1 max-w-12 bg-primary/40" />
+                        <span className="text-sm font-semibold text-primary tracking-wider uppercase">{committee}</span>
+                        <div className="h-px flex-1 bg-white/[0.06]" />
+                      </motion.div>
+
+                      <div className={`grid gap-6 ${
+                        members.length <= 3 ? "grid-cols-2 sm:grid-cols-3 max-w-3xl mx-auto" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                      }`}>
+                        {members.map((member, i) => (
+                          <motion.div
+                            key={member.id}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: i * 0.08 }}
+                            className="group cursor-default"
+                            style={{ perspective: "800px" }}
+                          >
+                            <div className="relative transition-transform duration-500 group-hover:[transform:rotateY(6deg)_rotateX(-3deg)_scale(1.05)]">
+                              <div className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/[0.06] group-hover:border-primary/20 group-hover:shadow-xl group-hover:shadow-primary/5 transition-all duration-500">
+                                <div className="aspect-[3/4] overflow-hidden bg-muted/20">
+                                  {member.photo_url ? (
+                                    <img
+                                      src={member.photo_url}
+                                      alt={member.name}
+                                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-500">
+                                      {member.name.split(" ").map(n => n[0]).join("")}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="p-4 text-center">
+                                  <p className="font-display font-bold text-sm text-foreground">{member.name}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">{member.role}</p>
+                                  {member.linkedin_url && member.linkedin_url !== "https://linkedin.com" && (
+                                    <a
+                                      href={member.linkedin_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex mt-2 text-primary/60 hover:text-primary transition-colors"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                              {/* 3D shadow */}
+                              <div className="absolute -inset-1 rounded-2xl bg-primary/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── CTA ── */}
       <section className="py-20 lg:py-28">

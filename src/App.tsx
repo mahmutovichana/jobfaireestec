@@ -27,6 +27,7 @@ import SettingsPage from "./pages/dashboard/SettingsPage";
 import NewsManager from "./pages/dashboard/NewsManager";
 import JobAdsManager from "./pages/dashboard/JobAdsManager";
 import PartnersManager from "./pages/dashboard/PartnersManager";
+import TeamManager from "./pages/dashboard/TeamManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => (
                       <Route path="news" element={<NewsManager />} />
                       <Route path="job-ads" element={<JobAdsManager />} />
                       <Route path="partners" element={<PartnersManager />} />
+                      <Route path="team" element={<TeamManager />} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>
