@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Upload, CheckCircle2, FileText } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle2, FileText, LogOut } from "lucide-react";
 import { useCreateCVSubmission, uploadCV } from "@/hooks/useCV";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 
 const faculties = [
   "Elektrotehnički fakultet",
@@ -25,6 +28,7 @@ const faculties = [
 const years = ["1", "2", "3", "4", "5", "Ostalo"];
 
 export default function OstaviCV() {
+  const { user, signOut } = useAuth();
   const createCV = useCreateCVSubmission();
   const [form, setForm] = useState({
     full_name: "",
@@ -38,6 +42,24 @@ export default function OstaviCV() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  // Pre-fill from Google profile
+  useEffect(() => {
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        full_name: f.full_name || user.user_metadata?.full_name || "",
+        email: f.email || user.email || "",
+      }));
+    }
+  }, [user]);
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/ostavi-cv",
+    });
+    if (error) toast.error("Google prijava nije uspjela");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,14 +110,68 @@ export default function OstaviCV() {
     );
   }
 
+  // If not signed in, show sign-in prompt
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="border-b border-border/50">
+          <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
+            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <Logo size="sm" />
+          </div>
+        </div>
+
+        <div className="max-w-md mx-auto px-6 py-24">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-3xl font-display font-bold text-foreground mb-3">
+              Ostavi svoj <span className="text-primary">CV</span>
+            </h1>
+            <p className="text-muted-foreground mb-8 text-lg">
+              Prijavite se putem Google računa kako biste priložili svoj CV.
+            </p>
+            <Button
+              onClick={handleGoogleSignIn}
+              className="rounded-full h-12 px-8 text-base font-semibold gap-3"
+              variant="outline"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Prijavi se putem Google-a
+            </Button>
+            <p className="text-xs text-muted-foreground mt-4">
+              Koristi se isključivo za verifikaciju identiteta.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border/50">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <Logo size="sm" />
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <Logo size="sm" />
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">{user.email}</span>
+            <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground">
+              <LogOut className="w-4 h-4" /> Odjavi se
+            </Button>
+          </div>
         </div>
       </div>
 
