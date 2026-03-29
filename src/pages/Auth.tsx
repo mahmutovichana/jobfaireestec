@@ -85,7 +85,7 @@ const Auth = () => {
             <Logo size="lg" />
           </Link>
           <p className="text-muted-foreground mt-2 text-sm font-body">
-            Create events people actually want to attend
+            Iskoristi svoju šansu — prijavi se!
           </p>
         </div>
 
