@@ -213,7 +213,7 @@ const Landing = () => {
             >
               <CalendarDays className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-white/90">
-                03. i 04. novembar 2026.
+                {NEXT_EVENT_DATE}
               </span>
             </motion.div>
 
