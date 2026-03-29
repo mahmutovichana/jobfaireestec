@@ -74,7 +74,7 @@ const Events = () => {
               {event.event_date ? format(new Date(event.event_date), "EEE, MMM d") : "No date set"}
             </p>
             {!isUpcoming && (
-              <Badge className={`${statusColors[event.status] || "bg-muted text-muted-foreground"} border-0 capitalize text-[10px]`}>
+              <Badge className={`${EVENT_STATUS_COLORS[event.status] || "bg-muted text-muted-foreground"} border-0 capitalize text-[10px]`}>
                 {event.status}
               </Badge>
             )}
@@ -188,7 +188,7 @@ const Events = () => {
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                         {event.event_date ? format(new Date(event.event_date), "EEE, MMM d") : "No date set"}
                       </p>
-                      <Badge className={`${statusColors[event.status] || "bg-muted text-muted-foreground"} border-0 capitalize text-[10px]`}>
+                      <Badge className={`${EVENT_STATUS_COLORS[event.status] || "bg-muted text-muted-foreground"} border-0 capitalize text-[10px]`}>
                         {event.status}
                       </Badge>
                     </div>

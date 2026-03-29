@@ -10,7 +10,7 @@ import { useRegistrations, Registration } from "@/hooks/useRegistrations";
 import { useRegistrationStats } from "@/hooks/useRegistrations";
 import { format } from "date-fns";
 
-import { REGISTRATION_STATUS_STYLES, DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { REGISTRATION_STATUS_STYLES, DEFAULT_DEFAULT_PAGE_SIZE } from "@/lib/constants";
 
 type SortColumn = "name" | "email" | "event" | "status" | "date";
 type SortDir = "asc" | "desc";
@@ -81,8 +81,8 @@ const Attendees = () => {
     return items;
   }, [registrations, search, eventFilter, sortColumn, sortDir]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / DEFAULT_PAGE_SIZE);
+  const paged = filtered.slice(page * DEFAULT_PAGE_SIZE, (page + 1) * DEFAULT_PAGE_SIZE);
 
   const handleExportCSV = () => {
     if (!filtered?.length) return;
@@ -202,7 +202,7 @@ const Attendees = () => {
                       <TableCell className="text-muted-foreground hidden sm:table-cell">{data["Email Address"] || data["Email"] || "—"}</TableCell>
                       <TableCell className="hidden md:table-cell">{r.events?.name || "—"}</TableCell>
                       <TableCell>
-                        <Badge className={`${statusStyle[r.status] || ""} capitalize text-xs`}>{r.status.replace("_", " ")}</Badge>
+                        <Badge className={`${REGISTRATION_STATUS_STYLES[r.status] || ""} capitalize text-xs`}>{r.status.replace("_", " ")}</Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground hidden lg:table-cell">{format(new Date(r.created_at), "MMM d, yyyy")}</TableCell>
                     </TableRow>
@@ -215,7 +215,7 @@ const Attendees = () => {
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
+                Showing {page * DEFAULT_PAGE_SIZE + 1}–{Math.min((page + 1) * DEFAULT_PAGE_SIZE, filtered.length)} of {filtered.length}
               </p>
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
@@ -259,7 +259,7 @@ const Attendees = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground font-medium">Status</span>
-                    <Badge className={`${statusStyle[selectedRegistration.status] || ""} capitalize text-xs`}>
+                    <Badge className={`${REGISTRATION_STATUS_STYLES[selectedRegistration.status] || ""} capitalize text-xs`}>
                       {selectedRegistration.status.replace("_", " ")}
                     </Badge>
                   </div>

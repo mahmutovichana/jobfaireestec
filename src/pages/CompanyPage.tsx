@@ -96,8 +96,8 @@ const CompanyPage = () => {
                   title={s.platform}>
                   {s.platform === "Email" ? (
                     <Mail className="w-5 h-5 text-foreground" />
-                  ) : SOCIAL_ICONS[s.platform] ? (
-                    <img src={SOCIAL_ICONS[s.platform]} alt={s.platform} className="w-5 h-5" />
+                  ) : SOCIAL_ICON_URLS[s.platform] ? (
+                    <img src={SOCIAL_ICON_URLS[s.platform]} alt={s.platform} className="w-5 h-5" />
                   ) : (
                     <ExternalLink className="w-5 h-5 text-foreground" />
                   )}
