@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      company_inquiries: {
+        Row: {
+          company_name: string
+          contact_person: string
+          created_at: string
+          email: string
+          id: string
+          interest_type: string | null
+          message: string
+          phone: string | null
+          status: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_person: string
+          created_at?: string
+          email: string
+          id?: string
+          interest_type?: string | null
+          message: string
+          phone?: string | null
+          status?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_person?: string
+          created_at?: string
+          email?: string
+          id?: string
+          interest_type?: string | null
+          message?: string
+          phone?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      cv_submissions: {
+        Row: {
+          created_at: string
+          cv_url: string
+          email: string
+          faculty: string | null
+          full_name: string
+          id: string
+          phone: string | null
+          year_of_study: string | null
+        }
+        Insert: {
+          created_at?: string
+          cv_url: string
+          email: string
+          faculty?: string | null
+          full_name: string
+          id?: string
+          phone?: string | null
+          year_of_study?: string | null
+        }
+        Update: {
+          created_at?: string
+          cv_url?: string
+          email?: string
+          faculty?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+          year_of_study?: string | null
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           body: string

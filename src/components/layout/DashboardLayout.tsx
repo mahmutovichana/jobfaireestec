@@ -25,9 +25,9 @@ const navItems = [
   { title: "Oglasi", url: "/dashboard/job-ads", icon: Megaphone },
   { title: "Partneri", url: "/dashboard/partners", icon: Handshake },
   { title: "Tim", url: "/dashboard/team", icon: UsersRound },
-  { title: "Attendees", url: "/dashboard/attendees", icon: Users },
+  { title: "CV Baza", url: "/dashboard/cv-database", icon: Users },
+  { title: "Upiti", url: "/dashboard/company-inquiries", icon: Megaphone },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-  { title: "Integrations", url: "/dashboard/integrations", icon: Puzzle },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
