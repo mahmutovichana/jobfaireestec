@@ -12,17 +12,15 @@ import {
 } from "lucide-react";
 import { format, isPast } from "date-fns";
 
+const navItems = [
+  { label: "Novosti", to: ROUTES.NOVOSTI },
+  { label: "Prijava", to: ROUTES.AUTH },
+];
+
 const Oglasi = () => {
   const { data: ads, isLoading } = useJobAds(true);
-  const [navVisible, setNavVisible] = useState(false);
   const [search, setSearch] = useState("");
-  const [showActive, setShowActive] = useState<"all" | "active" | "expired">("all");
-
-  useEffect(() => {
-    const handleScroll = () => setNavVisible(window.scrollY > 80);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [showActive, setShowActive] = useState<JobAdFilterKey>("all");
 
   const filtered = useMemo(() => {
     if (!ads) return [];
