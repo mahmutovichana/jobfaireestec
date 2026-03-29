@@ -57,6 +57,7 @@ const App = () => (
               <Route path="/novosti" element={<Novosti />} />
               <Route path="/novost/:id" element={<NovostDetail />} />
               <Route path="/oglasi" element={<Oglasi />} />
+              <Route path="/partneri" element={<Partneri />} />
 
               {/* Dashboard (protected) */}
               <Route path="/dashboard" element={<Navigate to="/dashboard/events" replace />} />
