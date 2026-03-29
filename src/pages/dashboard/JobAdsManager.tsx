@@ -225,7 +225,18 @@ const JobAdsManager = () => {
 
             <div className="space-y-1.5">
               <Label htmlFor="ad-company">Firma *</Label>
-              <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
+              {companyNames.length > 0 ? (
+                <Select value={form.company_name} onValueChange={(v) => setForm((f) => ({ ...f, company_name: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Odaberi kompaniju" /></SelectTrigger>
+                  <SelectContent>
+                    {companyNames.map((name) => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
+              )}
             </div>
 
             <div className="space-y-1.5">

@@ -428,28 +428,36 @@ const Landing = () => {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">Organizator</h2>
           </motion.div>
 
-          <div className="grid lg:grid-cols-5 gap-8 items-start">
-            <motion.div className="lg:col-span-2 rounded-3xl overflow-hidden" initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-              <img src={eestecWall} alt="EESTEC LC Sarajevo projekti" className="w-full aspect-[4/3] object-cover" loading="lazy" />
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Left column: full-height image + caption */}
+            <motion.div className="lg:row-span-2 flex flex-col gap-6" initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+              <div className="rounded-3xl overflow-hidden flex-1">
+                <img src={eestecWall} alt="EESTEC LC Sarajevo projekti" className="w-full h-full min-h-[400px] object-cover" loading="lazy" />
+              </div>
+              <GlassCard className="p-6">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="text-primary font-semibold">EESTEC LC Sarajevo</span> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
+                </p>
+              </GlassCard>
             </motion.div>
-            <div className="lg:col-span-3 grid sm:grid-cols-2 gap-6">
-              {[
-                { icon: Users, title: "Misija Udruženja", text: "EESTEC je udruženje studenata elektrotehnike Evrope s 46 lokalnih komiteta. Osnovni cilj je promocija i razvoj međunarodnih kontakata između studenata i profesionalaca." },
-                { icon: Building2, title: "Višegodišnja tradicija", text: "Tokom 15 godina aktivnog rada, EESTEC LC Sarajevo se može pohvaliti velikim brojem organizovanih projekata na lokalnom i internacionalnom nivou." },
-                { icon: MessageSquare, title: "Razmjena iskustava", text: "Studenti imaju priliku posjetiti bilo koji grad u kojem EESTEC ima komitet, upoznati kulturu i običaje, te stvoriti prijateljstva za čitav život." },
-                { icon: Leaf, title: "Ekološka svijest", text: "JobFAIR aktivno promovira ekološku odgovornost kroz reciklažu i edukaciju o održivosti, pokazujući da nam je stalo do budućnosti planete." },
-              ].map((item, i) => (
-                <motion.div key={item.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}>
-                  <GlassCard className="p-7 h-full hover:bg-white/[0.1] transition-all duration-500 group">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-500">
-                      <item.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <h3 className="font-display font-bold text-lg mb-3 text-foreground">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
-                  </GlassCard>
-                </motion.div>
-              ))}
-            </div>
+
+            {/* Right 2x2 grid of cards */}
+            {[
+              { icon: Users, title: "Misija Udruženja", text: "EESTEC je udruženje studenata elektrotehnike Evrope s 46 lokalnih komiteta. Osnovni cilj je promocija i razvoj međunarodnih kontakata između studenata i profesionalaca." },
+              { icon: Building2, title: "Višegodišnja tradicija", text: "Tokom 15 godina aktivnog rada, EESTEC LC Sarajevo se može pohvaliti velikim brojem organizovanih projekata na lokalnom i internacionalnom nivou." },
+              { icon: MessageSquare, title: "Razmjena iskustava", text: "Studenti imaju priliku posjetiti bilo koji grad u kojem EESTEC ima komitet, upoznati kulturu i običaje, te stvoriti prijateljstva za čitav život." },
+              { icon: Leaf, title: "Ekološka svijest", text: "JobFAIR aktivno promovira ekološku odgovornost kroz reciklažu i edukaciju o održivosti, pokazujući da nam je stalo do budućnosti planete." },
+            ].map((item, i) => (
+              <motion.div key={item.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}>
+                <GlassCard className="p-7 h-full hover:bg-white/[0.1] transition-all duration-500 group">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-500">
+                    <item.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-display font-bold text-lg mb-3 text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+                </GlassCard>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

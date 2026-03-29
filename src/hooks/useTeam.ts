@@ -57,7 +57,6 @@ export function useUpdateTeamMember() {
         .update(u as any)
         .eq("id", id);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["team-members"] }); toast.success("Član ažuriran!"); },
     onError: (e: any) => toast.error(e.message),
