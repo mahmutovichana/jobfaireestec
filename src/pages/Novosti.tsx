@@ -10,16 +10,14 @@ import { ROUTES } from "@/lib/constants";
 import { CalendarDays, ArrowRight, ArrowLeft, Search, X } from "lucide-react";
 import { format } from "date-fns";
 
+const navItems = [
+  { label: "Oglasi", to: ROUTES.OGLASI },
+  { label: "Prijava", to: ROUTES.AUTH },
+];
+
 const Novosti = () => {
   const { data: posts, isLoading } = useNewsPosts(true);
-  const [navVisible, setNavVisible] = useState(false);
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    const handleScroll = () => setNavVisible(window.scrollY > 80);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const filtered = useMemo(() => {
     if (!posts) return [];
