@@ -42,7 +42,6 @@ export function useCreateTeamMember() {
         .from("team_members")
         .insert({ ...m, user_id: user!.id } as any);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["team-members"] }); toast.success("Član dodan!"); },
     onError: (e: any) => toast.error(e.message),
