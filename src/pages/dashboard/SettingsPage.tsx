@@ -8,9 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Loader2, Send, UserPlus, Plus, Trash2, Sun, Moon, Monitor, Copy, ExternalLink } from "lucide-react";
+import { Loader2, Plus, Trash2, Sun, Moon, Monitor, Copy, ExternalLink } from "lucide-react";
 import { useTheme } from "next-themes";
-
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
 
 type SocialLink = { platform: string; url: string };
@@ -31,8 +30,6 @@ const SettingsPage = () => {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [companySlug, setCompanySlug] = useState("");
   const [initialized, setInitialized] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteSending, setInviteSending] = useState(false);
 
   if (profile && !initialized) {
     setFullName(profile.full_name || "");
@@ -57,22 +54,9 @@ const SettingsPage = () => {
         ...(slug ? { company_slug: slug } : {}),
       } as any);
       if (slug) setCompanySlug(slug);
-      toast.success("Profile updated!");
+      toast.success("Profil ažuriran!");
     } catch (err: any) {
-      toast.error(err.message || "Failed to update profile");
-    }
-  };
-
-  const handleInvite = async () => {
-    if (!inviteEmail.trim()) return;
-    setInviteSending(true);
-    try {
-      toast.success(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send invitation");
-    } finally {
-      setInviteSending(false);
+      toast.error(err.message || "Greška pri ažuriranju profila");
     }
   };
 
@@ -91,22 +75,21 @@ const SettingsPage = () => {
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
       <div>
-        <h1 className="text-3xl font-display font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and preferences.</p>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold">Postavke</h1>
+        <p className="text-muted-foreground text-sm mt-1">Upravljajte svojim računom i preferencama.</p>
       </div>
 
       <Tabs defaultValue="profile">
         <TabsList className="bg-muted rounded-full p-1">
-          <TabsTrigger value="profile" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm">Profile</TabsTrigger>
-          <TabsTrigger value="appearance" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm">Appearance</TabsTrigger>
-          <TabsTrigger value="team" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm">Team</TabsTrigger>
+          <TabsTrigger value="profile" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Profil</TabsTrigger>
+          <TabsTrigger value="appearance" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Izgled</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-6">
-          <div className="bg-card rounded-xl p-6 space-y-5">
+          <div className="bg-card rounded-xl p-4 sm:p-6 space-y-5">
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Full name</Label>
+                <Label>Ime i prezime</Label>
                 <Input value={fullName} onChange={e => setFullName(e.target.value)} className="rounded-full" />
               </div>
               <div className="space-y-2">
@@ -115,19 +98,19 @@ const SettingsPage = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Company</Label>
+              <Label>Organizacija / Kompanija</Label>
               <Input value={company} onChange={e => setCompany(e.target.value)} className="rounded-full" />
             </div>
             <div className="space-y-2">
-              <Label>Website</Label>
-              <Input value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yourcompany.com" className="rounded-full" />
+              <Label>Web stranica</Label>
+              <Input value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://vašastranica.com" className="rounded-full" />
             </div>
             <div className="space-y-2">
-              <Label>Company description</Label>
+              <Label>Opis organizacije</Label>
               <Textarea
                 value={companyDescription}
                 onChange={e => setCompanyDescription(e.target.value)}
-                placeholder="A short description of your company or organization…"
+                placeholder="Kratki opis vaše organizacije…"
                 rows={3}
                 className="rounded-xl"
               />
@@ -135,7 +118,7 @@ const SettingsPage = () => {
 
             {companySlug && (
               <div className="space-y-2">
-                <Label>Public company page</Label>
+                <Label>Javna stranica</Label>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Input
                     value={`${window.location.origin}/company/${companySlug}`}
@@ -149,7 +132,7 @@ const SettingsPage = () => {
                       className="shrink-0 rounded-full"
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/company/${companySlug}`);
-                        toast.success("Link copied!");
+                        toast.success("Link kopiran!");
                       }}
                     >
                       <Copy className="w-4 h-4" />
@@ -165,12 +148,12 @@ const SettingsPage = () => {
             )}
 
             <div className="space-y-3">
-              <Label>Social media</Label>
+              <Label>Društvene mreže</Label>
               {socialLinks.map((link, i) => (
                 <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Select value={link.platform} onValueChange={v => updateSocialLink(i, "platform", v)}>
                     <SelectTrigger className="w-full sm:w-40 shrink-0 rounded-full">
-                      <SelectValue placeholder="Platform" />
+                      <SelectValue placeholder="Platforma" />
                     </SelectTrigger>
                     <SelectContent>
                       {SOCIAL_PLATFORMS.map(p => (
@@ -190,31 +173,31 @@ const SettingsPage = () => {
                 </div>
               ))}
               <Button type="button" variant="outline" size="sm" onClick={addSocialLink} className="rounded-full">
-                <Plus className="w-4 h-4 mr-1" /> Add social
+                <Plus className="w-4 h-4 mr-1" /> Dodaj mrežu
               </Button>
             </div>
 
             <Button onClick={handleSave} disabled={updateProfile.isPending} className="rounded-full">
-              {updateProfile.isPending ? "Saving…" : "Save changes"}
+              {updateProfile.isPending ? "Spremanje…" : "Sačuvaj promjene"}
             </Button>
           </div>
         </TabsContent>
 
         <TabsContent value="appearance" className="mt-6">
-          <div className="bg-card rounded-xl p-6 space-y-6">
+          <div className="bg-card rounded-xl p-4 sm:p-6 space-y-6">
             <div>
-              <h3 className="font-display font-semibold text-lg mb-1">Theme</h3>
-              <p className="text-sm text-muted-foreground">Choose how the application looks for you.</p>
+              <h3 className="font-display font-semibold text-lg mb-1">Tema</h3>
+              <p className="text-sm text-muted-foreground">Odaberite kako će aplikacija izgledati.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {([
-                { value: "light", label: "Light", icon: Sun, desc: "Clean and bright interface" },
-                { value: "dark", label: "Dark", icon: Moon, desc: "Easy on the eyes" },
-                { value: "system", label: "System", icon: Monitor, desc: "Match your device settings" },
+                { value: "light", label: "Svijetla", icon: Sun, desc: "Čist i svijetli interfejs" },
+                { value: "dark", label: "Tamna", icon: Moon, desc: "Ugodan za oči" },
+                { value: "system", label: "Sistem", icon: Monitor, desc: "Prati postavke uređaja" },
               ] as const).map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => { setTheme(opt.value); toast.success(`Theme set to ${opt.label}`); }}
+                  onClick={() => { setTheme(opt.value); toast.success(`Tema postavljena na: ${opt.label}`); }}
                   className={`relative flex flex-col items-center gap-3 rounded-xl p-6 transition-all cursor-pointer ${
                     theme === opt.value
                       ? "bg-muted ring-2 ring-foreground shadow-sm"
@@ -232,35 +215,6 @@ const SettingsPage = () => {
                   </div>
                 </button>
               ))}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="team" className="mt-6">
-          <div className="bg-card rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <UserPlus className="w-5 h-5 text-muted-foreground" />
-              <h3 className="font-display font-semibold text-lg">Invite co-hosts</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Invite others to co-host and collaborate on events with you.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input
-                placeholder="colleague@email.com"
-                type="email"
-                value={inviteEmail}
-                onChange={e => setInviteEmail(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleInvite()}
-                className="flex-1 rounded-full"
-              />
-              <Button
-                className="shrink-0 w-full sm:w-auto rounded-full"
-                onClick={handleInvite}
-                disabled={inviteSending || !inviteEmail.trim()}
-              >
-                {inviteSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Send</>}
-              </Button>
             </div>
           </div>
         </TabsContent>
