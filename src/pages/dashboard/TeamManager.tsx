@@ -77,6 +77,8 @@ export default function TeamManager() {
       committee: m.committee,
       photo_url: m.photo_url || "",
       linkedin_url: m.linkedin_url || "",
+      email: m.email || "",
+      phone: m.phone || "",
       display_order: m.display_order,
       visible: m.visible,
     });
