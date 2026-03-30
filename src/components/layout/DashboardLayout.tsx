@@ -15,7 +15,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Eye,
   Newspaper,
   Megaphone,
   Handshake,
