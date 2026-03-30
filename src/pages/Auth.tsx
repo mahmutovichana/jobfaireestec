@@ -68,19 +68,27 @@ const Auth = () => {
   const handleAccessRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.from("access_requests").insert({
-      full_name: reqName,
-      email: reqEmail,
-      company_name: reqCompanyName || null,
-      company_domain: reqCompanyDomain || null,
-      message: reqMessage || null,
-    });
-    setLoading(false);
-    if (error) {
-      toast.error("Greška pri slanju zahtjeva. Pokušajte ponovo.");
-    } else {
-      setRequestSent(true);
-      toast.success("Zahtjev poslan! Obavijestit ćemo vas kad bude odobren.");
+    try {
+      const { error, data } = await supabase.from("access_requests").insert({
+        full_name: reqName,
+        email: reqEmail,
+        company_name: reqCompanyName || null,
+        company_domain: reqCompanyDomain || null,
+        message: reqMessage || null,
+      }).select();
+      if (error) {
+        console.error("Access request insert error:", error);
+        toast.error(`Greška: ${error.message}`);
+      } else {
+        console.log("Access request created:", data);
+        setRequestSent(true);
+        toast.success("Zahtjev poslan! Obavijestit ćemo vas kad bude odobren.");
+      }
+    } catch (err: any) {
+      console.error("Access request exception:", err);
+      toast.error("Neočekivana greška. Pokušajte ponovo.");
+    } finally {
+      setLoading(false);
     }
   };
 
