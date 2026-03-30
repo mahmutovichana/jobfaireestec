@@ -122,7 +122,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
 
-        <Link to="/dashboard" className="mr-4 shrink-0">
+        <Link to="/dashboard/home" className="mr-4 shrink-0">
           <Logo size="sm" />
         </Link>
 
