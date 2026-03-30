@@ -48,11 +48,6 @@ Deno.serve(async (req) => {
     }
 
     const result = await response.json();
-    const items = result?.data?.items || [];
-
-    console.log(`Fetched ${items.length} posts from RapidAPI`);
-
-    const result = await response.json();
     const edges = result?.result?.edges || [];
     const items = edges.map((e: any) => e.node).filter(Boolean);
 
