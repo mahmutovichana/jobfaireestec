@@ -52,11 +52,17 @@ Deno.serve(async (req) => {
 
     console.log(`Fetched ${items.length} posts from RapidAPI`);
 
+    const result = await response.json();
+    const edges = result?.result?.edges || [];
+    const items = edges.map((e: any) => e.node).filter(Boolean);
+
+    console.log(`Fetched ${items.length} posts from RapidAPI`);
+
     // Take last 6 posts
     const posts = items.slice(0, 6);
 
     // Step 2: Check which posts already exist
-    const igIds = posts.map((p: any) => p.id || p.pk?.toString() || p.code);
+    const igIds = posts.map((p: any) => p.code || p.pk?.toString() || p.id);
     const { data: existing } = await supabase
       .from("news_posts")
       .select("instagram_post_id")
