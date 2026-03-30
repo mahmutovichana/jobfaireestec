@@ -161,6 +161,7 @@ const Beam = ({ delay, duration, angle, top, width }: { delay: number; duration:
 const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
   const { data: teamMembers = [] } = useTeamMembers(true);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
