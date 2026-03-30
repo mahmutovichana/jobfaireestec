@@ -35,6 +35,7 @@ import CVDatabase from "./pages/dashboard/CVDatabase";
 import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AccessRequests from "./pages/dashboard/AccessRequests";
+import CompanyProfile from "./pages/dashboard/CompanyProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
