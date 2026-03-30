@@ -324,6 +324,36 @@ export type Database = {
           },
         ]
       }
+      gallery_images: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          title: string | null
+          user_id: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          title?: string | null
+          user_id: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          title?: string | null
+          user_id?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       job_ads: {
         Row: {
           company_name: string
@@ -556,9 +586,11 @@ export type Database = {
           committee: string
           created_at: string
           display_order: number
+          email: string | null
           id: string
           linkedin_url: string | null
           name: string
+          phone: string | null
           photo_url: string | null
           role: string
           updated_at: string
@@ -569,9 +601,11 @@ export type Database = {
           committee?: string
           created_at?: string
           display_order?: number
+          email?: string | null
           id?: string
           linkedin_url?: string | null
           name: string
+          phone?: string | null
           photo_url?: string | null
           role?: string
           updated_at?: string
@@ -582,9 +616,11 @@ export type Database = {
           committee?: string
           created_at?: string
           display_order?: number
+          email?: string | null
           id?: string
           linkedin_url?: string | null
           name?: string
+          phone?: string | null
           photo_url?: string | null
           role?: string
           updated_at?: string

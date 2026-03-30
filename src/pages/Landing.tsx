@@ -37,6 +37,10 @@ import activityWorkshop from "@/assets/activity-workshop.jpg";
 
 import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE, COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME } from "@/lib/constants";
 import { useTeamMembers } from "@/hooks/useTeam";
+import { TeamSection } from "@/components/landing/TeamSection";
+import { GallerySection } from "@/components/landing/GallerySection";
+import { MapSection } from "@/components/landing/MapSection";
+import { PartnersStrip } from "@/components/landing/PartnersStrip";
 
 const stats = LANDING_STATS.map((s, i) => ({
   icon: [Users, Briefcase, Building2, Camera][i],
@@ -178,6 +182,7 @@ const Landing = () => {
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/oglasi">Oglasi</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/partneri">Partneri</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/kontakt">Za kompanije</Link></Button>
+            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/auth">Prijava</Link></Button>
             <Button className="hidden sm:inline-flex text-sm font-semibold rounded-full" asChild>
               <Link to="/ostavi-cv">Ostavi CV</Link>
             </Button>
@@ -187,12 +192,10 @@ const Landing = () => {
 
       {/* ── Hero with animated beams ── */}
       <section ref={heroRef} className="relative min-h-[110vh] flex items-center overflow-hidden">
-        {/* Dark base with subtle grid */}
         <div className="absolute inset-0 bg-[#070709]">
           <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:80px_80px]" />
         </div>
 
-        {/* Gradient glow spots with hover-reactive feel */}
         <motion.div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/[0.08] rounded-full blur-[150px]"
           animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.12, 0.08] }}
@@ -209,7 +212,6 @@ const Landing = () => {
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        {/* Animated beams */}
         <Beam delay={0} duration={5} angle={-12} top="15%" width="500px" />
         <Beam delay={1.5} duration={6} angle={-8} top="30%" width="600px" />
         <Beam delay={3} duration={4.5} angle={-15} top="50%" width="450px" />
@@ -217,29 +219,19 @@ const Landing = () => {
         <Beam delay={2} duration={5.5} angle={-18} top="80%" width="400px" />
         <Beam delay={6} duration={4} angle={-10} top="40%" width="350px" />
 
-        {/* Vertical beams */}
         <motion.div
           className="absolute pointer-events-none w-[1px] h-[300px]"
-          style={{
-            left: "20%",
-            top: "-300px",
-            background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.2), transparent)",
-          }}
+          style={{ left: "20%", top: "-300px", background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.2), transparent)" }}
           animate={{ top: ["-300px", "120%"] }}
           transition={{ duration: 8, repeat: Infinity, delay: 1, ease: "linear" }}
         />
         <motion.div
           className="absolute pointer-events-none w-[1px] h-[200px]"
-          style={{
-            left: "75%",
-            top: "-200px",
-            background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.15), transparent)",
-          }}
+          style={{ left: "75%", top: "-200px", background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.15), transparent)" }}
           animate={{ top: ["-200px", "120%"] }}
           transition={{ duration: 10, repeat: Infinity, delay: 4, ease: "linear" }}
         />
 
-        {/* Bottom gradient fade — extended */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
 
         <motion.div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 w-full" style={{ opacity: heroOpacity }}>
@@ -253,7 +245,6 @@ const Landing = () => {
               <Logo size="lg" className="[&_span]:text-white [&_.text-foreground]:text-white justify-center" />
             </motion.div>
 
-            {/* Glass pill */}
             <motion.div
               className="inline-flex items-center gap-2 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] rounded-full px-5 py-2.5 mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -312,7 +303,6 @@ const Landing = () => {
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
           animate={{ y: [0, 12, 0] }}
@@ -396,8 +386,8 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Timeline */}
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-24">
+          {/* Timeline — reduced spacing from organizer section */}
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-16">
             <p className="text-center text-sm text-muted-foreground font-medium mb-10 tracking-wider uppercase">Naša historija</p>
             <div className="relative max-w-5xl mx-auto">
               <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
@@ -420,16 +410,15 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Organizer ── */}
-      <section className="py-24 lg:py-32">
+      {/* ── Organizer — reduced py ── */}
+      <section className="py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-14">
             <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">Ko stoji iza svega</span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">Organizator</h2>
           </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left column: full-height image + caption */}
             <motion.div className="lg:row-span-2 flex flex-col gap-6" initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
               <div className="rounded-3xl overflow-hidden flex-1">
                 <img src={eestecWall} alt="EESTEC LC Sarajevo projekti" className="w-full h-full min-h-[400px] object-cover" loading="lazy" />
@@ -441,7 +430,6 @@ const Landing = () => {
               </GlassCard>
             </motion.div>
 
-            {/* Right 2x2 grid of cards */}
             {[
               { icon: Users, title: "Misija Udruženja", text: "EESTEC je udruženje studenata elektrotehnike Evrope s 46 lokalnih komiteta. Osnovni cilj je promocija i razvoj međunarodnih kontakata između studenata i profesionalaca." },
               { icon: Building2, title: "Višegodišnja tradicija", text: "Tokom 15 godina aktivnog rada, EESTEC LC Sarajevo se može pohvaliti velikim brojem organizovanih projekata na lokalnom i internacionalnom nivou." },
@@ -462,23 +450,8 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Photo strip ── */}
-      <section className="py-4 px-4">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { src: ecoAwareness, alt: "Ekološka svijest" },
-            { src: eventInstagram, alt: "Event atmosfera" },
-            { src: teamPhoto1, alt: "JobFAIR tim" },
-          ].map((photo, i) => (
-            <motion.div key={photo.alt + i} className="rounded-2xl overflow-hidden aspect-[4/3]" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}>
-              <img src={photo.src} alt={photo.alt} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       {/* ── Activities ── */}
-      <section className="py-24 lg:py-32">
+      <section className="py-16 lg:py-20">
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
             <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">Šta te čeka</span>
@@ -486,7 +459,6 @@ const Landing = () => {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Kroz raznolike aktivnosti prije i tokom Sajma, studenti imaju priliku razviti karijeru i uspostaviti kontakte.</p>
           </motion.div>
 
-          {/* Before fair */}
           <div className="mb-16">
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 max-w-12 bg-primary/40" />
@@ -508,7 +480,6 @@ const Landing = () => {
             </div>
           </div>
 
-          {/* During fair */}
           <div>
             <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="flex items-center gap-3 mb-8">
               <div className="h-px flex-1 max-w-12 bg-primary/40" />
@@ -541,99 +512,23 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Meet the Team ── */}
-      {teamMembers.length > 0 && (
-        <section className="py-24 lg:py-32">
-          <div className="max-w-5xl mx-auto px-6 lg:px-8">
-            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
-              <span className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 block">Upoznaj nas</span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-foreground tracking-tight">
-                Organizacioni <span className="text-primary">odbor</span>
-              </h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Ljudi koji stoje iza najznačajnijeg sajma zapošljavanja u BiH.</p>
-            </motion.div>
+      {/* ── Team Section (new component) ── */}
+      <TeamSection teamMembers={teamMembers} />
 
-            {/* Leader card (first member) */}
-            {teamMembers.length > 0 && (() => {
-              const leader = teamMembers[0];
-              const rest = teamMembers.slice(1);
-              return (
-                <div className="space-y-10">
-                  {/* Leader */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    className="flex justify-center"
-                  >
-                    <div className="group cursor-default w-56" style={{ perspective: "800px" }}>
-                      <div className="relative transition-transform duration-500 group-hover:[transform:rotateY(6deg)_rotateX(-3deg)_scale(1.05)]">
-                        <div className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/[0.06] group-hover:border-primary/20 group-hover:shadow-xl group-hover:shadow-primary/5 transition-all duration-500">
-                          <div className="aspect-[3/4] overflow-hidden bg-muted/20">
-                            {leader.photo_url ? (
-                              <img src={leader.photo_url} alt={leader.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" loading="lazy" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-500">
-                                {leader.name.split(" ").map(n => n[0]).join("")}
-                              </div>
-                            )}
-                          </div>
-                          <div className="p-4 text-center">
-                            <p className="font-display font-bold text-sm text-foreground">{leader.name}</p>
-                            <p className="text-xs text-primary mt-0.5 font-medium">{leader.role}</p>
-                          </div>
-                        </div>
-                        <div className="absolute -inset-1 rounded-2xl bg-primary/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-                      </div>
-                    </div>
-                  </motion.div>
+      {/* ── Gallery Section ── */}
+      <GallerySection />
 
-                  {/* Rest of team */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                    {rest.map((member, i) => (
-                      <motion.div
-                        key={member.id}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: i * 0.08 }}
-                        className="group cursor-default"
-                        style={{ perspective: "800px" }}
-                      >
-                        <div className="relative transition-transform duration-500 group-hover:[transform:rotateY(6deg)_rotateX(-3deg)_scale(1.05)]">
-                          <div className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/[0.06] group-hover:border-primary/20 group-hover:shadow-xl group-hover:shadow-primary/5 transition-all duration-500">
-                            <div className="aspect-[3/4] overflow-hidden bg-muted/20">
-                              {member.photo_url ? (
-                                <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" loading="lazy" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-muted-foreground/20 group-hover:text-primary/30 transition-colors duration-500">
-                                  {member.name.split(" ").map(n => n[0]).join("")}
-                                </div>
-                              )}
-                            </div>
-                            <div className="p-4 text-center">
-                              <p className="font-display font-bold text-sm text-foreground">{member.name}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{member.role}</p>
-                            </div>
-                          </div>
-                          <div className="absolute -inset-1 rounded-2xl bg-primary/5 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </section>
-      )}
+      {/* ── Partners Strip (all partners, logos only) ── */}
+      <PartnersStrip />
+
+      {/* ── Map Section ── */}
+      <MapSection />
 
       {/* ── CTA ── */}
-      <section className="py-20 lg:py-28">
+      <section className="py-16 lg:py-20">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-            <GlassCard className="relative overflow-hidden px-8 py-20 lg:px-16 lg:py-28 text-center">
+            <GlassCard className="relative overflow-hidden px-8 py-16 lg:px-16 lg:py-24 text-center">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -z-0" />
               <div className="relative z-10">
                 <motion.div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-1.5 mb-6" initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }}>

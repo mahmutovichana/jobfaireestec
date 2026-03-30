@@ -25,6 +25,8 @@ const emptyForm = {
   committee: "Predsjedništvo",
   photo_url: "",
   linkedin_url: "",
+  email: "",
+  phone: "",
   display_order: 0,
   visible: true,
 };
@@ -75,6 +77,8 @@ export default function TeamManager() {
       committee: m.committee,
       photo_url: m.photo_url || "",
       linkedin_url: m.linkedin_url || "",
+      email: m.email || "",
+      phone: m.phone || "",
       display_order: m.display_order,
       visible: m.visible,
     });
@@ -250,6 +254,16 @@ export default function TeamManager() {
               <div className="relative">
                 <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input value={form.linkedin_url} onChange={(e) => setForm((f) => ({ ...f, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/..." className="pl-9" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Email</Label>
+                <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@primjer.com" />
+              </div>
+              <div>
+                <Label>Telefon</Label>
+                <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="+387..." />
               </div>
             </div>
             <div>
