@@ -24,7 +24,9 @@ import {
   Upload,
   ArrowLeft,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +67,23 @@ const NewsManager = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleInstagramSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-instagram");
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(data.message || "Instagram sync završen!");
+      } else {
+        toast.error(data?.error || "Sync nije uspio");
+      }
+    } catch (err: any) {
+      toast.error("Greška pri syncu: " + err.message);
+    }
+    setSyncing(false);
+  };
 
   const thumbnailRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -152,9 +171,19 @@ const NewsManager = () => {
             Upravljajte vijestima i obavještenjima
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="w-4 h-4 mr-2" /> Nova novost
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleInstagramSync} disabled={syncing}>
+            {syncing ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Sync Instagram
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus className="w-4 h-4 mr-2" /> Nova novost
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
