@@ -26,6 +26,7 @@ import {
   Menu,
   Sun,
   Moon,
+  Globe,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -140,21 +141,44 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
   );
 };
 
-/* ── Animated beam component ── */
-const Beam = ({ delay, duration, angle, top, width }: { delay: number; duration: number; angle: number; top: string; width: string }) => (
+/* ── Shooting star component ── */
+const ShootingStar = ({ delay, duration, startX, startY, angle, length }: { delay: number; duration: number; startX: string; startY: string; angle: number; length: number }) => {
+  const rad = (angle * Math.PI) / 180;
+  const endX = Math.cos(rad) * length;
+  const endY = Math.sin(rad) * length;
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{ left: startX, top: startY }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 1, 0] }}
+      transition={{ duration: duration * 0.8, repeat: Infinity, delay, ease: "easeOut", repeatDelay: duration * 0.5 }}
+    >
+      <motion.div
+        style={{
+          width: `${length}px`,
+          height: "2px",
+          background: `linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.6) 40%, hsl(var(--primary)) 70%, white 100%)`,
+          rotate: `${angle}deg`,
+          transformOrigin: "right center",
+          borderRadius: "2px",
+          filter: "blur(0.3px)",
+          boxShadow: "0 0 6px hsl(var(--primary) / 0.4)",
+        }}
+        animate={{ x: [0, endX], y: [0, endY] }}
+        transition={{ duration, repeat: Infinity, delay, ease: "easeIn", repeatDelay: duration * 0.5 }}
+      />
+    </motion.div>
+  );
+};
+
+/* ── Sparkle dot ── */
+const SparkleDot = ({ x, y, delay, size = 3 }: { x: string; y: string; delay: number; size?: number }) => (
   <motion.div
-    className="absolute pointer-events-none"
-    style={{
-      top,
-      left: "-20%",
-      width,
-      height: "1px",
-      background: `linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.15) 20%, hsl(var(--primary) / 0.5) 50%, hsl(var(--primary) / 0.15) 80%, transparent 100%)`,
-      rotate: `${angle}deg`,
-      filter: "blur(0.5px)",
-    }}
-    animate={{ left: ["-20%", "120%"] }}
-    transition={{ duration, repeat: Infinity, delay, ease: "linear" }}
+    className="absolute rounded-full bg-primary pointer-events-none"
+    style={{ left: x, top: y, width: size, height: size }}
+    animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
+    transition={{ duration: 2.5, repeat: Infinity, delay, ease: "easeInOut" }}
   />
 );
 
@@ -267,25 +291,23 @@ const Landing = () => {
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        <Beam delay={0} duration={5} angle={-12} top="15%" width="500px" />
-        <Beam delay={1.5} duration={6} angle={-8} top="30%" width="600px" />
-        <Beam delay={3} duration={4.5} angle={-15} top="50%" width="450px" />
-        <Beam delay={4.5} duration={7} angle={-5} top="65%" width="550px" />
-        <Beam delay={2} duration={5.5} angle={-18} top="80%" width="400px" />
-        <Beam delay={6} duration={4} angle={-10} top="40%" width="350px" />
+        {/* Shooting stars */}
+        <ShootingStar delay={0} duration={2} startX="10%" startY="15%" angle={35} length={120} />
+        <ShootingStar delay={3} duration={1.8} startX="70%" startY="10%" angle={150} length={100} />
+        <ShootingStar delay={1.5} duration={2.2} startX="30%" startY="40%" angle={25} length={140} />
+        <ShootingStar delay={5} duration={1.5} startX="80%" startY="35%" angle={165} length={90} />
+        <ShootingStar delay={7} duration={2} startX="15%" startY="65%" angle={20} length={110} />
+        <ShootingStar delay={4} duration={1.7} startX="55%" startY="55%" angle={140} length={100} />
 
-        <motion.div
-          className="absolute pointer-events-none w-[1px] h-[300px]"
-          style={{ left: "20%", top: "-300px", background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.2), transparent)" }}
-          animate={{ top: ["-300px", "120%"] }}
-          transition={{ duration: 8, repeat: Infinity, delay: 1, ease: "linear" }}
-        />
-        <motion.div
-          className="absolute pointer-events-none w-[1px] h-[200px]"
-          style={{ left: "75%", top: "-200px", background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.15), transparent)" }}
-          animate={{ top: ["-200px", "120%"] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 4, ease: "linear" }}
-        />
+        {/* Sparkle dots */}
+        <SparkleDot x="12%" y="25%" delay={0} size={3} />
+        <SparkleDot x="85%" y="20%" delay={1.2} size={2} />
+        <SparkleDot x="45%" y="70%" delay={0.8} size={4} />
+        <SparkleDot x="70%" y="45%" delay={2} size={2} />
+        <SparkleDot x="25%" y="80%" delay={1.5} size={3} />
+        <SparkleDot x="60%" y="15%" delay={3} size={2} />
+        <SparkleDot x="90%" y="65%" delay={0.5} size={3} />
+        <SparkleDot x="35%" y="30%" delay={2.5} size={2} />
 
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
 
@@ -441,26 +463,51 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Timeline — responsive */}
+          {/* Timeline — compact with fade on middle years */}
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-16">
             <p className="text-center text-sm text-muted-foreground font-medium mb-10 tracking-wider uppercase">Naša historija</p>
-            <div className="relative max-w-5xl mx-auto overflow-x-auto pb-4 scrollbar-hide">
-              <div className="relative min-w-[600px] md:min-w-0">
+            <div className="relative max-w-4xl mx-auto">
+              <div className="relative">
                 <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/[0.15] to-transparent" />
-                <div className="flex items-start justify-between gap-1">
+                <div className="flex items-start justify-between">
                   {timelineYears.map((year, i) => {
-                    const isLast = i === timelineYears.length - 1;
-                    const isRecent = i >= timelineYears.length - 5;
+                    const total = timelineYears.length;
+                    const isLast = i === total - 1;
+                    const isFirst = i === 0;
+                    const isEdge = i <= 2 || i >= total - 4;
+                    // Middle items get faded out and hidden on mobile
+                    const isFaded = !isEdge && !isFirst && !isLast;
+                    
                     return (
-                      <motion.div key={year} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.04 }} className="flex flex-col items-center group cursor-default flex-shrink-0">
-                        <div className={`relative w-2 h-2 sm:w-[9px] sm:h-[9px] rounded-full transition-all duration-300 ${isLast ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]" : isRecent ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150" : "bg-foreground/20 group-hover:bg-foreground/50 group-hover:scale-125"}`}>
+                      <motion.div
+                        key={year}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: i * 0.04 }}
+                        className={`flex flex-col items-center group cursor-default ${isFaded ? "hidden sm:flex" : "flex"}`}
+                      >
+                        <div className={`relative w-2 h-2 sm:w-[9px] sm:h-[9px] rounded-full transition-all duration-300 ${
+                          isLast ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
+                          : isEdge ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150"
+                          : "bg-foreground/15"
+                        }`}>
                           {isLast && <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-30" />}
                         </div>
-                        <span className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-medium transition-all duration-300 ${isLast ? "text-primary font-bold sm:text-sm" : isRecent ? "text-muted-foreground group-hover:text-primary" : "text-muted-foreground/50 group-hover:text-muted-foreground"}`}>{year}</span>
+                        <span className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-medium transition-all duration-300 ${
+                          isLast ? "text-primary font-bold sm:text-sm"
+                          : isFaded ? "text-muted-foreground/30"
+                          : isEdge ? "text-muted-foreground group-hover:text-primary"
+                          : "text-muted-foreground/50"
+                        }`}>
+                          {isFaded ? "·" : year}
+                        </span>
                       </motion.div>
                     );
                   })}
                 </div>
+                {/* Fade overlay on middle */}
+                <div className="hidden sm:block absolute top-0 bottom-0 left-[20%] right-[35%] pointer-events-none bg-gradient-to-r from-transparent via-background/70 to-transparent" />
               </div>
             </div>
           </motion.div>
@@ -481,9 +528,19 @@ const Landing = () => {
                 <img src={eestecWall} alt="EESTEC LC Sarajevo projekti" className="w-full h-full min-h-[400px] object-cover" loading="lazy" />
               </div>
               <GlassCard className="p-6">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <a href="https://eestec-sa.ba" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">EESTEC LC Sarajevo</a> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  Lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
                 </p>
+                <a
+                  href="https://eestec-sa.ba"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-full"
+                >
+                  <Globe className="w-4 h-4" />
+                  Posjeti eestec-sa.ba
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
               </GlassCard>
             </motion.div>
 

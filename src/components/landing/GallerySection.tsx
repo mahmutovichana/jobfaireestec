@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useGalleryImages } from "@/hooks/useGallery";
 
 import teamPhoto1 from "@/assets/team-photo-1.jpg";
@@ -20,18 +19,6 @@ const fallbackImages = [
   { url: ecoAwareness, title: "Ekologija" },
   { url: teamPhoto2, title: "Organizacija" },
   { url: activityWorkshop, title: "Radionice" },
-];
-
-// Grid layout definitions - each image gets a fixed cell
-const gridItems = [
-  { colSpan: "md:col-span-2", rowSpan: "md:row-span-2", aspect: "aspect-square" },
-  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
-  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
-  { colSpan: "md:col-span-2", rowSpan: "", aspect: "aspect-[16/9]" },
-  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[3/4]" },
-  { colSpan: "md:col-span-1", rowSpan: "md:row-span-2", aspect: "aspect-[3/4] md:aspect-auto md:h-full" },
-  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
-  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
 ];
 
 export function GallerySection() {
@@ -57,34 +44,30 @@ export function GallerySection() {
           </h2>
         </motion.div>
 
-        {/* Clean grid - no overlapping */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {images.slice(0, 8).map((img, i) => {
-            const layout = gridItems[i] || gridItems[0];
-            return (
-              <motion.div
-                key={i}
-                className={`${layout.colSpan} ${layout.rowSpan} overflow-hidden rounded-2xl relative group`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.06 }}
-              >
-                <div className={`${layout.aspect} w-full overflow-hidden`}>
-                  <img
-                    src={img.url}
-                    alt={img.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-                {/* Title overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
-                  <span className="text-white text-sm font-medium">{img.title}</span>
-                </div>
-              </motion.div>
-            );
-          })}
+        {/* Uniform grid — all images same aspect ratio, no overlap */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {images.slice(0, 8).map((img, i) => (
+            <motion.div
+              key={i}
+              className="overflow-hidden rounded-2xl relative group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.06 }}
+            >
+              <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                <img
+                  src={img.url}
+                  alt={img.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
+                <span className="text-white text-sm font-medium">{img.title}</span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

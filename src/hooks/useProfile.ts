@@ -23,7 +23,11 @@ export function useUpdateProfile() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (updates: TablesUpdate<"profiles">) => {
-      const { data, error } = await supabase.from("profiles").update(updates).eq("id", user!.id).select().single();
+      const { data, error } = await supabase
+        .from("profiles")
+        .upsert({ id: user!.id, ...updates }, { onConflict: "id" })
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
