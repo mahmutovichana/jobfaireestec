@@ -23,7 +23,11 @@ import {
   Presentation,
   CircleDot,
   MessagesSquare,
+  Menu,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import teamPhoto1 from "@/assets/team-photo-1.jpg";
 import teamPhoto2 from "@/assets/team-photo-2.jpg";
