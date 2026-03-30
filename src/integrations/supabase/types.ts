@@ -556,9 +556,11 @@ export type Database = {
           committee: string
           created_at: string
           display_order: number
+          email: string | null
           id: string
           linkedin_url: string | null
           name: string
+          phone: string | null
           photo_url: string | null
           role: string
           updated_at: string
@@ -569,9 +571,11 @@ export type Database = {
           committee?: string
           created_at?: string
           display_order?: number
+          email?: string | null
           id?: string
           linkedin_url?: string | null
           name: string
+          phone?: string | null
           photo_url?: string | null
           role?: string
           updated_at?: string
@@ -582,9 +586,11 @@ export type Database = {
           committee?: string
           created_at?: string
           display_order?: number
+          email?: string | null
           id?: string
           linkedin_url?: string | null
           name?: string
+          phone?: string | null
           photo_url?: string | null
           role?: string
           updated_at?: string
