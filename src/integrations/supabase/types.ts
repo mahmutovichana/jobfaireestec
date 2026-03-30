@@ -324,6 +324,36 @@ export type Database = {
           },
         ]
       }
+      gallery_images: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          title: string | null
+          user_id: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          title?: string | null
+          user_id: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          title?: string | null
+          user_id?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       job_ads: {
         Row: {
           company_name: string
