@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     let synced = 0;
 
     for (const post of posts) {
-      const postId = post.id || post.pk?.toString() || post.code;
+      const postId = post.code || post.pk?.toString() || post.id;
       if (!postId || existingIds.has(postId)) {
         console.log(`Skipping already synced or invalid post: ${postId}`);
         continue;
@@ -104,15 +104,12 @@ Deno.serve(async (req) => {
       let thumbnailUrl = "";
       const galleryUrls: string[] = [];
 
-      if (post.carousel_media && post.carousel_media.length > 0) {
-        // Carousel post - first image is thumbnail, rest are gallery
-        for (let i = 0; i < post.carousel_media.length; i++) {
-          const media = post.carousel_media[i];
-          const imageUrl =
-            media.image_versions2?.candidates?.[0]?.url ||
-            media.image_versions?.items?.[0]?.url ||
-            media.thumbnail_url ||
-            "";
+      if (post.edge_sidecar_to_children?.edges?.length > 0) {
+        // Carousel post
+        const children = post.edge_sidecar_to_children.edges;
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i].node;
+          const imageUrl = child?.display_url || "";
           if (i === 0) {
             thumbnailUrl = imageUrl;
           } else if (imageUrl) {
@@ -121,12 +118,7 @@ Deno.serve(async (req) => {
         }
       } else {
         // Single image post
-        thumbnailUrl =
-          post.image_versions2?.candidates?.[0]?.url ||
-          post.image_versions?.items?.[0]?.url ||
-          post.thumbnail_url ||
-          post.display_url ||
-          "";
+        thumbnailUrl = post.display_url || post.thumbnail_src || "";
       }
 
       if (!thumbnailUrl) {
@@ -134,15 +126,18 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const caption = post.caption?.text || post.caption || "Instagram post";
-      const captionText = typeof caption === "string" ? caption : "Instagram post";
+      const captionText =
+        post.edge_media_to_caption?.edges?.[0]?.node?.text ||
+        post.caption?.text ||
+        (typeof post.caption === "string" ? post.caption : "") ||
+        "Instagram post";
       const lines = captionText.split("\n");
       const title = lines[0].substring(0, 200);
       const content = captionText;
       const summary = captionText.substring(0, 300);
 
-      const publishedAt = post.taken_at
-        ? new Date(post.taken_at * 1000).toISOString()
+      const publishedAt = post.taken_at_timestamp
+        ? new Date(post.taken_at_timestamp * 1000).toISOString()
         : new Date().toISOString();
 
       const { error: insertError } = await supabase.from("news_posts").insert({
