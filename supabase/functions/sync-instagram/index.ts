@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const INSTAGRAM_GRAPH_URL = "https://graph.instagram.com";
+const INSTAGRAM_USERNAME = "jobfairsarajevo";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,50 +14,51 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const igToken = Deno.env.get("INSTAGRAM_ACCESS_TOKEN");
-    if (!igToken) {
-      throw new Error("INSTAGRAM_ACCESS_TOKEN is not configured");
+    const rapidApiKey = Deno.env.get("RAPIDAPI_KEY");
+    if (!rapidApiKey) {
+      throw new Error("RAPIDAPI_KEY is not configured");
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Step 1: Get user's media from Instagram Graph API
-    // First get the user ID
-    const meRes = await fetch(
-      `${INSTAGRAM_GRAPH_URL}/me?fields=id,username&access_token=${igToken}`
+    // Step 1: Fetch posts from Instagram via RapidAPI scraper
+    console.log(`Fetching posts for @${INSTAGRAM_USERNAME}...`);
+
+    const response = await fetch(
+      `https://instagram-scraper-api2.p.rapidapi.com/v1/posts?username_or_id_or_url=${INSTAGRAM_USERNAME}`,
+      {
+        headers: {
+          "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com",
+          "x-rapidapi-key": rapidApiKey,
+        },
+      }
     );
-    if (!meRes.ok) {
-      const errBody = await meRes.text();
-      throw new Error(`Instagram /me failed [${meRes.status}]: ${errBody}`);
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error(`RapidAPI request failed [${response.status}]: ${errBody}`);
     }
-    const meData = await meRes.json();
-    console.log(`Instagram user: ${meData.username} (${meData.id})`);
 
-    // Step 2: Fetch recent media (last 6 posts)
-    const mediaRes = await fetch(
-      `${INSTAGRAM_GRAPH_URL}/${meData.id}/media?fields=id,caption,media_type,media_url,timestamp,permalink,children{media_url,media_type}&limit=6&access_token=${igToken}`
-    );
-    if (!mediaRes.ok) {
-      const errBody = await mediaRes.text();
-      throw new Error(`Instagram /media failed [${mediaRes.status}]: ${errBody}`);
-    }
-    const mediaData = await mediaRes.json();
-    const posts = mediaData.data || [];
+    const result = await response.json();
+    const items = result?.data?.items || [];
 
-    console.log(`Fetched ${posts.length} Instagram posts`);
+    console.log(`Fetched ${items.length} posts from RapidAPI`);
 
-    // Step 3: Check which posts already exist in news_posts
-    const igIds = posts.map((p: any) => p.id);
+    // Take last 6 posts
+    const posts = items.slice(0, 6);
+
+    // Step 2: Check which posts already exist
+    const igIds = posts.map((p: any) => p.id || p.pk?.toString() || p.code);
     const { data: existing } = await supabase
       .from("news_posts")
       .select("instagram_post_id")
-      .in("instagram_post_id", igIds);
+      .in("instagram_post_id", igIds.filter(Boolean));
 
     const existingIds = new Set((existing || []).map((r: any) => r.instagram_post_id));
 
-    // Step 4: We need a user_id for creating posts. Get the first admin user.
+    // Step 3: Get admin user for attribution
     const { data: adminRole } = await supabase
       .from("user_roles")
       .select("user_id")
@@ -65,7 +66,6 @@ Deno.serve(async (req) => {
       .limit(1)
       .single();
 
-    // Fallback: get any profile
     let userId: string;
     if (adminRole) {
       userId = adminRole.user_id;
@@ -82,36 +82,56 @@ Deno.serve(async (req) => {
     let synced = 0;
 
     for (const post of posts) {
-      if (existingIds.has(post.id)) {
-        console.log(`Skipping already synced post: ${post.id}`);
+      const postId = post.id || post.pk?.toString() || post.code;
+      if (!postId || existingIds.has(postId)) {
+        console.log(`Skipping already synced or invalid post: ${postId}`);
         continue;
       }
 
-      // Only sync IMAGE, CAROUSEL_ALBUM posts (skip VIDEO-only for now)
-      if (post.media_type !== "IMAGE" && post.media_type !== "CAROUSEL_ALBUM") {
-        console.log(`Skipping ${post.media_type} post: ${post.id}`);
-        continue;
-      }
+      // Extract images from the post
+      let thumbnailUrl = "";
+      const galleryUrls: string[] = [];
 
-      let thumbnailUrl = post.media_url;
-      let galleryUrls: string[] = [];
-
-      if (post.media_type === "CAROUSEL_ALBUM" && post.children?.data) {
-        const images = post.children.data.filter(
-          (c: any) => c.media_type === "IMAGE"
-        );
-        if (images.length > 0) {
-          thumbnailUrl = images[0].media_url;
-          galleryUrls = images.slice(1).map((c: any) => c.media_url);
+      if (post.carousel_media && post.carousel_media.length > 0) {
+        // Carousel post - first image is thumbnail, rest are gallery
+        for (let i = 0; i < post.carousel_media.length; i++) {
+          const media = post.carousel_media[i];
+          const imageUrl =
+            media.image_versions2?.candidates?.[0]?.url ||
+            media.image_versions?.items?.[0]?.url ||
+            media.thumbnail_url ||
+            "";
+          if (i === 0) {
+            thumbnailUrl = imageUrl;
+          } else if (imageUrl) {
+            galleryUrls.push(imageUrl);
+          }
         }
+      } else {
+        // Single image post
+        thumbnailUrl =
+          post.image_versions2?.candidates?.[0]?.url ||
+          post.image_versions?.items?.[0]?.url ||
+          post.thumbnail_url ||
+          post.display_url ||
+          "";
       }
 
-      const caption = post.caption || "Instagram post";
-      // Use first line as title, rest as content
-      const lines = caption.split("\n");
+      if (!thumbnailUrl) {
+        console.log(`Skipping post without image: ${postId}`);
+        continue;
+      }
+
+      const caption = post.caption?.text || post.caption || "Instagram post";
+      const captionText = typeof caption === "string" ? caption : "Instagram post";
+      const lines = captionText.split("\n");
       const title = lines[0].substring(0, 200);
-      const content = caption;
-      const summary = caption.substring(0, 300);
+      const content = captionText;
+      const summary = captionText.substring(0, 300);
+
+      const publishedAt = post.taken_at
+        ? new Date(post.taken_at * 1000).toISOString()
+        : new Date().toISOString();
 
       const { error: insertError } = await supabase.from("news_posts").insert({
         user_id: userId,
@@ -121,15 +141,15 @@ Deno.serve(async (req) => {
         thumbnail_url: thumbnailUrl,
         gallery_urls: galleryUrls,
         published: true,
-        published_at: post.timestamp,
-        instagram_post_id: post.id,
+        published_at: publishedAt,
+        instagram_post_id: postId,
       });
 
       if (insertError) {
-        console.error(`Failed to insert post ${post.id}:`, insertError.message);
+        console.error(`Failed to insert post ${postId}:`, insertError.message);
       } else {
         synced++;
-        console.log(`Synced Instagram post: ${post.id}`);
+        console.log(`Synced Instagram post: ${postId}`);
       }
     }
 
