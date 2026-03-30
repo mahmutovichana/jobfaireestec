@@ -106,7 +106,7 @@ const timelineYears = [...TIMELINE_YEARS];
 
 /* ── Glassmorphism card ── */
 const GlassCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] rounded-3xl ${className}`}>{children}</div>
+  <div className={`bg-card/80 backdrop-blur-xl border border-border/30 rounded-3xl ${className}`}>{children}</div>
 );
 
 /* ── Animated counter ── */
@@ -246,8 +246,9 @@ const Landing = () => {
 
       {/* ── Hero with animated beams ── */}
       <section ref={heroRef} className="relative min-h-[110vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-[#070709]">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:80px_80px]" />
+        {/* Background - theme aware */}
+        <div className="absolute inset-0 bg-background">
+          <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--foreground)/0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
         </div>
 
         <motion.div
@@ -296,21 +297,21 @@ const Landing = () => {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div className="mb-8" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }}>
-              <Logo size="lg" className="[&_span]:text-white [&_.text-foreground]:text-white justify-center" />
+              <Logo size="lg" className="justify-center" />
             </motion.div>
 
             <motion.div
-              className="inline-flex items-center gap-2 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] rounded-full px-5 py-2.5 mb-8"
+              className="inline-flex items-center gap-2 bg-foreground/[0.06] backdrop-blur-xl border border-foreground/[0.08] rounded-full px-5 py-2.5 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <CalendarDays className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-white/90">{NEXT_EVENT_DATE}</span>
+              <span className="text-sm font-medium text-foreground/80">{NEXT_EVENT_DATE}</span>
             </motion.div>
 
             <motion.h1
-              className="text-5xl sm:text-6xl lg:text-8xl font-display font-bold text-white tracking-tight leading-[1.05] mb-6"
+              className="text-5xl sm:text-6xl lg:text-8xl font-display font-bold text-foreground tracking-tight leading-[1.05] mb-6"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
@@ -328,7 +329,7 @@ const Landing = () => {
             </motion.h1>
 
             <motion.p
-              className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto mb-10 leading-relaxed"
+              className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -348,7 +349,7 @@ const Landing = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-base font-semibold px-10 h-14 rounded-full border-white/[0.12] text-white hover:bg-white/[0.08] bg-white/[0.04] backdrop-blur-xl"
+                className="text-base font-semibold px-10 h-14 rounded-full"
                 asChild
               >
                 <Link to="/kontakt">Za kompanije</Link>
@@ -362,8 +363,8 @@ const Landing = () => {
           animate={{ y: [0, 12, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1.5">
-            <motion.div className="w-1.5 h-1.5 rounded-full bg-white/40" animate={{ y: [0, 16, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
+          <div className="w-6 h-10 rounded-full border-2 border-foreground/20 flex items-start justify-center p-1.5">
+            <motion.div className="w-1.5 h-1.5 rounded-full bg-foreground/40" animate={{ y: [0, 16, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
           </div>
         </motion.div>
       </section>

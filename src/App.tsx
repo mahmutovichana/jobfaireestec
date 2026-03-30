@@ -34,6 +34,7 @@ import TeamManager from "./pages/dashboard/TeamManager";
 import CVDatabase from "./pages/dashboard/CVDatabase";
 import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
 import DashboardHome from "./pages/dashboard/DashboardHome";
+import AccessRequests from "./pages/dashboard/AccessRequests";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,20 +77,22 @@ const App = () => (
                   <DashboardLayout>
                     <Routes>
                       <Route path="home" element={<DashboardHome />} />
-                      <Route path="events" element={<Events />} />
-                      <Route path="events/create" element={<CreateEvent />} />
-                      <Route path="events/:id" element={<EventDetail />} />
-                      <Route path="events/:id/edit" element={<CreateEvent />} />
-                      <Route path="attendees" element={<Attendees />} />
-                      <Route path="analytics" element={<Analytics />} />
-                      <Route path="integrations" element={<Integrations />} />
                       <Route path="settings" element={<SettingsPage />} />
-                      <Route path="news" element={<NewsManager />} />
-                      <Route path="job-ads" element={<JobAdsManager />} />
-                      <Route path="partners" element={<PartnersManager />} />
-                      <Route path="team" element={<TeamManager />} />
                       <Route path="cv-database" element={<CVDatabase />} />
-                      <Route path="company-inquiries" element={<CompanyInquiries />} />
+                      {/* Admin-only routes */}
+                      <Route path="events" element={<ProtectedRoute requireAdmin><Events /></ProtectedRoute>} />
+                      <Route path="events/create" element={<ProtectedRoute requireAdmin><CreateEvent /></ProtectedRoute>} />
+                      <Route path="events/:id" element={<ProtectedRoute requireAdmin><EventDetail /></ProtectedRoute>} />
+                      <Route path="events/:id/edit" element={<ProtectedRoute requireAdmin><CreateEvent /></ProtectedRoute>} />
+                      <Route path="attendees" element={<ProtectedRoute requireAdmin><Attendees /></ProtectedRoute>} />
+                      <Route path="analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
+                      <Route path="integrations" element={<ProtectedRoute requireAdmin><Integrations /></ProtectedRoute>} />
+                      <Route path="news" element={<ProtectedRoute requireAdmin><NewsManager /></ProtectedRoute>} />
+                      <Route path="job-ads" element={<ProtectedRoute requireAdmin><JobAdsManager /></ProtectedRoute>} />
+                      <Route path="partners" element={<ProtectedRoute requireAdmin><PartnersManager /></ProtectedRoute>} />
+                      <Route path="team" element={<ProtectedRoute requireAdmin><TeamManager /></ProtectedRoute>} />
+                      <Route path="company-inquiries" element={<ProtectedRoute requireAdmin><CompanyInquiries /></ProtectedRoute>} />
+                      <Route path="access-requests" element={<ProtectedRoute requireAdmin><AccessRequests /></ProtectedRoute>} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>
