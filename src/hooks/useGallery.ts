@@ -24,7 +24,7 @@ export function useGalleryImages(onlyVisible = false) {
       if (onlyVisible) query = query.eq("visible", true);
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as GalleryImage[];
+      return (data ?? []) as unknown as GalleryImage[];
     },
   });
 }

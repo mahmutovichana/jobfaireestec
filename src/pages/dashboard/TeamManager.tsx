@@ -25,6 +25,8 @@ const emptyForm = {
   committee: "Predsjedništvo",
   photo_url: "",
   linkedin_url: "",
+  email: "",
+  phone: "",
   display_order: 0,
   visible: true,
 };
