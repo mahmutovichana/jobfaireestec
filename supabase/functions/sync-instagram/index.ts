@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const INSTAGRAM_USERNAME = "jobfairsarajevo";
+const INSTAGRAM_USERNAME = "jobfair.sarajevo";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -42,14 +42,38 @@ Deno.serve(async (req) => {
       }
     );
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      throw new Error(`RapidAPI request failed [${response.status}]: ${errBody}`);
+    const responseText = await response.text();
+    let result: any = null;
+
+    try {
+      result = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      result = null;
     }
 
-    const result = await response.json();
+    if (!response.ok) {
+      if (result?.response_type === "link not found") {
+        throw new Error(
+          `Instagram username \"${INSTAGRAM_USERNAME}\" was not found by RapidAPI. Check that the username matches the working endpoint in RapidAPI.`
+        );
+      }
+
+      const apiMessage = result?.message || responseText || "Unknown error";
+      throw new Error(`RapidAPI request failed [${response.status}]: ${apiMessage}`);
+    }
+
+    if (result?.success === false && result?.response_type === "link not found") {
+      throw new Error(
+        `Instagram username \"${INSTAGRAM_USERNAME}\" was not found by RapidAPI. Check that the username matches the working endpoint in RapidAPI.`
+      );
+    }
+
     const edges = result?.result?.edges || [];
     const items = edges.map((e: any) => e.node).filter(Boolean);
+
+    if (items.length === 0) {
+      throw new Error(`No Instagram posts were returned for @${INSTAGRAM_USERNAME}`);
+    }
 
     console.log(`Fetched ${items.length} posts from RapidAPI`);
 
@@ -65,25 +89,41 @@ Deno.serve(async (req) => {
 
     const existingIds = new Set((existing || []).map((r: any) => r.instagram_post_id));
 
-    // Step 3: Get admin user for attribution
+    // Step 3: Get a user for attribution
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    const accessToken = authHeader?.replace(/^Bearer\s+/i, "") || null;
+
+    let requesterUserId: string | null = null;
+    if (accessToken) {
+      const { data: requesterData, error: requesterError } = await supabase.auth.getUser(accessToken);
+      if (requesterError) {
+        console.warn("Could not resolve requesting user:", requesterError.message);
+      } else {
+        requesterUserId = requesterData.user?.id ?? null;
+      }
+    }
+
     const { data: adminRole } = await supabase
       .from("user_roles")
       .select("user_id")
       .eq("role", "admin")
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    let userId: string;
-    if (adminRole) {
-      userId = adminRole.user_id;
-    } else {
+    let userId: string | null = adminRole?.user_id ?? requesterUserId;
+
+    if (!userId) {
       const { data: anyProfile } = await supabase
         .from("profiles")
         .select("id")
         .limit(1)
-        .single();
-      if (!anyProfile) throw new Error("No users found to attribute posts to");
-      userId = anyProfile.id;
+        .maybeSingle();
+
+      userId = anyProfile?.id ?? null;
+    }
+
+    if (!userId) {
+      throw new Error("No users found to attribute posts to");
     }
 
     let synced = 0;
