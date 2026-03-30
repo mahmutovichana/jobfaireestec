@@ -462,26 +462,51 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Timeline — responsive */}
+          {/* Timeline — compact with fade on middle years */}
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-16">
             <p className="text-center text-sm text-muted-foreground font-medium mb-10 tracking-wider uppercase">Naša historija</p>
-            <div className="relative max-w-5xl mx-auto overflow-x-auto pb-4 scrollbar-hide">
-              <div className="relative min-w-[600px] md:min-w-0">
+            <div className="relative max-w-4xl mx-auto">
+              <div className="relative">
                 <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/[0.15] to-transparent" />
-                <div className="flex items-start justify-between gap-1">
+                <div className="flex items-start justify-between">
                   {timelineYears.map((year, i) => {
-                    const isLast = i === timelineYears.length - 1;
-                    const isRecent = i >= timelineYears.length - 5;
+                    const total = timelineYears.length;
+                    const isLast = i === total - 1;
+                    const isFirst = i === 0;
+                    const isEdge = i <= 2 || i >= total - 4;
+                    // Middle items get faded out and hidden on mobile
+                    const isFaded = !isEdge && !isFirst && !isLast;
+                    
                     return (
-                      <motion.div key={year} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.04 }} className="flex flex-col items-center group cursor-default flex-shrink-0">
-                        <div className={`relative w-2 h-2 sm:w-[9px] sm:h-[9px] rounded-full transition-all duration-300 ${isLast ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]" : isRecent ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150" : "bg-foreground/20 group-hover:bg-foreground/50 group-hover:scale-125"}`}>
+                      <motion.div
+                        key={year}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.3, delay: i * 0.04 }}
+                        className={`flex flex-col items-center group cursor-default ${isFaded ? "hidden sm:flex" : "flex"}`}
+                      >
+                        <div className={`relative w-2 h-2 sm:w-[9px] sm:h-[9px] rounded-full transition-all duration-300 ${
+                          isLast ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]"
+                          : isEdge ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150"
+                          : "bg-foreground/15"
+                        }`}>
                           {isLast && <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-30" />}
                         </div>
-                        <span className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-medium transition-all duration-300 ${isLast ? "text-primary font-bold sm:text-sm" : isRecent ? "text-muted-foreground group-hover:text-primary" : "text-muted-foreground/50 group-hover:text-muted-foreground"}`}>{year}</span>
+                        <span className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-medium transition-all duration-300 ${
+                          isLast ? "text-primary font-bold sm:text-sm"
+                          : isFaded ? "text-muted-foreground/30"
+                          : isEdge ? "text-muted-foreground group-hover:text-primary"
+                          : "text-muted-foreground/50"
+                        }`}>
+                          {isFaded ? "·" : year}
+                        </span>
                       </motion.div>
                     );
                   })}
                 </div>
+                {/* Fade overlay on middle */}
+                <div className="hidden sm:block absolute top-0 bottom-0 left-[20%] right-[35%] pointer-events-none bg-gradient-to-r from-transparent via-background/70 to-transparent" />
               </div>
             </div>
           </motion.div>
