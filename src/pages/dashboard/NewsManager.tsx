@@ -171,10 +171,19 @@ const NewsManager = () => {
             Upravljajte vijestima i obavještenjima
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="w-4 h-4 mr-2" /> Nova novost
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleInstagramSync} disabled={syncing}>
+            {syncing ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Sync Instagram
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus className="w-4 h-4 mr-2" /> Nova novost
+          </Button>
+        </div>
 
       {isLoading ? (
         <div className="space-y-4">
