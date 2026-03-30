@@ -15,7 +15,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Eye,
   Newspaper,
   Megaphone,
   Handshake,
@@ -67,7 +66,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const allItems = [
     ...baseItems,
     ...(isAdmin ? [{ title: "Zahtjevi", url: "/dashboard/access-requests", icon: ShieldCheck }] : []),
-    ...(profile?.company_slug ? [{ title: "Kompanija", url: `/company/${profile.company_slug}`, icon: Eye }] : []),
   ];
 
   const isActive = (url: string) => {

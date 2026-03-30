@@ -6,9 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsAdmin } from "@/hooks/useUserRole";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Upload, Building2, Globe, FileText, CheckCircle, Clock } from "lucide-react";
+import { Loader2, Plus, Trash2, Building2, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SOCIAL_PLATFORMS } from "@/lib/constants";
 import { motion } from "framer-motion";
@@ -21,7 +20,6 @@ function generateCompanySlug(name: string): string {
 
 export default function CompanyProfile() {
   const { user } = useAuth();
-  const { isAdmin } = useIsAdmin();
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   
@@ -38,11 +36,11 @@ export default function CompanyProfile() {
   if (profile && !initialized) {
     setFullName(profile.full_name || "");
     setCompany(profile.company || "");
-    setWebsite((profile as any).website || "");
-    setCompanyDescription((profile as any).company_description || "");
-    const links = (profile as any).social_links;
-    setSocialLinks(Array.isArray(links) ? links : []);
-    setCompanySlug((profile as any).company_slug || "");
+    setWebsite(profile.website || "");
+    setCompanyDescription(profile.company_description || "");
+    const links = profile.social_links;
+    setSocialLinks(Array.isArray(links) ? links as SocialLink[] : []);
+    setCompanySlug(profile.company_slug || "");
     setLogoUrl(profile.avatar_url || "");
     setInitialized(true);
   }
@@ -82,16 +80,48 @@ export default function CompanyProfile() {
     
     try {
       const slug = companySlug || generateCompanySlug(company);
+      
+      // Save profile
       await updateProfile.mutateAsync({
         full_name: fullName,
         company,
         website,
         company_description: companyDescription,
-        social_links: socialLinks,
+        social_links: socialLinks as any,
         avatar_url: logoUrl,
-        ...(slug ? { company_slug: slug } : {}),
-      } as any);
+        company_slug: slug,
+      });
+      
       if (!companySlug && slug) setCompanySlug(slug);
+
+      // Also upsert a partner entry with visible=false for admin review
+      const { data: existingPartner } = await supabase
+        .from("partners")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+
+      if (existingPartner) {
+        await supabase.from("partners").update({
+          name: company,
+          logo_url: logoUrl || null,
+          website: website || null,
+          description: companyDescription || null,
+          visible: false, // Reset to pending on any edit
+        }).eq("id", existingPartner.id);
+      } else {
+        await supabase.from("partners").insert({
+          user_id: user!.id,
+          name: company,
+          logo_url: logoUrl || null,
+          website: website || null,
+          description: companyDescription || null,
+          visible: false,
+          category: "company" as const,
+          package: "standard" as const,
+        });
+      }
+
       toast.success("Profil sačuvan! Vaše promjene će biti vidljive nakon odobrenja admin tima.");
     } catch (err: any) {
       toast.error(err.message || "Greška pri ažuriranju profila");
