@@ -482,7 +482,7 @@ const Landing = () => {
               </div>
               <GlassCard className="p-6">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="text-primary font-semibold">EESTEC LC Sarajevo</span> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
+                  <a href="https://eestec-sa.ba" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">EESTEC LC Sarajevo</a> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
                 </p>
               </GlassCard>
             </motion.div>

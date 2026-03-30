@@ -22,44 +22,21 @@ const fallbackImages = [
   { url: activityWorkshop, title: "Radionice" },
 ];
 
-function ParallaxImage({ src, alt, index }: { src: string; alt: string; index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  // Alternate parallax direction and speed
-  const yOffset = index % 2 === 0 ? 40 : -40;
-  const y = useTransform(scrollYProgress, [0, 1], [-yOffset, yOffset]);
-
-  return (
-    <motion.div
-      ref={ref}
-      className="relative overflow-hidden rounded-2xl"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
-    >
-      <motion.div style={{ y }} className="w-full h-full">
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-          loading="lazy"
-        />
-      </motion.div>
-      {/* Subtle overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500" />
-    </motion.div>
-  );
-}
+// Grid layout definitions - each image gets a fixed cell
+const gridItems = [
+  { colSpan: "md:col-span-2", rowSpan: "md:row-span-2", aspect: "aspect-square" },
+  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
+  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
+  { colSpan: "md:col-span-2", rowSpan: "", aspect: "aspect-[16/9]" },
+  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[3/4]" },
+  { colSpan: "md:col-span-1", rowSpan: "md:row-span-2", aspect: "aspect-[3/4] md:aspect-auto md:h-full" },
+  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
+  { colSpan: "md:col-span-1", rowSpan: "", aspect: "aspect-[4/3]" },
+];
 
 export function GallerySection() {
   const { data: dbImages = [] } = useGalleryImages(true);
 
-  // Use DB images if available, otherwise fallback
   const images = dbImages.length > 0
     ? dbImages.map(img => ({ url: img.image_url, title: img.title }))
     : fallbackImages;
@@ -80,20 +57,32 @@ export function GallerySection() {
           </h2>
         </motion.div>
 
-        {/* Masonry-like grid with varied sizes */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-[180px] md:auto-rows-[220px]">
+        {/* Clean grid - no overlapping */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {images.slice(0, 8).map((img, i) => {
-            // Create visual variety with spanning
-            const spanClass =
-              i === 0 ? "col-span-2 row-span-2" :
-              i === 3 ? "col-span-2" :
-              i === 5 ? "row-span-2" :
-              "";
-
+            const layout = gridItems[i] || gridItems[0];
             return (
-              <div key={i} className={spanClass}>
-                <ParallaxImage src={img.url} alt={img.title} index={i} />
-              </div>
+              <motion.div
+                key={i}
+                className={`${layout.colSpan} ${layout.rowSpan} overflow-hidden rounded-2xl relative group`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.06 }}
+              >
+                <div className={`${layout.aspect} w-full overflow-hidden`}>
+                  <img
+                    src={img.url}
+                    alt={img.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+                {/* Title overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4">
+                  <span className="text-white text-sm font-medium">{img.title}</span>
+                </div>
+              </motion.div>
             );
           })}
         </div>
