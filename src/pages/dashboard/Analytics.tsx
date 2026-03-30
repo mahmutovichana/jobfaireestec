@@ -1,13 +1,29 @@
-import { Users, TrendingUp, CalendarDays, Loader2 } from "lucide-react";
+import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase } from "lucide-react";
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { useRegistrationStats } from "@/hooks/useRegistrations";
+import { usePartners } from "@/hooks/usePartners";
+import { useEvents } from "@/hooks/useEvents";
 import { useMemo } from "react";
 import { format, parseISO, startOfWeek } from "date-fns";
 
+const COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--success))",
+  "hsl(340 75% 58%)",
+  "hsl(45 93% 58%)",
+  "hsl(200 70% 55%)",
+  "hsl(280 60% 55%)",
+];
+
 const Analytics = () => {
-  const { data: stats, isLoading } = useRegistrationStats();
+  const { data: stats, isLoading: statsLoading } = useRegistrationStats();
+  const { data: partners = [], isLoading: partnersLoading } = usePartners();
+  const { data: events = [], isLoading: eventsLoading } = useEvents();
+
+  const isLoading = statsLoading || partnersLoading || eventsLoading;
 
   const perEventData = useMemo(() => {
     if (!stats?.events || !stats?.registrations) return [];
@@ -31,30 +47,85 @@ const Analytics = () => {
     return Object.entries(weekMap).map(([week, count]) => ({ week, registrations: count }));
   }, [stats]);
 
+  // Partner breakdown by category
+  const partnersByCategory = useMemo(() => {
+    const cats = { company: 0, media: 0, sponsor: 0 };
+    partners.forEach(p => { if (cats[p.category] !== undefined) cats[p.category]++; });
+    return [
+      { name: "Kompanije", value: cats.company, color: COLORS[0] },
+      { name: "Mediji", value: cats.media, color: COLORS[1] },
+      { name: "Sponzori", value: cats.sponsor, color: COLORS[2] },
+    ].filter(c => c.value > 0);
+  }, [partners]);
+
+  // Partner breakdown by package
+  const partnersByPackage = useMemo(() => {
+    const pkgs: Record<string, number> = {};
+    partners.forEach(p => {
+      const pkg = p.package || "standard";
+      pkgs[pkg] = (pkgs[pkg] || 0) + 1;
+    });
+    return Object.entries(pkgs).map(([pkg, count], i) => ({
+      name: pkg.charAt(0).toUpperCase() + pkg.slice(1),
+      value: count,
+      color: COLORS[i % COLORS.length],
+    }));
+  }, [partners]);
+
+  // Events by status
+  const eventsByStatus = useMemo(() => {
+    const statuses: Record<string, number> = {};
+    events.forEach(e => {
+      statuses[e.status] = (statuses[e.status] || 0) + 1;
+    });
+    return Object.entries(statuses).map(([status, count]) => ({
+      name: status === "live" ? "Aktivni" : status === "draft" ? "Nacrt" : "Prošli",
+      value: count,
+    }));
+  }, [events]);
+
+  // Registration status breakdown
+  const registrationsByStatus = useMemo(() => {
+    if (!stats?.registrations) return [];
+    const statuses: Record<string, number> = {};
+    stats.registrations.forEach(r => {
+      statuses[r.status] = (statuses[r.status] || 0) + 1;
+    });
+    return Object.entries(statuses).map(([status, count], i) => ({
+      name: status === "registered" ? "Registrirani" : status === "checked_in" ? "Prisutni" : "Otkazani",
+      value: count,
+      color: COLORS[i % COLORS.length],
+    }));
+  }, [stats]);
+
   if (isLoading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   }
 
   const statCards = [
-    { label: "Total registrations", value: stats?.total ?? 0, icon: Users },
-    { label: "Active events", value: stats?.activeEvents ?? 0, icon: CalendarDays },
-    { label: "Avg per event", value: stats?.events?.length ? Math.round((stats?.total ?? 0) / stats.events.length) : 0, icon: TrendingUp },
+    { label: "Ukupno registracija", value: stats?.total ?? 0, icon: Users },
+    { label: "Aktivni eventi", value: stats?.activeEvents ?? 0, icon: CalendarDays },
+    { label: "Ukupno partnera", value: partners.length, icon: Building2 },
+    { label: "Kompanije", value: partners.filter(p => p.category === "company").length, icon: Briefcase },
+    { label: "Medijski partneri", value: partners.filter(p => p.category === "media").length, icon: Radio },
+    { label: "Ukupno evenata", value: events.length, icon: FileText },
   ];
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-display font-bold">Analytics</h1>
-        <p className="text-muted-foreground">Track your event performance and registration metrics.</p>
+        <h1 className="text-3xl font-display font-bold">Analitika</h1>
+        <p className="text-muted-foreground">Pregled performansi evenata, registracija i partnera.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {statCards.map((stat) => (
-          <div key={stat.label} className="bg-card rounded-xl p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">{stat.label}</span>
-              <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">
-                <stat.icon className="w-4 h-4 text-muted-foreground" />
+          <div key={stat.label} className="bg-card rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground">{stat.label}</span>
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <stat.icon className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
             </div>
             <p className="text-2xl font-display font-bold">{stat.value}</p>
@@ -62,9 +133,10 @@ const Analytics = () => {
         ))}
       </div>
 
+      {/* Charts row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-card rounded-xl p-5 sm:p-6">
-          <h3 className="font-display font-semibold mb-4">Registrations by event</h3>
+          <h3 className="font-display font-semibold mb-4">Registracije po eventu</h3>
           {perEventData.length > 0 ? (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -81,12 +153,12 @@ const Analytics = () => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-12 text-sm">No registration data yet.</p>
+            <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka o registracijama.</p>
           )}
         </div>
 
         <div className="bg-card rounded-xl p-5 sm:p-6">
-          <h3 className="font-display font-semibold mb-4">Registrations over time</h3>
+          <h3 className="font-display font-semibold mb-4">Registracije tokom vremena</h3>
           {overTimeData.length > 0 ? (
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -103,7 +175,86 @@ const Analytics = () => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-12 text-sm">No registration data yet.</p>
+            <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka o registracijama.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Charts row 2: Partner breakdowns */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-4">Partneri po kategoriji</h3>
+          {partnersByCategory.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={partnersByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`}>
+                    {partnersByCategory.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Nema partnera.</p>
+          )}
+        </div>
+
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-4">Partneri po paketu</h3>
+          {partnersByPackage.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={partnersByPackage} margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 11 }} />
+                  <YAxis className="text-xs" allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} />
+                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} barSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka.</p>
+          )}
+        </div>
+
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-4">Status registracija</h3>
+          {registrationsByStatus.length > 0 ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={registrationsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={80} label>
+                    {registrationsByStatus.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Events by status summary */}
+      <div className="bg-card rounded-xl p-5 sm:p-6">
+        <h3 className="font-display font-semibold mb-4">Pregled evenata po statusu</h3>
+        <div className="grid grid-cols-3 gap-4">
+          {eventsByStatus.map((item) => (
+            <div key={item.name} className="text-center p-4 rounded-xl bg-muted/30">
+              <p className="text-2xl font-display font-bold">{item.value}</p>
+              <p className="text-sm text-muted-foreground">{item.name}</p>
+            </div>
+          ))}
+          {eventsByStatus.length === 0 && (
+            <p className="col-span-3 text-muted-foreground text-center py-8 text-sm">Nema evenata.</p>
           )}
         </div>
       </div>
