@@ -256,6 +256,16 @@ export default function TeamManager() {
                 <Input value={form.linkedin_url} onChange={(e) => setForm((f) => ({ ...f, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/..." className="pl-9" />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Email</Label>
+                <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@primjer.com" />
+              </div>
+              <div>
+                <Label>Telefon</Label>
+                <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="+387..." />
+              </div>
+            </div>
             <div>
               <Label>Redoslijed</Label>
               <Input type="number" value={form.display_order} onChange={(e) => setForm((f) => ({ ...f, display_order: parseInt(e.target.value) || 0 }))} />
