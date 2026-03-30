@@ -135,7 +135,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 to={item.url}
                 className="px-3 py-1.5 text-sm font-medium text-muted-foreground rounded-full transition-colors hover:text-foreground hover:bg-muted whitespace-nowrap"
                 activeClassName="bg-foreground text-background hover:bg-foreground hover:text-background"
-                end={item.url === "/dashboard"}
               >
                 {item.title}
               </NavLink>
