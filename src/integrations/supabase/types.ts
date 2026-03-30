@@ -372,6 +372,7 @@ export type Database = {
           created_at: string
           gallery_urls: Json | null
           id: string
+          instagram_post_id: string | null
           published: boolean
           published_at: string | null
           summary: string | null
@@ -385,6 +386,7 @@ export type Database = {
           created_at?: string
           gallery_urls?: Json | null
           id?: string
+          instagram_post_id?: string | null
           published?: boolean
           published_at?: string | null
           summary?: string | null
@@ -398,6 +400,7 @@ export type Database = {
           created_at?: string
           gallery_urls?: Json | null
           id?: string
+          instagram_post_id?: string | null
           published?: boolean
           published_at?: string | null
           summary?: string | null

@@ -1,0 +1,1 @@
+ALTER TABLE public.news_posts ADD COLUMN IF NOT EXISTS instagram_post_id text UNIQUE;
