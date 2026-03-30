@@ -27,12 +27,18 @@ Deno.serve(async (req) => {
     console.log(`Fetching posts for @${INSTAGRAM_USERNAME}...`);
 
     const response = await fetch(
-      `https://instagram-scraper-api2.p.rapidapi.com/v1/posts?username_or_id_or_url=${INSTAGRAM_USERNAME}`,
+      "https://instagram120.p.rapidapi.com/api/instagram/posts",
       {
+        method: "POST",
         headers: {
-          "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com",
+          "Content-Type": "application/json",
+          "x-rapidapi-host": "instagram120.p.rapidapi.com",
           "x-rapidapi-key": rapidApiKey,
         },
+        body: JSON.stringify({
+          username: INSTAGRAM_USERNAME,
+          maxId: "",
+        }),
       }
     );
 
