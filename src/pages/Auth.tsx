@@ -57,7 +57,7 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Račun kreiran! Provjerite email za potvrdu.");
-      navigate("/dashboard");
+      navigate("/dashboard/home");
     }
   };
 
