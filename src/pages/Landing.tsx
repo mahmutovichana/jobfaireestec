@@ -106,7 +106,7 @@ const timelineYears = [...TIMELINE_YEARS];
 
 /* ── Glassmorphism card ── */
 const GlassCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] rounded-3xl ${className}`}>{children}</div>
+  <div className={`bg-card/80 backdrop-blur-xl border border-border/30 rounded-3xl ${className}`}>{children}</div>
 );
 
 /* ── Animated counter ── */
