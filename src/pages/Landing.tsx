@@ -290,25 +290,23 @@ const Landing = () => {
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        <Beam delay={0} duration={5} angle={-12} top="15%" width="500px" />
-        <Beam delay={1.5} duration={6} angle={-8} top="30%" width="600px" />
-        <Beam delay={3} duration={4.5} angle={-15} top="50%" width="450px" />
-        <Beam delay={4.5} duration={7} angle={-5} top="65%" width="550px" />
-        <Beam delay={2} duration={5.5} angle={-18} top="80%" width="400px" />
-        <Beam delay={6} duration={4} angle={-10} top="40%" width="350px" />
+        {/* Shooting stars */}
+        <ShootingStar delay={0} duration={2} startX="10%" startY="15%" angle={35} length={120} />
+        <ShootingStar delay={3} duration={1.8} startX="70%" startY="10%" angle={150} length={100} />
+        <ShootingStar delay={1.5} duration={2.2} startX="30%" startY="40%" angle={25} length={140} />
+        <ShootingStar delay={5} duration={1.5} startX="80%" startY="35%" angle={165} length={90} />
+        <ShootingStar delay={7} duration={2} startX="15%" startY="65%" angle={20} length={110} />
+        <ShootingStar delay={4} duration={1.7} startX="55%" startY="55%" angle={140} length={100} />
 
-        <motion.div
-          className="absolute pointer-events-none w-[1px] h-[300px]"
-          style={{ left: "20%", top: "-300px", background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.2), transparent)" }}
-          animate={{ top: ["-300px", "120%"] }}
-          transition={{ duration: 8, repeat: Infinity, delay: 1, ease: "linear" }}
-        />
-        <motion.div
-          className="absolute pointer-events-none w-[1px] h-[200px]"
-          style={{ left: "75%", top: "-200px", background: "linear-gradient(180deg, transparent, hsl(var(--primary) / 0.15), transparent)" }}
-          animate={{ top: ["-200px", "120%"] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 4, ease: "linear" }}
-        />
+        {/* Sparkle dots */}
+        <SparkleDot x="12%" y="25%" delay={0} size={3} />
+        <SparkleDot x="85%" y="20%" delay={1.2} size={2} />
+        <SparkleDot x="45%" y="70%" delay={0.8} size={4} />
+        <SparkleDot x="70%" y="45%" delay={2} size={2} />
+        <SparkleDot x="25%" y="80%" delay={1.5} size={3} />
+        <SparkleDot x="60%" y="15%" delay={3} size={2} />
+        <SparkleDot x="90%" y="65%" delay={0.5} size={3} />
+        <SparkleDot x="35%" y="30%" delay={2.5} size={2} />
 
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
 
