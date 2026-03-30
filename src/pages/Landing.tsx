@@ -140,21 +140,44 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
   );
 };
 
-/* ── Animated beam component ── */
-const Beam = ({ delay, duration, angle, top, width }: { delay: number; duration: number; angle: number; top: string; width: string }) => (
+/* ── Shooting star component ── */
+const ShootingStar = ({ delay, duration, startX, startY, angle, length }: { delay: number; duration: number; startX: string; startY: string; angle: number; length: number }) => {
+  const rad = (angle * Math.PI) / 180;
+  const endX = Math.cos(rad) * length;
+  const endY = Math.sin(rad) * length;
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{ left: startX, top: startY }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 1, 0] }}
+      transition={{ duration: duration * 0.8, repeat: Infinity, delay, ease: "easeOut", repeatDelay: duration * 0.5 }}
+    >
+      <motion.div
+        style={{
+          width: `${length}px`,
+          height: "2px",
+          background: `linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.6) 40%, hsl(var(--primary)) 70%, white 100%)`,
+          rotate: `${angle}deg`,
+          transformOrigin: "right center",
+          borderRadius: "2px",
+          filter: "blur(0.3px)",
+          boxShadow: "0 0 6px hsl(var(--primary) / 0.4)",
+        }}
+        animate={{ x: [0, endX], y: [0, endY] }}
+        transition={{ duration, repeat: Infinity, delay, ease: "easeIn", repeatDelay: duration * 0.5 }}
+      />
+    </motion.div>
+  );
+};
+
+/* ── Sparkle dot ── */
+const SparkleDot = ({ x, y, delay, size = 3 }: { x: string; y: string; delay: number; size?: number }) => (
   <motion.div
-    className="absolute pointer-events-none"
-    style={{
-      top,
-      left: "-20%",
-      width,
-      height: "1px",
-      background: `linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.15) 20%, hsl(var(--primary) / 0.5) 50%, hsl(var(--primary) / 0.15) 80%, transparent 100%)`,
-      rotate: `${angle}deg`,
-      filter: "blur(0.5px)",
-    }}
-    animate={{ left: ["-20%", "120%"] }}
-    transition={{ duration, repeat: Infinity, delay, ease: "linear" }}
+    className="absolute rounded-full bg-primary pointer-events-none"
+    style={{ left: x, top: y, width: size, height: size }}
+    animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
+    transition={{ duration: 2.5, repeat: Infinity, delay, ease: "easeInOut" }}
   />
 );
 
