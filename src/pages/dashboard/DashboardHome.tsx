@@ -31,7 +31,7 @@ const adminQuickActions = [
 ];
 
 const companyQuickActions = [
-  { title: "Moj profil", icon: Settings, to: "/dashboard/settings", color: "bg-primary/10 text-primary" },
+  { title: "Profil kompanije", icon: Settings, to: "/dashboard/company-profile", color: "bg-primary/10 text-primary" },
   { title: "CV Baza", icon: FileText, to: "/dashboard/cv-database", color: "bg-blue-500/10 text-blue-500" },
 ];
 

@@ -441,24 +441,26 @@ const Landing = () => {
             </motion.div>
           </div>
 
-          {/* Timeline — reduced spacing from organizer section */}
+          {/* Timeline — responsive */}
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-16">
             <p className="text-center text-sm text-muted-foreground font-medium mb-10 tracking-wider uppercase">Naša historija</p>
-            <div className="relative max-w-5xl mx-auto">
-              <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
-              <div className="flex items-start justify-between">
-                {timelineYears.map((year, i) => {
-                  const isLast = i === timelineYears.length - 1;
-                  const isRecent = i >= timelineYears.length - 5;
-                  return (
-                    <motion.div key={year} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.04 }} className="flex flex-col items-center group cursor-default">
-                      <div className={`relative w-[9px] h-[9px] rounded-full transition-all duration-300 ${isLast ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]" : isRecent ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150" : "bg-white/20 group-hover:bg-white/50 group-hover:scale-125"}`}>
-                        {isLast && <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-30" />}
-                      </div>
-                      <span className={`mt-4 text-xs font-medium transition-all duration-300 ${isLast ? "text-primary font-bold text-sm" : isRecent ? "text-muted-foreground group-hover:text-primary" : "text-muted-foreground/50 group-hover:text-muted-foreground"}`}>{year}</span>
-                    </motion.div>
-                  );
-                })}
+            <div className="relative max-w-5xl mx-auto overflow-x-auto pb-4 scrollbar-hide">
+              <div className="relative min-w-[600px] md:min-w-0">
+                <div className="absolute top-4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/[0.15] to-transparent" />
+                <div className="flex items-start justify-between gap-1">
+                  {timelineYears.map((year, i) => {
+                    const isLast = i === timelineYears.length - 1;
+                    const isRecent = i >= timelineYears.length - 5;
+                    return (
+                      <motion.div key={year} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, delay: i * 0.04 }} className="flex flex-col items-center group cursor-default flex-shrink-0">
+                        <div className={`relative w-2 h-2 sm:w-[9px] sm:h-[9px] rounded-full transition-all duration-300 ${isLast ? "bg-primary scale-150 shadow-[0_0_20px_hsl(var(--primary)/0.5)]" : isRecent ? "bg-primary/60 group-hover:bg-primary group-hover:scale-150" : "bg-foreground/20 group-hover:bg-foreground/50 group-hover:scale-125"}`}>
+                          {isLast && <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-30" />}
+                        </div>
+                        <span className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-medium transition-all duration-300 ${isLast ? "text-primary font-bold sm:text-sm" : isRecent ? "text-muted-foreground group-hover:text-primary" : "text-muted-foreground/50 group-hover:text-muted-foreground"}`}>{year}</span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -480,7 +482,7 @@ const Landing = () => {
               </div>
               <GlassCard className="p-6">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="text-primary font-semibold">EESTEC LC Sarajevo</span> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
+                  <a href="https://eestec-sa.ba" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">EESTEC LC Sarajevo</a> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
                 </p>
               </GlassCard>
             </motion.div>

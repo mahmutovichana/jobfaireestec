@@ -35,6 +35,7 @@ import CVDatabase from "./pages/dashboard/CVDatabase";
 import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AccessRequests from "./pages/dashboard/AccessRequests";
+import CompanyProfile from "./pages/dashboard/CompanyProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +79,7 @@ const App = () => (
                     <Routes>
                       <Route path="home" element={<DashboardHome />} />
                       <Route path="settings" element={<SettingsPage />} />
+                      <Route path="company-profile" element={<CompanyProfile />} />
                       <Route path="cv-database" element={<CVDatabase />} />
                       {/* Admin-only routes */}
                       <Route path="events" element={<ProtectedRoute requireAdmin><Events /></ProtectedRoute>} />
