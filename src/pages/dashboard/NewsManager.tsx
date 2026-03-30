@@ -24,7 +24,9 @@ import {
   Upload,
   ArrowLeft,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
