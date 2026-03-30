@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { title: "Početna", url: "/dashboard", icon: Home },
+  { title: "Početna", url: "/dashboard/home", icon: Home },
   { title: "Events", url: "/dashboard/events", icon: CalendarDays },
   { title: "Novosti", url: "/dashboard/news", icon: Newspaper },
   { title: "Oglasi", url: "/dashboard/job-ads", icon: Megaphone },
