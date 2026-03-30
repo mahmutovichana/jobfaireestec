@@ -26,6 +26,7 @@ import {
   Menu,
   Sun,
   Moon,
+  Globe,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
