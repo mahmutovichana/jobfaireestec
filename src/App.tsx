@@ -33,6 +33,7 @@ import PartnersManager from "./pages/dashboard/PartnersManager";
 import TeamManager from "./pages/dashboard/TeamManager";
 import CVDatabase from "./pages/dashboard/CVDatabase";
 import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
+import DashboardHome from "./pages/dashboard/DashboardHome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,11 +70,12 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
 
               {/* Dashboard (protected) */}
-              <Route path="/dashboard" element={<Navigate to="/dashboard/events" replace />} />
+              <Route path="/dashboard" element={<Navigate to="/dashboard/home" replace />} />
               <Route path="/dashboard/*" element={
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Routes>
+                      <Route path="home" element={<DashboardHome />} />
                       <Route path="events" element={<Events />} />
                       <Route path="events/create" element={<CreateEvent />} />
                       <Route path="events/:id" element={<EventDetail />} />

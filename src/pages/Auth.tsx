@@ -22,7 +22,7 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState("");
 
   useEffect(() => {
-    if (user) navigate("/dashboard/events", { replace: true });
+    if (user) navigate("/dashboard/home", { replace: true });
   }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,8 +36,8 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Welcome back!");
-      navigate("/dashboard/events");
+      toast.success("Dobrodošli nazad!");
+      navigate("/dashboard/home");
     }
   };
 
@@ -56,21 +56,18 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Account created! Check your email to confirm, or you may be logged in automatically.");
-      navigate("/dashboard/events");
+      toast.success("Račun kreiran! Provjerite email za potvrdu.");
+      navigate("/dashboard/home");
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 relative overflow-hidden">
-      {/* Subtle decorative shapes like the landing page confetti */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[10%] left-[8%] w-16 h-16 rounded-full bg-primary/10 blur-sm" />
         <div className="absolute top-[20%] right-[12%] w-12 h-12 rounded-lg bg-primary/8 rotate-12 blur-sm" />
         <div className="absolute bottom-[15%] left-[15%] w-10 h-10 rounded-full bg-primary/10 blur-sm" />
         <div className="absolute bottom-[25%] right-[8%] w-14 h-14 rounded-lg bg-primary/6 -rotate-12 blur-sm" />
-        <div className="absolute top-[50%] left-[5%] w-8 h-8 rounded-full bg-muted-foreground/5 blur-sm" />
-        <div className="absolute top-[40%] right-[5%] w-20 h-20 rounded-full bg-primary/5 blur-md" />
       </div>
 
       <motion.div
@@ -79,7 +76,6 @@ const Auth = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
             <Logo size="lg" />
@@ -89,34 +85,33 @@ const Auth = () => {
           </p>
         </div>
 
-        {/* Auth card */}
         <div className="bg-card rounded-2xl border border-border shadow-lg p-6">
           <Tabs defaultValue="login">
             <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted p-1 mb-6">
               <TabsTrigger value="login" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm font-medium">
-                Log in
+                Prijava
               </TabsTrigger>
               <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm font-medium">
-                Sign up
+                Registracija
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="mt-0">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="email-login" className="text-sm font-medium text-foreground">Email</Label>
+                  <Label htmlFor="email-login" className="text-sm font-medium">Email</Label>
                   <Input
                     id="email-login"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder="vas@email.com"
                     required
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
-                    className="rounded-full h-11 px-4 border-input"
+                    className="rounded-full h-11 px-4"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="password-login" className="text-sm font-medium text-foreground">Password</Label>
+                  <Label htmlFor="password-login" className="text-sm font-medium">Lozinka</Label>
                   <Input
                     id="password-login"
                     type="password"
@@ -124,25 +119,25 @@ const Auth = () => {
                     required
                     value={loginPassword}
                     onChange={e => setLoginPassword(e.target.value)}
-                    className="rounded-full h-11 px-4 border-input"
+                    className="rounded-full h-11 px-4"
                   />
                 </div>
-                <Button type="submit" className="w-full rounded-full h-11 bg-foreground text-background hover:bg-foreground/90 font-medium" disabled={loading}>
-                  {loading ? "Signing in…" : "Sign in"}
+                <Button type="submit" className="w-full rounded-full h-11 font-medium" disabled={loading}>
+                  {loading ? "Prijava u toku…" : "Prijavi se"}
                 </Button>
               </form>
 
               <div className="mt-5 relative">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-3 text-muted-foreground">Or</span></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-3 text-muted-foreground">Ili</span></div>
               </div>
 
               <Button
                 variant="outline"
-                className="w-full mt-5 rounded-full h-11 border-input hover:bg-muted font-medium"
+                className="w-full mt-5 rounded-full h-11 font-medium"
                 onClick={async () => {
                   const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                  if (error) toast.error(error.message || "Google sign-in failed");
+                  if (error) toast.error(error.message || "Google prijava nije uspjela");
                 }}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
@@ -151,37 +146,37 @@ const Auth = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                Continue with Google
+                Nastavi s Google računom
               </Button>
             </TabsContent>
 
             <TabsContent value="signup" className="mt-0">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="name-signup" className="text-sm font-medium text-foreground">Full name</Label>
+                  <Label htmlFor="name-signup" className="text-sm font-medium">Ime i prezime</Label>
                   <Input
                     id="name-signup"
-                    placeholder="Jane Doe"
+                    placeholder="Ime Prezime"
                     required
                     value={signupName}
                     onChange={e => setSignupName(e.target.value)}
-                    className="rounded-full h-11 px-4 border-input"
+                    className="rounded-full h-11 px-4"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="email-signup" className="text-sm font-medium text-foreground">Email</Label>
+                  <Label htmlFor="email-signup" className="text-sm font-medium">Email</Label>
                   <Input
                     id="email-signup"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder="vas@email.com"
                     required
                     value={signupEmail}
                     onChange={e => setSignupEmail(e.target.value)}
-                    className="rounded-full h-11 px-4 border-input"
+                    className="rounded-full h-11 px-4"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="password-signup" className="text-sm font-medium text-foreground">Password</Label>
+                  <Label htmlFor="password-signup" className="text-sm font-medium">Lozinka</Label>
                   <Input
                     id="password-signup"
                     type="password"
@@ -189,25 +184,25 @@ const Auth = () => {
                     required
                     value={signupPassword}
                     onChange={e => setSignupPassword(e.target.value)}
-                    className="rounded-full h-11 px-4 border-input"
+                    className="rounded-full h-11 px-4"
                   />
                 </div>
-                <Button type="submit" className="w-full rounded-full h-11 bg-foreground text-background hover:bg-foreground/90 font-medium" disabled={loading}>
-                  {loading ? "Creating account…" : "Create account"}
+                <Button type="submit" className="w-full rounded-full h-11 font-medium" disabled={loading}>
+                  {loading ? "Kreiranje računa…" : "Kreiraj račun"}
                 </Button>
               </form>
 
               <div className="mt-5 relative">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-3 text-muted-foreground">Or</span></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-3 text-muted-foreground">Ili</span></div>
               </div>
 
               <Button
                 variant="outline"
-                className="w-full mt-5 rounded-full h-11 border-input hover:bg-muted font-medium"
+                className="w-full mt-5 rounded-full h-11 font-medium"
                 onClick={async () => {
                   const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-                  if (error) toast.error(error.message || "Google sign-in failed");
+                  if (error) toast.error(error.message || "Google prijava nije uspjela");
                 }}
               >
                 <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
@@ -216,14 +211,14 @@ const Auth = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                Continue with Google
+                Nastavi s Google računom
               </Button>
             </TabsContent>
           </Tabs>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
+          Nastavkom pristajete na naše Uvjete korištenja i Politiku privatnosti.
         </p>
       </motion.div>
     </div>

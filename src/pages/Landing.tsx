@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import {
   ArrowRight,
@@ -22,7 +23,11 @@ import {
   Presentation,
   CircleDot,
   MessagesSquare,
+  Menu,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import teamPhoto1 from "@/assets/team-photo-1.jpg";
 import teamPhoto2 from "@/assets/team-photo-2.jpg";
@@ -155,6 +160,8 @@ const Beam = ({ delay, duration, angle, top, width }: { delay: number; duration:
 
 const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
   const { data: teamMembers = [] } = useTeamMembers(true);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -170,22 +177,69 @@ const Landing = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* ── Navbar ── */}
       <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-white/[0.06]"
+        className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-border/10"
         initial={{ y: -100 }}
         animate={{ y: navVisible ? 0 : -100 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-[64px] px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-[56px] sm:h-[64px] px-4 sm:px-6 lg:px-8">
           <Link to="/"><Logo size="md" /></Link>
-          <div className="flex items-center gap-2">
+          {/* Desktop */}
+          <div className="hidden md:flex items-center gap-1">
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/novosti">Novosti</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/oglasi">Oglasi</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/partneri">Partneri</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/kontakt">Za kompanije</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/auth">Prijava</Link></Button>
-            <Button className="hidden sm:inline-flex text-sm font-semibold rounded-full" asChild>
+            <Button variant="ghost" size="icon" className="rounded-full ml-1" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+            <Button className="text-sm font-semibold rounded-full ml-1" asChild>
               <Link to="/ostavi-cv">Ostavi CV</Link>
             </Button>
+          </div>
+          {/* Mobile */}
+          <div className="flex md:hidden items-center gap-1">
+            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72 p-0">
+                <div className="p-4 border-b border-border/50">
+                  <Logo size="sm" />
+                </div>
+                <nav className="p-4 space-y-1">
+                  {[
+                    { label: "Novosti", to: "/novosti" },
+                    { label: "Oglasi", to: "/oglasi" },
+                    { label: "Partneri", to: "/partneri" },
+                    { label: "Za kompanije", to: "/kontakt" },
+                    { label: "Prijava", to: "/auth" },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <Link
+                    to="/ostavi-cv"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 rounded-xl text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    Ostavi CV
+                  </Link>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </motion.nav>
