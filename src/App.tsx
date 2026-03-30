@@ -33,6 +33,7 @@ import PartnersManager from "./pages/dashboard/PartnersManager";
 import TeamManager from "./pages/dashboard/TeamManager";
 import CVDatabase from "./pages/dashboard/CVDatabase";
 import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
+import DashboardHome from "./pages/dashboard/DashboardHome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
