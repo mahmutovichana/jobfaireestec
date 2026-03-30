@@ -79,6 +79,7 @@ const App = () => (
                     <Routes>
                       <Route path="home" element={<DashboardHome />} />
                       <Route path="settings" element={<SettingsPage />} />
+                      <Route path="company-profile" element={<CompanyProfile />} />
                       <Route path="cv-database" element={<CVDatabase />} />
                       {/* Admin-only routes */}
                       <Route path="events" element={<ProtectedRoute requireAdmin><Events /></ProtectedRoute>} />
