@@ -37,7 +37,7 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Dobrodošli nazad!");
-      navigate("/dashboard");
+      navigate("/dashboard/home");
     }
   };
 
