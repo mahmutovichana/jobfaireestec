@@ -67,6 +67,23 @@ const NewsManager = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleInstagramSync = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-instagram");
+      if (error) throw error;
+      if (data?.success) {
+        toast.success(data.message || "Instagram sync završen!");
+      } else {
+        toast.error(data?.error || "Sync nije uspio");
+      }
+    } catch (err: any) {
+      toast.error("Greška pri syncu: " + err.message);
+    }
+    setSyncing(false);
+  };
 
   const thumbnailRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
