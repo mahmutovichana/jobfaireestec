@@ -10,6 +10,8 @@ export interface TeamMember {
   committee: string;
   photo_url: string | null;
   linkedin_url: string | null;
+  email: string | null;
+  phone: string | null;
   display_order: number;
   visible: boolean;
   user_id: string;
