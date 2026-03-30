@@ -70,7 +70,7 @@ const App = () => (
               <Route path="/unsubscribe" element={<Unsubscribe />} />
 
               {/* Dashboard (protected) */}
-              <Route path="/dashboard" element={<Navigate to="/dashboard/events" replace />} />
+              <Route path="/dashboard" element={<Navigate to="/dashboard/home" replace />} />
               <Route path="/dashboard/*" element={
                 <ProtectedRoute>
                   <DashboardLayout>
