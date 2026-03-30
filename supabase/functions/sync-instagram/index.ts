@@ -27,12 +27,18 @@ Deno.serve(async (req) => {
     console.log(`Fetching posts for @${INSTAGRAM_USERNAME}...`);
 
     const response = await fetch(
-      `https://instagram-scraper-api2.p.rapidapi.com/v1/posts?username_or_id_or_url=${INSTAGRAM_USERNAME}`,
+      "https://instagram120.p.rapidapi.com/api/instagram/posts",
       {
+        method: "POST",
         headers: {
-          "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com",
+          "Content-Type": "application/json",
+          "x-rapidapi-host": "instagram120.p.rapidapi.com",
           "x-rapidapi-key": rapidApiKey,
         },
+        body: JSON.stringify({
+          username: INSTAGRAM_USERNAME,
+          maxId: "",
+        }),
       }
     );
 
@@ -42,7 +48,8 @@ Deno.serve(async (req) => {
     }
 
     const result = await response.json();
-    const items = result?.data?.items || [];
+    const edges = result?.result?.edges || [];
+    const items = edges.map((e: any) => e.node).filter(Boolean);
 
     console.log(`Fetched ${items.length} posts from RapidAPI`);
 
@@ -50,7 +57,7 @@ Deno.serve(async (req) => {
     const posts = items.slice(0, 6);
 
     // Step 2: Check which posts already exist
-    const igIds = posts.map((p: any) => p.id || p.pk?.toString() || p.code);
+    const igIds = posts.map((p: any) => p.code || p.pk?.toString() || p.id);
     const { data: existing } = await supabase
       .from("news_posts")
       .select("instagram_post_id")
@@ -82,7 +89,7 @@ Deno.serve(async (req) => {
     let synced = 0;
 
     for (const post of posts) {
-      const postId = post.id || post.pk?.toString() || post.code;
+      const postId = post.code || post.pk?.toString() || post.id;
       if (!postId || existingIds.has(postId)) {
         console.log(`Skipping already synced or invalid post: ${postId}`);
         continue;
@@ -92,15 +99,12 @@ Deno.serve(async (req) => {
       let thumbnailUrl = "";
       const galleryUrls: string[] = [];
 
-      if (post.carousel_media && post.carousel_media.length > 0) {
-        // Carousel post - first image is thumbnail, rest are gallery
-        for (let i = 0; i < post.carousel_media.length; i++) {
-          const media = post.carousel_media[i];
-          const imageUrl =
-            media.image_versions2?.candidates?.[0]?.url ||
-            media.image_versions?.items?.[0]?.url ||
-            media.thumbnail_url ||
-            "";
+      if (post.edge_sidecar_to_children?.edges?.length > 0) {
+        // Carousel post
+        const children = post.edge_sidecar_to_children.edges;
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i].node;
+          const imageUrl = child?.display_url || "";
           if (i === 0) {
             thumbnailUrl = imageUrl;
           } else if (imageUrl) {
@@ -109,12 +113,7 @@ Deno.serve(async (req) => {
         }
       } else {
         // Single image post
-        thumbnailUrl =
-          post.image_versions2?.candidates?.[0]?.url ||
-          post.image_versions?.items?.[0]?.url ||
-          post.thumbnail_url ||
-          post.display_url ||
-          "";
+        thumbnailUrl = post.display_url || post.thumbnail_src || "";
       }
 
       if (!thumbnailUrl) {
@@ -122,15 +121,18 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const caption = post.caption?.text || post.caption || "Instagram post";
-      const captionText = typeof caption === "string" ? caption : "Instagram post";
+      const captionText =
+        post.edge_media_to_caption?.edges?.[0]?.node?.text ||
+        post.caption?.text ||
+        (typeof post.caption === "string" ? post.caption : "") ||
+        "Instagram post";
       const lines = captionText.split("\n");
       const title = lines[0].substring(0, 200);
       const content = captionText;
       const summary = captionText.substring(0, 300);
 
-      const publishedAt = post.taken_at
-        ? new Date(post.taken_at * 1000).toISOString()
+      const publishedAt = post.taken_at_timestamp
+        ? new Date(post.taken_at_timestamp * 1000).toISOString()
         : new Date().toISOString();
 
       const { error: insertError } = await supabase.from("news_posts").insert({
