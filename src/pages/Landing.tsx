@@ -527,9 +527,19 @@ const Landing = () => {
                 <img src={eestecWall} alt="EESTEC LC Sarajevo projekti" className="w-full h-full min-h-[400px] object-cover" loading="lazy" />
               </div>
               <GlassCard className="p-6">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <a href="https://eestec-sa.ba" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">EESTEC LC Sarajevo</a> — lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  Lokalni komitet jednog od najvećih studentskih udruženja u Evropi, posvećen razvoju mladih profesionalaca od 2009. godine.
                 </p>
+                <a
+                  href="https://eestec-sa.ba"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-full"
+                >
+                  <Globe className="w-4 h-4" />
+                  Posjeti eestec-sa.ba
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
               </GlassCard>
             </motion.div>
 
