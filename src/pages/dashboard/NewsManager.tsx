@@ -184,6 +184,7 @@ const NewsManager = () => {
             <Plus className="w-4 h-4 mr-2" /> Nova novost
           </Button>
         </div>
+      </div>
 
       {isLoading ? (
         <div className="space-y-4">
