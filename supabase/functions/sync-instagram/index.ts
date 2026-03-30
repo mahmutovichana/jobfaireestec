@@ -8,6 +8,63 @@ const corsHeaders = {
 
 const INSTAGRAM_USERNAME = "jobfair.sarajevo";
 
+function extractImageUrl(node: any): string {
+  // Try multiple known paths for the image URL
+  return (
+    node?.display_url ||
+    node?.thumbnail_src ||
+    node?.display_resources?.slice(-1)?.[0]?.src ||
+    node?.image_versions2?.candidates?.[0]?.url ||
+    node?.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url ||
+    node?.thumbnail ||
+    node?.media_url ||
+    ""
+  );
+}
+
+function extractGalleryUrls(node: any): string[] {
+  const urls: string[] = [];
+
+  // Carousel via edge_sidecar_to_children
+  const sidecarEdges = node?.edge_sidecar_to_children?.edges;
+  if (Array.isArray(sidecarEdges) && sidecarEdges.length > 1) {
+    for (let i = 1; i < sidecarEdges.length; i++) {
+      const url = extractImageUrl(sidecarEdges[i]?.node);
+      if (url) urls.push(url);
+    }
+    return urls;
+  }
+
+  // Carousel via carousel_media
+  const carouselMedia = node?.carousel_media;
+  if (Array.isArray(carouselMedia) && carouselMedia.length > 1) {
+    for (let i = 1; i < carouselMedia.length; i++) {
+      const url = extractImageUrl(carouselMedia[i]);
+      if (url) urls.push(url);
+    }
+    return urls;
+  }
+
+  return urls;
+}
+
+function extractThumbnail(node: any): string {
+  // For carousel, use first child
+  const sidecarEdges = node?.edge_sidecar_to_children?.edges;
+  if (Array.isArray(sidecarEdges) && sidecarEdges.length > 0) {
+    const firstChild = extractImageUrl(sidecarEdges[0]?.node);
+    if (firstChild) return firstChild;
+  }
+
+  const carouselMedia = node?.carousel_media;
+  if (Array.isArray(carouselMedia) && carouselMedia.length > 0) {
+    const firstChild = extractImageUrl(carouselMedia[0]);
+    if (firstChild) return firstChild;
+  }
+
+  return extractImageUrl(node);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,7 +80,7 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Step 1: Fetch posts from Instagram via RapidAPI scraper
+    // Step 1: Fetch posts from Instagram via RapidAPI
     console.log(`Fetching posts for @${INSTAGRAM_USERNAME}...`);
 
     const response = await fetch(
@@ -52,40 +109,56 @@ Deno.serve(async (req) => {
     }
 
     if (!response.ok) {
-      if (result?.response_type === "link not found") {
-        throw new Error(
-          `Instagram username \"${INSTAGRAM_USERNAME}\" was not found by RapidAPI. Check that the username matches the working endpoint in RapidAPI.`
-        );
-      }
-
       const apiMessage = result?.message || responseText || "Unknown error";
       throw new Error(`RapidAPI request failed [${response.status}]: ${apiMessage}`);
     }
 
-    if (result?.success === false && result?.response_type === "link not found") {
-      throw new Error(
-        `Instagram username \"${INSTAGRAM_USERNAME}\" was not found by RapidAPI. Check that the username matches the working endpoint in RapidAPI.`
-      );
+    // Parse posts from various response formats
+    let items: any[] = [];
+    
+    // Format 1: result.edges[].node
+    if (result?.result?.edges) {
+      items = result.result.edges.map((e: any) => e.node).filter(Boolean);
     }
-
-    const edges = result?.result?.edges || [];
-    const items = edges.map((e: any) => e.node).filter(Boolean);
-
-    if (items.length === 0) {
-      throw new Error(`No Instagram posts were returned for @${INSTAGRAM_USERNAME}`);
+    // Format 2: result.data.items[]
+    else if (result?.data?.items) {
+      items = result.data.items;
+    }
+    // Format 3: result.items[]
+    else if (result?.items) {
+      items = result.items;
+    }
+    // Format 4: direct array
+    else if (Array.isArray(result)) {
+      items = result;
     }
 
     console.log(`Fetched ${items.length} posts from RapidAPI`);
 
-    // Take last 6 posts
+    if (items.length === 0) {
+      // Log the response structure for debugging
+      console.log("Response keys:", Object.keys(result || {}));
+      if (result?.result) console.log("result.result keys:", Object.keys(result.result));
+      throw new Error(`No Instagram posts were returned for @${INSTAGRAM_USERNAME}`);
+    }
+
+    // Log first post structure for debugging
+    const samplePost = items[0];
+    console.log("Sample post keys:", Object.keys(samplePost || {}));
+    console.log("Sample thumbnail extraction:", extractThumbnail(samplePost) ? "found" : "NOT FOUND");
+
+    // Take last 6 posts (most recent)
     const posts = items.slice(0, 6);
 
     // Step 2: Check which posts already exist
-    const igIds = posts.map((p: any) => p.code || p.pk?.toString() || p.id);
+    const igIds = posts
+      .map((p: any) => p.code || p.shortcode || p.pk?.toString() || p.id)
+      .filter(Boolean);
+    
     const { data: existing } = await supabase
       .from("news_posts")
       .select("instagram_post_id")
-      .in("instagram_post_id", igIds.filter(Boolean));
+      .in("instagram_post_id", igIds);
 
     const existingIds = new Set((existing || []).map((r: any) => r.instagram_post_id));
 
@@ -95,12 +168,8 @@ Deno.serve(async (req) => {
 
     let requesterUserId: string | null = null;
     if (accessToken) {
-      const { data: requesterData, error: requesterError } = await supabase.auth.getUser(accessToken);
-      if (requesterError) {
-        console.warn("Could not resolve requesting user:", requesterError.message);
-      } else {
-        requesterUserId = requesterData.user?.id ?? null;
-      }
+      const { data: requesterData } = await supabase.auth.getUser(accessToken);
+      requesterUserId = requesterData?.user?.id ?? null;
     }
 
     const { data: adminRole } = await supabase
@@ -118,7 +187,6 @@ Deno.serve(async (req) => {
         .select("id")
         .limit(1)
         .maybeSingle();
-
       userId = anyProfile?.id ?? null;
     }
 
@@ -127,37 +195,27 @@ Deno.serve(async (req) => {
     }
 
     let synced = 0;
+    let skippedNoImage = 0;
+    let skippedExisting = 0;
 
     for (const post of posts) {
-      const postId = post.code || post.pk?.toString() || post.id;
-      if (!postId || existingIds.has(postId)) {
-        console.log(`Skipping already synced or invalid post: ${postId}`);
+      const postId = post.code || post.shortcode || post.pk?.toString() || post.id;
+      if (!postId) {
+        console.log("Skipping post with no ID");
+        continue;
+      }
+      
+      if (existingIds.has(postId)) {
+        skippedExisting++;
         continue;
       }
 
-      // Extract images from the post
-      let thumbnailUrl = "";
-      const galleryUrls: string[] = [];
-
-      if (post.edge_sidecar_to_children?.edges?.length > 0) {
-        // Carousel post
-        const children = post.edge_sidecar_to_children.edges;
-        for (let i = 0; i < children.length; i++) {
-          const child = children[i].node;
-          const imageUrl = child?.display_url || "";
-          if (i === 0) {
-            thumbnailUrl = imageUrl;
-          } else if (imageUrl) {
-            galleryUrls.push(imageUrl);
-          }
-        }
-      } else {
-        // Single image post
-        thumbnailUrl = post.display_url || post.thumbnail_src || "";
-      }
+      const thumbnailUrl = extractThumbnail(post);
+      const galleryUrls = extractGalleryUrls(post);
 
       if (!thumbnailUrl) {
-        console.log(`Skipping post without image: ${postId}`);
+        skippedNoImage++;
+        console.log(`Skipping post without image: ${postId}. Keys: ${Object.keys(post).join(", ")}`);
         continue;
       }
 
@@ -173,6 +231,8 @@ Deno.serve(async (req) => {
 
       const publishedAt = post.taken_at_timestamp
         ? new Date(post.taken_at_timestamp * 1000).toISOString()
+        : post.taken_at
+        ? new Date(post.taken_at * 1000).toISOString()
         : new Date().toISOString();
 
       const { error: insertError } = await supabase.from("news_posts").insert({
@@ -200,7 +260,8 @@ Deno.serve(async (req) => {
         success: true,
         message: `Synced ${synced} new posts from Instagram`,
         total_fetched: posts.length,
-        already_existed: posts.length - synced,
+        already_existed: skippedExisting,
+        skipped_no_image: skippedNoImage,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
