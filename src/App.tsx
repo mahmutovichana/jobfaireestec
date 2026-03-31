@@ -71,6 +71,7 @@ const App = () => (
               <Route path="/partneri" element={<Partneri />} />
               <Route path="/ostavi-cv" element={<OstaviCV />} />
               <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/aktivnosti" element={<Aktivnosti />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
 
               {/* Dashboard (protected) */}
