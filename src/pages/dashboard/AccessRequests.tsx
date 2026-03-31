@@ -1,5 +1,6 @@
 import { useAccessRequests, useUpdateAccessRequest } from "@/hooks/useAccessRequests";
 import { usePendingPartners, useApprovePartner, useRejectPartner } from "@/hooks/usePendingPartners";
+import { useLogAction } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -13,10 +14,12 @@ export default function AccessRequests() {
   const { data: pendingPartners = [], isLoading: loadingPartners } = usePendingPartners();
   const approvePartner = useApprovePartner();
   const rejectPartner = useRejectPartner();
+  const logAction = useLogAction();
 
   const handleUpdate = async (id: string, status: string) => {
     try {
       await updateRequest.mutateAsync({ id, status });
+      await logAction.mutateAsync({ action: status === "approved" ? "approved" : "rejected", entity_type: "access_request", entity_id: id });
       toast.success(status === "approved" ? "Zahtjev odobren!" : "Zahtjev odbijen.");
     } catch {
       toast.error("Greška pri ažuriranju zahtjeva.");
@@ -26,6 +29,7 @@ export default function AccessRequests() {
   const handleApprovePartner = async (id: string) => {
     try {
       await approvePartner.mutateAsync(id);
+      await logAction.mutateAsync({ action: "approved", entity_type: "partner", entity_id: id });
       toast.success("Partner profil odobren i objavljen!");
     } catch {
       toast.error("Greška pri odobravanju partnera.");
@@ -35,6 +39,7 @@ export default function AccessRequests() {
   const handleRejectPartner = async (id: string) => {
     try {
       await rejectPartner.mutateAsync(id);
+      await logAction.mutateAsync({ action: "rejected", entity_type: "partner", entity_id: id });
       toast.success("Partner profil odbijen.");
     } catch {
       toast.error("Greška pri odbijanju partnera.");

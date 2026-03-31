@@ -36,6 +36,7 @@ import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AccessRequests from "./pages/dashboard/AccessRequests";
 import CompanyProfile from "./pages/dashboard/CompanyProfile";
+import AuditLogs from "./pages/dashboard/AuditLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,6 +96,7 @@ const App = () => (
                       <Route path="team" element={<ProtectedRoute requireAdmin><TeamManager /></ProtectedRoute>} />
                       <Route path="company-inquiries" element={<ProtectedRoute requireAdmin><CompanyInquiries /></ProtectedRoute>} />
                       <Route path="access-requests" element={<ProtectedRoute requireAdmin><AccessRequests /></ProtectedRoute>} />
+                      <Route path="audit-logs" element={<ProtectedRoute requireAdmin><AuditLogs /></ProtectedRoute>} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>
