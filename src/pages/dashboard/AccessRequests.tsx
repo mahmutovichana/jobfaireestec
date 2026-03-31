@@ -39,6 +39,7 @@ export default function AccessRequests() {
   const handleRejectPartner = async (id: string) => {
     try {
       await rejectPartner.mutateAsync(id);
+      await logAction.mutateAsync({ action: "rejected", entity_type: "partner", entity_id: id });
       toast.success("Partner profil odbijen.");
     } catch {
       toast.error("Greška pri odbijanju partnera.");
