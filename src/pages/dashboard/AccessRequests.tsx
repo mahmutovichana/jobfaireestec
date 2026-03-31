@@ -29,6 +29,7 @@ export default function AccessRequests() {
   const handleApprovePartner = async (id: string) => {
     try {
       await approvePartner.mutateAsync(id);
+      await logAction.mutateAsync({ action: "approved", entity_type: "partner", entity_id: id });
       toast.success("Partner profil odobren i objavljen!");
     } catch {
       toast.error("Greška pri odobravanju partnera.");
