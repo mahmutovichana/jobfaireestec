@@ -36,6 +36,7 @@ import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import AccessRequests from "./pages/dashboard/AccessRequests";
 import CompanyProfile from "./pages/dashboard/CompanyProfile";
+import AuditLogs from "./pages/dashboard/AuditLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
