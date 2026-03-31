@@ -132,7 +132,9 @@ export default function AuditLogs() {
                   </div>
                   {log.metadata && Object.keys(log.metadata).length > 0 && (
                     <p className="text-xs text-muted-foreground/60 mt-1 font-mono bg-muted/50 rounded px-2 py-1 break-all">
-                      {JSON.stringify(log.metadata)}
+                      {(log.metadata as any).name || (log.metadata as any).old_name
+                        ? (log.metadata as any).name || (log.metadata as any).old_name
+                        : JSON.stringify(log.metadata)}
                     </p>
                   )}
                 </div>
