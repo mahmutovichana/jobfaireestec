@@ -7,12 +7,12 @@ import { Clock, Filter, User, FileText, Handshake, ShieldCheck, Newspaper, Megap
 
 const ENTITY_TYPES = [
   { value: "all", label: "Sve" },
-  { value: "access_request", label: "Zahtjevi" },
-  { value: "partner", label: "Partneri" },
-  { value: "event", label: "Događaji" },
-  { value: "news", label: "Novosti" },
-  { value: "job_ad", label: "Oglasi" },
-  { value: "team_member", label: "Tim" },
+  { value: "access_requests", label: "Zahtjevi" },
+  { value: "partners", label: "Partneri" },
+  { value: "events", label: "Događaji" },
+  { value: "news_posts", label: "Novosti" },
+  { value: "job_ads", label: "Oglasi" },
+  { value: "team_members", label: "Tim" },
   { value: "profile", label: "Profili" },
 ];
 
