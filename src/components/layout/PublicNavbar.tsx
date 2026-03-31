@@ -19,6 +19,7 @@ interface PublicNavbarProps {
 }
 
 const defaultItems: NavItem[] = [
+  { label: "Aktivnosti", to: "/aktivnosti" },
   { label: "Novosti", to: ROUTES.NOVOSTI },
   { label: "Oglasi", to: ROUTES.OGLASI },
   { label: "Partneri", to: ROUTES.PARTNERI },

@@ -7,12 +7,12 @@ import { Clock, Filter, User, FileText, Handshake, ShieldCheck, Newspaper, Megap
 
 const ENTITY_TYPES = [
   { value: "all", label: "Sve" },
-  { value: "access_request", label: "Zahtjevi" },
-  { value: "partner", label: "Partneri" },
-  { value: "event", label: "Događaji" },
-  { value: "news", label: "Novosti" },
-  { value: "job_ad", label: "Oglasi" },
-  { value: "team_member", label: "Tim" },
+  { value: "access_requests", label: "Zahtjevi" },
+  { value: "partners", label: "Partneri" },
+  { value: "events", label: "Događaji" },
+  { value: "news_posts", label: "Novosti" },
+  { value: "job_ads", label: "Oglasi" },
+  { value: "team_members", label: "Tim" },
   { value: "profile", label: "Profili" },
 ];
 
@@ -27,12 +27,12 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 const ENTITY_ICONS: Record<string, React.ElementType> = {
-  access_request: ShieldCheck,
-  partner: Handshake,
-  event: CalendarDays,
-  news: Newspaper,
-  job_ad: Megaphone,
-  team_member: UsersRound,
+  access_requests: ShieldCheck,
+  partners: Handshake,
+  events: CalendarDays,
+  news_posts: Newspaper,
+  job_ads: Megaphone,
+  team_members: UsersRound,
   profile: User,
 };
 
@@ -132,7 +132,9 @@ export default function AuditLogs() {
                   </div>
                   {log.metadata && Object.keys(log.metadata).length > 0 && (
                     <p className="text-xs text-muted-foreground/60 mt-1 font-mono bg-muted/50 rounded px-2 py-1 break-all">
-                      {JSON.stringify(log.metadata)}
+                      {(log.metadata as any).name || (log.metadata as any).old_name
+                        ? (log.metadata as any).name || (log.metadata as any).old_name
+                        : JSON.stringify(log.metadata)}
                     </p>
                   )}
                 </div>
