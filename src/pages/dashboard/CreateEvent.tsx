@@ -39,10 +39,11 @@ const templates = [
 ];
 
 const defaultFields = [
-  { label: "Full Name", field_type: "text", required: true, position: 0 },
-  { label: "Email Address", field_type: "email", required: true, position: 1 },
-  { label: "Company", field_type: "text", required: false, position: 2 },
-  { label: "Job Title", field_type: "text", required: false, position: 3 },
+  { label: "Ime i prezime", field_type: "text", required: true, position: 0 },
+  { label: "Email adresa", field_type: "email", required: true, position: 1 },
+  { label: "Fakultet", field_type: "text", required: false, position: 2 },
+  { label: "Godina studija", field_type: "text", required: false, position: 3 },
+  { label: "Broj telefona", field_type: "text", required: false, position: 4 },
 ];
 
 const popularTimezones = [
