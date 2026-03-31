@@ -19,6 +19,7 @@ export default function AccessRequests() {
   const handleUpdate = async (id: string, status: string) => {
     try {
       await updateRequest.mutateAsync({ id, status });
+      await logAction.mutateAsync({ action: status === "approved" ? "approved" : "rejected", entity_type: "access_request", entity_id: id });
       toast.success(status === "approved" ? "Zahtjev odobren!" : "Zahtjev odbijen.");
     } catch {
       toast.error("Greška pri ažuriranju zahtjeva.");
