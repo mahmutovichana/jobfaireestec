@@ -27,12 +27,12 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 const ENTITY_ICONS: Record<string, React.ElementType> = {
-  access_request: ShieldCheck,
-  partner: Handshake,
-  event: CalendarDays,
-  news: Newspaper,
-  job_ad: Megaphone,
-  team_member: UsersRound,
+  access_requests: ShieldCheck,
+  partners: Handshake,
+  events: CalendarDays,
+  news_posts: Newspaper,
+  job_ads: Megaphone,
+  team_members: UsersRound,
   profile: User,
 };
 

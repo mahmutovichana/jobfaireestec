@@ -454,11 +454,15 @@ const CreateEvent = () => {
                       <Select value={eventType} onValueChange={setEventType}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="webinar">Webinar</SelectItem>
-                          <SelectItem value="conference">Conference</SelectItem>
-                          <SelectItem value="workshop">Workshop</SelectItem>
-                          <SelectItem value="meetup">Meetup</SelectItem>
-                          <SelectItem value="launch">Product Launch</SelectItem>
+                          <SelectItem value="webinar">Webinar / Podcast</SelectItem>
+                          <SelectItem value="workshop">Radionica</SelectItem>
+                          <SelectItem value="presentation">Prezentacija</SelectItem>
+                          <SelectItem value="panel">Panel diskusija</SelectItem>
+                          <SelectItem value="networking">Networking / Razgovor</SelectItem>
+                          <SelectItem value="speed_dating">Career Speed Dating</SelectItem>
+                          <SelectItem value="open_space">Open Space Technology</SelectItem>
+                          <SelectItem value="eestechat">EESTEChat</SelectItem>
+                          <SelectItem value="other">Ostalo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
