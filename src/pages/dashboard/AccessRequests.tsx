@@ -1,5 +1,6 @@
 import { useAccessRequests, useUpdateAccessRequest } from "@/hooks/useAccessRequests";
 import { usePendingPartners, useApprovePartner, useRejectPartner } from "@/hooks/usePendingPartners";
+import { useLogAction } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
