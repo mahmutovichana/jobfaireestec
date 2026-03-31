@@ -36,7 +36,8 @@ const adminNavItems = [
   { title: "Tim", url: "/dashboard/team", icon: UsersRound },
   { title: "CV Baza", url: "/dashboard/cv-database", icon: FileText },
   { title: "Upiti", url: "/dashboard/company-inquiries", icon: MessageSquare },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
+  { title: "Analitika", url: "/dashboard/analytics", icon: BarChart3 },
+  { title: "Audit log", url: "/dashboard/audit-logs", icon: ScrollText },
 ];
 
 const companyNavItems = [
