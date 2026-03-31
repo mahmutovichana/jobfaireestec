@@ -24,6 +24,7 @@ import {
   FileText,
   MessageSquare,
   ShieldCheck,
+  ScrollText,
 } from "lucide-react";
 
 const adminNavItems = [
