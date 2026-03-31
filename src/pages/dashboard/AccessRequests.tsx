@@ -14,6 +14,7 @@ export default function AccessRequests() {
   const { data: pendingPartners = [], isLoading: loadingPartners } = usePendingPartners();
   const approvePartner = useApprovePartner();
   const rejectPartner = useRejectPartner();
+  const logAction = useLogAction();
 
   const handleUpdate = async (id: string, status: string) => {
     try {
