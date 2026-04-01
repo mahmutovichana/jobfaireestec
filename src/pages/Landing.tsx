@@ -28,6 +28,7 @@ import {
   Moon,
   Globe,
 } from "lucide-react";
+import { BackgroundBeams } from "@/components/landing/BackgroundBeams";
 import { useTheme } from "next-themes";
 
 import teamPhoto1 from "@/assets/team-photo-1.jpg";
