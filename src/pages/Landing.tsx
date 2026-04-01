@@ -142,49 +142,6 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
   );
 };
 
-/* ── Floating node (career network) ── */
-const FloatingNode = ({ x, y, delay, size = 6, icon: Icon }: { x: string; y: string; delay: number; size?: number; icon?: any }) => (
-  <motion.div
-    className="absolute pointer-events-none"
-    style={{ left: x, top: y }}
-    animate={{ y: [0, -15, 0], x: [0, 8, 0], opacity: [0.3, 0.7, 0.3] }}
-    transition={{ duration: 5 + delay, repeat: Infinity, ease: "easeInOut", delay }}
-  >
-    <div
-      className="rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center backdrop-blur-sm"
-      style={{ width: size * 6, height: size * 6 }}
-    >
-      {Icon && <Icon className="text-primary/60" style={{ width: size * 2.5, height: size * 2.5 }} />}
-    </div>
-  </motion.div>
-);
-
-/* ── Connection line between nodes ── */
-const ConnectionLine = ({ x1, y1, x2, y2, delay }: { x1: string; y1: string; x2: string; y2: string; delay: number }) => (
-  <motion.svg
-    className="absolute inset-0 w-full h-full pointer-events-none"
-    animate={{ opacity: [0.05, 0.15, 0.05] }}
-    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay }}
-  >
-    <line
-      x1={x1} y1={y1} x2={x2} y2={y2}
-      stroke="hsl(var(--primary))"
-      strokeWidth="1"
-      strokeDasharray="6 4"
-      opacity="0.3"
-    />
-  </motion.svg>
-);
-
-/* ── Pulse ring ── */
-const PulseRing = ({ x, y, delay }: { x: string; y: string; delay: number }) => (
-  <motion.div
-    className="absolute pointer-events-none rounded-full border border-primary/20"
-    style={{ left: x, top: y, width: 80, height: 80, marginLeft: -40, marginTop: -40 }}
-    animate={{ scale: [1, 2.5], opacity: [0.3, 0] }}
-    transition={{ duration: 3, repeat: Infinity, ease: "easeOut", delay }}
-  />
-);
 
 const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
