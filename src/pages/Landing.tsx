@@ -141,44 +141,47 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
   );
 };
 
-/* ── Shooting star component ── */
-const ShootingStar = ({ delay, duration, startX, startY, angle, length }: { delay: number; duration: number; startX: string; startY: string; angle: number; length: number }) => {
-  const rad = (angle * Math.PI) / 180;
-  const endX = Math.cos(rad) * length;
-  const endY = Math.sin(rad) * length;
-  return (
-    <motion.div
-      className="absolute pointer-events-none"
-      style={{ left: startX, top: startY }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: [0, 1, 1, 0] }}
-      transition={{ duration: duration * 0.8, repeat: Infinity, delay, ease: "easeOut", repeatDelay: duration * 0.5 }}
-    >
-      <motion.div
-        style={{
-          width: `${length}px`,
-          height: "2px",
-          background: `linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.6) 40%, hsl(var(--primary)) 70%, white 100%)`,
-          rotate: `${angle}deg`,
-          transformOrigin: "right center",
-          borderRadius: "2px",
-          filter: "blur(0.3px)",
-          boxShadow: "0 0 6px hsl(var(--primary) / 0.4)",
-        }}
-        animate={{ x: [0, endX], y: [0, endY] }}
-        transition={{ duration, repeat: Infinity, delay, ease: "easeIn", repeatDelay: duration * 0.5 }}
-      />
-    </motion.div>
-  );
-};
-
-/* ── Sparkle dot ── */
-const SparkleDot = ({ x, y, delay, size = 3 }: { x: string; y: string; delay: number; size?: number }) => (
+/* ── Floating node (career network) ── */
+const FloatingNode = ({ x, y, delay, size = 6, icon: Icon }: { x: string; y: string; delay: number; size?: number; icon?: any }) => (
   <motion.div
-    className="absolute rounded-full bg-primary pointer-events-none"
-    style={{ left: x, top: y, width: size, height: size }}
-    animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
-    transition={{ duration: 2.5, repeat: Infinity, delay, ease: "easeInOut" }}
+    className="absolute pointer-events-none"
+    style={{ left: x, top: y }}
+    animate={{ y: [0, -15, 0], x: [0, 8, 0], opacity: [0.3, 0.7, 0.3] }}
+    transition={{ duration: 5 + delay, repeat: Infinity, ease: "easeInOut", delay }}
+  >
+    <div
+      className="rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center backdrop-blur-sm"
+      style={{ width: size * 6, height: size * 6 }}
+    >
+      {Icon && <Icon className="text-primary/60" style={{ width: size * 2.5, height: size * 2.5 }} />}
+    </div>
+  </motion.div>
+);
+
+/* ── Connection line between nodes ── */
+const ConnectionLine = ({ x1, y1, x2, y2, delay }: { x1: string; y1: string; x2: string; y2: string; delay: number }) => (
+  <motion.svg
+    className="absolute inset-0 w-full h-full pointer-events-none"
+    animate={{ opacity: [0.05, 0.15, 0.05] }}
+    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay }}
+  >
+    <line
+      x1={x1} y1={y1} x2={x2} y2={y2}
+      stroke="hsl(var(--primary))"
+      strokeWidth="1"
+      strokeDasharray="6 4"
+      opacity="0.3"
+    />
+  </motion.svg>
+);
+
+/* ── Pulse ring ── */
+const PulseRing = ({ x, y, delay }: { x: string; y: string; delay: number }) => (
+  <motion.div
+    className="absolute pointer-events-none rounded-full border border-primary/20"
+    style={{ left: x, top: y, width: 80, height: 80, marginLeft: -40, marginTop: -40 }}
+    animate={{ scale: [1, 2.5], opacity: [0.3, 0] }}
+    transition={{ duration: 3, repeat: Infinity, ease: "easeOut", delay }}
   />
 );
 
