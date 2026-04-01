@@ -274,43 +274,40 @@ const Landing = () => {
       {/* ── Hero with animated beams ── */}
       <section ref={heroRef} className="relative min-h-[110vh] flex items-center overflow-hidden">
         {/* Background - theme aware */}
-        <div className="absolute inset-0 bg-background">
-          <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--foreground)/0.03)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--foreground)/0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
-        </div>
+        <div className="absolute inset-0 bg-background" />
 
         <motion.div
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/[0.08] rounded-full blur-[150px]"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.12, 0.08] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/[0.06] rounded-full blur-[180px]"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.06, 0.1, 0.06] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-0 left-1/3 w-[400px] h-[300px] bg-primary/[0.05] rounded-full blur-[120px]"
-          animate={{ scale: [1, 1.2, 1], x: [0, 30, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-        <motion.div
-          className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-primary/[0.04] rounded-full blur-[130px]"
-          animate={{ scale: [1, 1.3, 1], y: [0, -20, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary/[0.04] rounded-full blur-[150px]"
+          animate={{ scale: [1, 1.3, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
 
-        {/* Shooting stars */}
-        <ShootingStar delay={0} duration={2} startX="10%" startY="15%" angle={35} length={120} />
-        <ShootingStar delay={3} duration={1.8} startX="70%" startY="10%" angle={150} length={100} />
-        <ShootingStar delay={1.5} duration={2.2} startX="30%" startY="40%" angle={25} length={140} />
-        <ShootingStar delay={5} duration={1.5} startX="80%" startY="35%" angle={165} length={90} />
-        <ShootingStar delay={7} duration={2} startX="15%" startY="65%" angle={20} length={110} />
-        <ShootingStar delay={4} duration={1.7} startX="55%" startY="55%" angle={140} length={100} />
+        {/* Career network nodes */}
+        <FloatingNode x="8%" y="20%" delay={0} size={5} icon={Briefcase} />
+        <FloatingNode x="85%" y="15%" delay={1.5} size={4} icon={Users} />
+        <FloatingNode x="75%" y="60%" delay={0.8} size={5} icon={Building2} />
+        <FloatingNode x="15%" y="70%" delay={2.2} size={4} icon={Handshake} />
+        <FloatingNode x="50%" y="12%" delay={1} size={3} icon={Sparkles} />
+        <FloatingNode x="92%" y="45%" delay={3} size={3} icon={Mic} />
+        <FloatingNode x="5%" y="45%" delay={1.8} size={3} icon={Lightbulb} />
 
-        {/* Sparkle dots */}
-        <SparkleDot x="12%" y="25%" delay={0} size={3} />
-        <SparkleDot x="85%" y="20%" delay={1.2} size={2} />
-        <SparkleDot x="45%" y="70%" delay={0.8} size={4} />
-        <SparkleDot x="70%" y="45%" delay={2} size={2} />
-        <SparkleDot x="25%" y="80%" delay={1.5} size={3} />
-        <SparkleDot x="60%" y="15%" delay={3} size={2} />
-        <SparkleDot x="90%" y="65%" delay={0.5} size={3} />
-        <SparkleDot x="35%" y="30%" delay={2.5} size={2} />
+        {/* Connection lines between nodes */}
+        <ConnectionLine x1="11%" y1="23%" x2="52%" y2="14%" delay={0} />
+        <ConnectionLine x1="52%" y1="14%" x2="87%" y2="18%" delay={1} />
+        <ConnectionLine x1="87%" y1="18%" x2="77%" y2="63%" delay={2} />
+        <ConnectionLine x1="77%" y1="63%" x2="17%" y2="73%" delay={1.5} />
+        <ConnectionLine x1="17%" y1="73%" x2="8%" y2="48%" delay={0.5} />
+        <ConnectionLine x1="8%" y1="48%" x2="11%" y2="23%" delay={2.5} />
+
+        {/* Pulse rings */}
+        <PulseRing x="50%" y="50%" delay={0} />
+        <PulseRing x="25%" y="35%" delay={1.5} />
+        <PulseRing x="75%" y="40%" delay={3} />
 
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
 
