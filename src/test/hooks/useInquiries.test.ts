@@ -38,7 +38,7 @@ describe("useCreateInquiry", () => {
     mockSupabase.from.mockReturnValue(chain);
 
     const { result } = renderHook(() => useCreateInquiry(), { wrapper: createWrapper() });
-    result.current.mutate({ company_name: "Corp", contact_person: "John", email: "j@c.com", message: "Hi", interest_type: "participation" });
+    result.current.mutate({ company_name: "Corp", contact_person: "John", email: "j@c.com", phone: null, message: "Hi", interest_type: "participation" });
 
     await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("company_inquiries"));
   });

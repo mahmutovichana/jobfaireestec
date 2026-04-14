@@ -38,7 +38,7 @@ describe("useCreateCVSubmission", () => {
     mockSupabase.from.mockReturnValue(chain);
 
     const { result } = renderHook(() => useCreateCVSubmission(), { wrapper: createWrapper() });
-    result.current.mutate({ full_name: "Student", email: "s@test.com", cv_url: "path/cv.pdf" });
+    result.current.mutate({ full_name: "Student", email: "s@test.com", cv_url: "path/cv.pdf", phone: null, faculty: null, year_of_study: null });
 
     await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("cv_submissions"));
   });
