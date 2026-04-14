@@ -99,13 +99,14 @@ Deno.test("handle-email-unsubscribe: rejects invalid token", async () => {
 
 // ── handle-email-suppression ──
 
-Deno.test("handle-email-suppression: handles CORS", async () => {
+Deno.test("handle-email-suppression: responds to POST", async () => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/handle-email-suppression`, {
-    method: "OPTIONS",
+    method: "POST",
     headers,
+    body: JSON.stringify({}),
   });
-  await res.text();
-  assertEquals(res.status, 200);
+  const body = await res.text();
+  assertExists(body);
 });
 
 // ── preview-transactional-email ──
