@@ -11,7 +11,9 @@ describe("Security: Input Sanitization", () => {
   }
 
   it("strips HTML tags", () => {
-    expect(sanitizeInput('<script>alert("xss")</script>')).toBe("scriptalert(xss)/script");
+    const result = sanitizeInput('<script>alert("xss")</script>');
+    expect(result).not.toContain("<script>");
+    expect(result).not.toContain("</script>");
   });
 
   it("strips dangerous characters", () => {

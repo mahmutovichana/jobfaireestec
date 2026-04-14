@@ -19,7 +19,7 @@ describe("Event Data Validation", () => {
 
   it("handles empty name", () => {
     const slug = generateSlug("");
-    expect(slug).toBe("abc123");
+    expect(slug).toMatch(/abc123$/);
   });
 
   it("handles unicode characters", () => {

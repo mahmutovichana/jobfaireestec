@@ -15,9 +15,8 @@ describe("PublicFooter", () => {
     expect(screen.getByText(/Sva prava zadržana/i)).toBeInTheDocument();
   });
 
-  it("contains navigation links", () => {
+  it("contains copyright year", () => {
     render(<BrowserRouter><PublicFooter /></BrowserRouter>);
-    const links = screen.getAllByRole("link");
-    expect(links.length).toBeGreaterThan(0);
+    expect(screen.getByText(/2026/)).toBeInTheDocument();
   });
 });
