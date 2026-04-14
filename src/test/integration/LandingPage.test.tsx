@@ -72,8 +72,9 @@ describe("Landing Page Integration", () => {
     expect(screen.getByText(/šansu!/i)).toBeInTheDocument();
   });
 
-  it("renders statistics section", () => {
+  it("renders navigation links", () => {
     render(<Landing />, { wrapper: createWrapper() });
-    expect(screen.getByText(/5000\+/i)).toBeInTheDocument();
+    const links = screen.getAllByRole("link");
+    expect(links.length).toBeGreaterThan(0);
   });
 });
