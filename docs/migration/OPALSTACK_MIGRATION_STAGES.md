@@ -50,6 +50,14 @@ Commit format:
 4. Confirm preferred AI provider (OpenAI, Google, Anthropic).
 5. Confirm whether we use staging domain first (recommended).
 
+## Stage 2 Locked Choices
+
+- Backend: Node.js + NestJS
+- Migration tooling: Prisma
+- Email provider: Mailgun (primary)
+- AI provider: Google Gemini API (free tier first)
+- Deployment strategy: staging first
+
 ## Notes
 
 - No code migration starts before Stage 1 is committed and pushed.

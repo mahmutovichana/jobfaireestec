@@ -1,0 +1,390 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum app_role {
+  admin
+  editor
+  viewer
+}
+
+enum event_status {
+  draft
+  live
+  past
+}
+
+enum registration_status {
+  registered
+  checked_in
+  cancelled
+}
+
+enum partner_category {
+  company
+  media
+  sponsor
+}
+
+enum partner_package {
+  standard
+  silver
+  gold
+  promo
+}
+
+enum email_template_type {
+  confirmation
+  reminder
+  followup
+}
+
+enum email_job_status {
+  pending
+  processing
+  sent
+  failed
+  retry_scheduled
+  dlq
+}
+
+model users {
+  id                 String              @id @default(uuid()) @db.Uuid
+  email              String              @unique
+  full_name          String?
+  google_sub         String?             @unique
+  avatar_url         String?
+  is_active          Boolean             @default(true)
+  created_at         DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime            @updatedAt @db.Timestamptz(6)
+  profile            profiles?
+  roles              user_roles[]
+  events             events[]
+  partners           partners[]
+  team_members       team_members[]
+  news_posts         news_posts[]
+  job_ads            job_ads[]
+  gallery_images     gallery_images[]
+  access_reviews     access_requests[]   @relation("access_requests_reviewed_by")
+  audit_logs         audit_logs[]        @relation("audit_logs_actor_id")
+}
+
+model profiles {
+  id                  String   @id @db.Uuid
+  full_name           String?
+  company             String?
+  company_slug        String?  @unique
+  company_description String?
+  website             String?
+  avatar_url          String?
+  social_links        Json?
+  created_at          DateTime @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime @updatedAt @db.Timestamptz(6)
+  user                users    @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@index([company_slug])
+}
+
+model user_roles {
+  id      String   @id @default(uuid()) @db.Uuid
+  user_id String   @db.Uuid
+  role    app_role
+  user    users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role])
+  @@index([role])
+}
+
+model events {
+  id                    String                @id @default(uuid()) @db.Uuid
+  user_id               String                @db.Uuid
+  name                  String
+  slug                  String                @unique
+  description           String?
+  status                event_status          @default(draft)
+  event_type            String?               @default("webinar")
+  template              String?               @default("minimal")
+  primary_color         String?               @default("#7C3AED")
+  color_mode            String?               @default("light")
+  logo_url              String?
+  background_image_url  String?
+  timezone              String?               @default("America/New_York")
+  location_type         String?
+  location_value        String?
+  capacity              Int?
+  registration_limit    Int?
+  registration_deadline DateTime?             @db.Timestamptz(6)
+  ticket_price          Decimal?              @db.Decimal(10, 2)
+  requires_approval     Boolean?              @default(false)
+  event_date            DateTime?             @db.Timestamptz(6)
+  event_end_date        DateTime?             @db.Timestamptz(6)
+  created_at            DateTime              @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime              @updatedAt @db.Timestamptz(6)
+  user                  users                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  form_fields           form_fields[]
+  registrations         registrations[]
+  email_templates       email_templates[]
+
+  @@index([user_id])
+  @@index([status])
+}
+
+model form_fields {
+  id          String  @id @default(uuid()) @db.Uuid
+  event_id    String  @db.Uuid
+  label       String
+  field_type  String  @default("text")
+  placeholder String?
+  position    Int     @default(0)
+  required    Boolean @default(true)
+  event       events  @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@index([event_id, position])
+}
+
+model registrations {
+  id         String              @id @default(uuid()) @db.Uuid
+  event_id   String              @db.Uuid
+  data       Json                @default("{}")
+  status     registration_status @default(registered)
+  created_at DateTime            @default(now()) @db.Timestamptz(6)
+  event      events              @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@index([event_id])
+  @@index([status])
+}
+
+model partners {
+  id           String           @id @default(uuid()) @db.Uuid
+  user_id      String           @db.Uuid
+  name         String
+  logo_url     String?
+  website      String?
+  description  String?
+  category     partner_category @default(company)
+  package      partner_package? @default(standard)
+  display_order Int             @default(0)
+  visible      Boolean          @default(true)
+  created_at   DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime         @updatedAt @db.Timestamptz(6)
+  user         users            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([category, package])
+  @@index([visible, display_order])
+}
+
+model team_members {
+  id            String   @id @default(uuid()) @db.Uuid
+  user_id       String   @db.Uuid
+  name          String
+  role          String   @default("")
+  committee     String   @default("Organizacioni odbor")
+  email         String?
+  phone         String?
+  photo_url     String?
+  linkedin_url  String?
+  display_order Int      @default(0)
+  visible       Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @updatedAt @db.Timestamptz(6)
+  user          users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([committee, display_order])
+  @@index([visible, display_order])
+}
+
+model news_posts {
+  id                String   @id @default(uuid()) @db.Uuid
+  user_id           String   @db.Uuid
+  title             String
+  content           String?
+  summary           String?
+  thumbnail_url     String?
+  gallery_urls      Json?    @default("[]")
+  published         Boolean  @default(false)
+  published_at      DateTime? @db.Timestamptz(6)
+  instagram_post_id String?
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @updatedAt @db.Timestamptz(6)
+  user              users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([published, published_at])
+  @@unique([instagram_post_id])
+}
+
+model job_ads {
+  id            String    @id @default(uuid()) @db.Uuid
+  user_id       String    @db.Uuid
+  title         String
+  company_name  String
+  description   String?
+  image_url     String?
+  external_link String?
+  deadline      DateTime? @db.Timestamptz(6)
+  published     Boolean   @default(false)
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @updatedAt @db.Timestamptz(6)
+  user          users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([published, deadline])
+}
+
+model cv_submissions {
+  id            String   @id @default(uuid()) @db.Uuid
+  full_name     String
+  email         String
+  faculty       String?
+  year_of_study String?
+  phone         String?
+  cv_url        String
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at])
+}
+
+model access_requests {
+  id             String    @id @default(uuid()) @db.Uuid
+  full_name      String
+  email          String
+  company_name   String?
+  company_domain String?
+  message        String?
+  status         String    @default("pending")
+  reviewed_by    String?   @db.Uuid
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @updatedAt @db.Timestamptz(6)
+  reviewer       users?    @relation("access_requests_reviewed_by", fields: [reviewed_by], references: [id], onDelete: SetNull)
+
+  @@index([status, created_at])
+  @@index([email])
+}
+
+model audit_logs {
+  id          String   @id @default(uuid()) @db.Uuid
+  actor_id    String   @db.Uuid
+  actor_email String?
+  action      String
+  entity_type String
+  entity_id   String?
+  metadata    Json?    @default("{}")
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  actor       users    @relation("audit_logs_actor_id", fields: [actor_id], references: [id], onDelete: Cascade)
+
+  @@index([created_at])
+  @@index([entity_type, entity_id])
+}
+
+model company_inquiries {
+  id             String   @id @default(uuid()) @db.Uuid
+  company_name   String
+  contact_person String
+  email          String
+  phone          String?
+  message        String
+  interest_type  String?  @default("participation")
+  status         String?  @default("new")
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([status, created_at])
+}
+
+model gallery_images {
+  id            String   @id @default(uuid()) @db.Uuid
+  user_id       String   @db.Uuid
+  image_url     String
+  title         String?  @default("")
+  display_order Int      @default(0)
+  visible       Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  user          users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([visible, display_order])
+}
+
+model email_templates {
+  id            String              @id @default(uuid()) @db.Uuid
+  event_id      String              @db.Uuid
+  template_type email_template_type
+  subject       String              @default("")
+  body          String              @default("")
+  enabled       Boolean             @default(true)
+  event         events              @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@index([event_id, template_type])
+}
+
+model email_send_log {
+  id              String   @id @default(uuid()) @db.Uuid
+  recipient_email String
+  template_name   String
+  status          String
+  message_id      String?
+  error_message   String?
+  metadata        Json?
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([status, created_at])
+  @@index([message_id])
+}
+
+model email_send_state {
+  id                              Int      @id @default(1)
+  batch_size                      Int      @default(10)
+  send_delay_ms                   Int      @default(200)
+  retry_after_until               DateTime? @db.Timestamptz(6)
+  auth_email_ttl_minutes          Int      @default(15)
+  transactional_email_ttl_minutes Int      @default(60)
+  updated_at                      DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model email_unsubscribe_tokens {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String
+  token      String    @unique
+  used_at    DateTime? @db.Timestamptz(6)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@unique([email])
+}
+
+model suppressed_emails {
+  id         String   @id @default(uuid()) @db.Uuid
+  email      String   @unique
+  reason     String
+  metadata   Json?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model email_jobs {
+  id              String           @id @default(uuid()) @db.Uuid
+  queue_name      String
+  message_id      String           @unique
+  recipient_email String
+  payload         Json
+  status          email_job_status @default(pending)
+  attempt_count   Int              @default(0)
+  max_attempts    Int              @default(5)
+  next_retry_at   DateTime?        @db.Timestamptz(6)
+  last_error      String?
+  created_at      DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime         @updatedAt @db.Timestamptz(6)
+
+  @@index([queue_name, status, next_retry_at])
+}
+
+model email_jobs_dlq {
+  id              String   @id @default(uuid()) @db.Uuid
+  queue_name      String
+  message_id      String
+  recipient_email String
+  payload         Json
+  reason          String
+  moved_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([queue_name, moved_at])
+}
