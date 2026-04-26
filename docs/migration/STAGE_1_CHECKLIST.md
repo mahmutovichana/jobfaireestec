@@ -9,13 +9,17 @@ Lock the migration direction before implementation changes.
 - [x] Defined migration stages and commit strategy.
 - [x] Defined rollback and tagging approach.
 - [x] Defined mandatory user inputs before Stage 2.
+- [x] Defined feature mapping from current functionality to Opalstack components.
+- [x] Defined API contracts before frontend refactor.
+- [x] Locked authentication model (Google OAuth + JWT/session + roles).
+- [x] Locked storage strategy (Opalstack local media root for v1).
 
 ## Next stage entry criteria
 
 All items below must be confirmed:
 
-- [ ] Opalstack backend app type
-- [ ] Opalstack PostgreSQL database details
+- [x] Opalstack backend app type (Node.js API service)
+- [x] Opalstack PostgreSQL database direction confirmed
 - [ ] Email provider selection
 - [ ] AI provider selection
 - [ ] Staging domain decision

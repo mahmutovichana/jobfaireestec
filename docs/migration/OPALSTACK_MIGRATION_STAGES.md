@@ -39,6 +39,7 @@ Commit format:
 
 - Migration execution plan in repository
 - Task checklist for Stage 2 kickoff
+- Technical blueprint with mapping table and API contracts
 - Explicit user action list for hosting and credentials
 
 ## User Action Checklist (Needed Before Stage 2)
@@ -53,3 +54,4 @@ Commit format:
 
 - No code migration starts before Stage 1 is committed and pushed.
 - All future stage documents should be added under `docs/migration/`.
+- Stage 1 technical lock file: `docs/migration/STAGE_1_TECHNICAL_BLUEPRINT.md`.
