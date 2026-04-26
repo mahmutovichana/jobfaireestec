@@ -6,7 +6,7 @@ This stage locks backend stack and migration tooling, then establishes the initi
 
 - Backend framework: Node.js + NestJS
 - Migration tooling: Prisma
-- Deployment flow: staging first, then production
+- Deployment flow: production-first
 - Email provider: Mailgun (selected as primary for easier parity with existing suppression/webhook workflows)
 - AI provider: Google Gemini API (free tier first)
 
@@ -50,8 +50,8 @@ Stage 3 will scaffold NestJS modules around these models and wire auth + role gu
 
 ## User Action Checklist (before Stage 3)
 
-1. Create staging PostgreSQL database on Opalstack.
-2. Prepare staging domain/subdomain for backend API.
-3. Prepare Mailgun sandbox/domain + API key for staging.
-4. Prepare Gemini API key for staging.
-5. Confirm allowed Google OAuth redirect URL for staging domain.
+1. Confirm production PostgreSQL credentials are finalized.
+2. Confirm production backend callback URL for Google OAuth.
+3. Confirm Mailgun production sending key is active.
+4. Confirm Gemini API key is active.
+5. Confirm production domain routing for API path is planned.

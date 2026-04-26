@@ -23,8 +23,8 @@ Commit format:
 3. Stage 3 - Backend API skeleton + auth + role guards
 4. Stage 4 - Storage, email queue, AI provider integration
 5. Stage 5 - Frontend refactor from Supabase client to API client
-6. Stage 6 - Staging deployment validation
-7. Stage 7 - Production cutover + cleanup
+6. Stage 6 - Production deployment validation
+7. Stage 7 - Post-cutover cleanup and hardening
 
 ## Rollback Strategy
 
@@ -56,7 +56,7 @@ Commit format:
 - Migration tooling: Prisma
 - Email provider: Mailgun (primary)
 - AI provider: Google Gemini API (free tier first)
-- Deployment strategy: staging first
+- Deployment strategy: production-first
 
 ## Notes
 
