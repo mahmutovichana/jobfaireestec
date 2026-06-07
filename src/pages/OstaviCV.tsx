@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/SEO";
 
 const faculties = [
   "Elektrotehnički fakultet",
@@ -30,6 +31,14 @@ const years = ["1", "2", "3", "4", "5", "Ostalo"];
 export default function OstaviCV() {
   const { user, signOut } = useAuth();
   const createCV = useCreateCVSubmission();
+  const nameId = useId();
+  const emailId = useId();
+  const phoneId = useId();
+  const facultyId = useId();
+  const facultyOtherId = useId();
+  const yearId = useId();
+  const yearOtherId = useId();
+  const fileId = useId();
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -90,6 +99,7 @@ export default function OstaviCV() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <SEO title="CV poslan — JobFAIR" description="Vaš CV je uspješno priložen u bazu JobFAIR-a." path="/ostavi-cv" />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -114,6 +124,11 @@ export default function OstaviCV() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO
+          title="Ostavi CV"
+          description="Studenti i diplomci — priložite svoj CV u bazu kompanija učesnica JobFAIR sajma zapošljavanja."
+          path="/ostavi-cv"
+        />
         <div className="border-b border-border/50">
           <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
             <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -158,6 +173,11 @@ export default function OstaviCV() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Ostavi CV"
+        description="Priložite svoj CV i omogućite kompanijama učesnicama JobFAIR-a da vas pronađu."
+        path="/ostavi-cv"
+      />
       <div className="border-b border-border/50">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -188,8 +208,9 @@ export default function OstaviCV() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <Label className="text-sm font-medium">Ime i prezime *</Label>
+              <Label htmlFor={nameId} className="text-sm font-medium">Ime i prezime *</Label>
               <Input
+                id={nameId}
                 value={form.full_name}
                 onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                 placeholder="Vaše ime i prezime"
@@ -198,8 +219,9 @@ export default function OstaviCV() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Email *</Label>
+              <Label htmlFor={emailId} className="text-sm font-medium">Email *</Label>
               <Input
+                id={emailId}
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -209,8 +231,9 @@ export default function OstaviCV() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Telefon</Label>
+              <Label htmlFor={phoneId} className="text-sm font-medium">Telefon</Label>
               <Input
+                id={phoneId}
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="+387 6x xxx xxx"
@@ -218,15 +241,17 @@ export default function OstaviCV() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Fakultet</Label>
+              <Label htmlFor={facultyId} className="text-sm font-medium">Fakultet</Label>
               <Select value={form.faculty} onValueChange={(v) => setForm((f) => ({ ...f, faculty: v }))}>
-                <SelectTrigger><SelectValue placeholder="Odaberite fakultet" /></SelectTrigger>
+                <SelectTrigger id={facultyId}><SelectValue placeholder="Odaberite fakultet" /></SelectTrigger>
                 <SelectContent>
                   {faculties.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                 </SelectContent>
               </Select>
               {form.faculty === "Ostalo" && (
                 <Input
+                  id={facultyOtherId}
+                  aria-label="Naziv fakulteta"
                   className="mt-2"
                   value={customFaculty}
                   onChange={(e) => setCustomFaculty(e.target.value)}
@@ -236,9 +261,9 @@ export default function OstaviCV() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Godina studija</Label>
+              <Label htmlFor={yearId} className="text-sm font-medium">Godina studija</Label>
               <Select value={form.year_of_study} onValueChange={(v) => setForm((f) => ({ ...f, year_of_study: v }))}>
-                <SelectTrigger><SelectValue placeholder="Odaberite godinu" /></SelectTrigger>
+                <SelectTrigger id={yearId}><SelectValue placeholder="Odaberite godinu" /></SelectTrigger>
                 <SelectContent>
                   {years.map((y) => (
                     <SelectItem key={y} value={y}>
@@ -249,6 +274,8 @@ export default function OstaviCV() {
               </Select>
               {form.year_of_study === "Ostalo" && (
                 <Input
+                  id={yearOtherId}
+                  aria-label="Godina studija"
                   className="mt-2"
                   value={customYear}
                   onChange={(e) => setCustomYear(e.target.value)}
@@ -258,8 +285,8 @@ export default function OstaviCV() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">CV (PDF) *</Label>
-              <label className="mt-2 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl p-8 cursor-pointer hover:border-primary/40 transition-colors bg-muted/30">
+              <Label htmlFor={fileId} className="text-sm font-medium">CV (PDF) *</Label>
+              <label htmlFor={fileId} className="mt-2 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl p-8 cursor-pointer hover:border-primary/40 transition-colors bg-muted/30">
                 {file ? (
                   <div className="flex items-center gap-3 text-foreground">
                     <FileText className="w-6 h-6 text-primary" />
@@ -272,6 +299,7 @@ export default function OstaviCV() {
                   </>
                 )}
                 <input
+                  id={fileId}
                   type="file"
                   accept=".pdf"
                   className="hidden"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
@@ -12,6 +12,7 @@ import { useCreateInquiry } from "@/hooks/useInquiries";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
+import { SEO } from "@/components/SEO";
 
 const interestTypes = [
   { value: "participation", label: "Učešće na JobFAIR-u" },
@@ -23,6 +24,12 @@ const interestTypes = [
 export default function Kontakt() {
   const { user, signOut } = useAuth();
   const createInquiry = useCreateInquiry();
+  const companyId = useId();
+  const contactId = useId();
+  const emailId = useId();
+  const phoneId = useId();
+  const interestId = useId();
+  const messageId = useId();
   const [form, setForm] = useState({
     company_name: "",
     contact_person: "",
@@ -72,6 +79,7 @@ export default function Kontakt() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <SEO title="Kontakt — upit poslan" description="Upit je uspješno poslan timu JobFAIR-a." path="/kontakt" />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -96,6 +104,11 @@ export default function Kontakt() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO
+          title="Kontakt — za kompanije"
+          description="Kontaktirajte tim JobFAIR-a — prijavite kompaniju za učešće, sponzorstvo ili medijsko partnerstvo."
+          path="/kontakt"
+        />
         <div className="border-b border-border/50">
           <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
             <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -132,6 +145,11 @@ export default function Kontakt() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Kontakt — za kompanije"
+        description="Pošaljite upit za učešće, sponzorstvo ili medijsko partnerstvo na JobFAIR sajmu zapošljavanja."
+        path="/kontakt"
+      />
       <div className="border-b border-border/50">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -162,10 +180,11 @@ export default function Kontakt() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <Label className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor={companyId} className="text-sm font-medium flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-muted-foreground" /> Naziv kompanije *
               </Label>
               <Input
+                id={companyId}
                 value={form.company_name}
                 onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))}
                 placeholder="Vaša kompanija d.o.o."
@@ -174,10 +193,11 @@ export default function Kontakt() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor={contactId} className="text-sm font-medium flex items-center gap-2">
                 <User className="w-4 h-4 text-muted-foreground" /> Kontakt osoba *
               </Label>
               <Input
+                id={contactId}
                 value={form.contact_person}
                 onChange={(e) => setForm((f) => ({ ...f, contact_person: e.target.value }))}
                 placeholder="Ime i prezime"
@@ -186,10 +206,11 @@ export default function Kontakt() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor={emailId} className="text-sm font-medium flex items-center gap-2">
                 <Mail className="w-4 h-4 text-muted-foreground" /> Email *
               </Label>
               <Input
+                id={emailId}
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
@@ -199,10 +220,11 @@ export default function Kontakt() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium flex items-center gap-2">
+              <Label htmlFor={phoneId} className="text-sm font-medium flex items-center gap-2">
                 <Phone className="w-4 h-4 text-muted-foreground" /> Telefon
               </Label>
               <Input
+                id={phoneId}
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="+387 6x xxx xxx"
@@ -210,9 +232,9 @@ export default function Kontakt() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Vrsta interesovanja</Label>
+              <Label htmlFor={interestId} className="text-sm font-medium">Vrsta interesovanja</Label>
               <Select value={form.interest_type} onValueChange={(v) => setForm((f) => ({ ...f, interest_type: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id={interestId}><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {interestTypes.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                 </SelectContent>
@@ -220,8 +242,9 @@ export default function Kontakt() {
             </div>
 
             <div>
-              <Label className="text-sm font-medium">Poruka *</Label>
+              <Label htmlFor={messageId} className="text-sm font-medium">Poruka *</Label>
               <Textarea
+                id={messageId}
                 value={form.message}
                 onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                 placeholder="Opišite vaše interesovanje, veličinu štanda, broj predstavnika..."

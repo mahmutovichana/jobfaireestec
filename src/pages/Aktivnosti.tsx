@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { Link } from "react-router-dom";
 import { useEvents } from "@/hooks/useEvents";
 import { useFormFields } from "@/hooks/useFormFields";
@@ -60,23 +60,31 @@ function RegistrationForm({ eventId, onSuccess }: { eventId: string; onSuccess: 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {fields.sort((a, b) => a.position - b.position).map(field => (
-        <div key={field.id} className="space-y-1.5">
-          <Label className="text-sm">
-            {field.label} {field.required && <span className="text-destructive">*</span>}
-          </Label>
-          <Input
-            type={field.field_type === "email" ? "email" : "text"}
-            placeholder={field.placeholder || ""}
-            value={values[field.label] || ""}
-            onChange={e => setValues(prev => ({ ...prev, [field.label]: e.target.value }))}
-          />
-        </div>
+        <FormFieldRow key={field.id} field={field} value={values[field.label] || ""} onChange={v => setValues(prev => ({ ...prev, [field.label]: v }))} />
       ))}
       <Button type="submit" className="w-full rounded-full" disabled={createReg.isPending}>
         {createReg.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
         Prijavi se
       </Button>
     </form>
+  );
+}
+
+function FormFieldRow({ field, value, onChange }: { field: any; value: string; onChange: (v: string) => void }) {
+  const id = useId();
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-sm">
+        {field.label} {field.required && <span className="text-destructive">*</span>}
+      </Label>
+      <Input
+        id={id}
+        type={field.field_type === "email" ? "email" : "text"}
+        placeholder={field.placeholder || ""}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      />
+    </div>
   );
 }
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNewsPost } from "@/hooks/useNews";
 import { ArrowLeft, CalendarDays, X } from "lucide-react";
 import { format } from "date-fns";
+import { SEO } from "@/components/SEO";
 
 const NovostDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +50,22 @@ const NovostDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={post.title}
+        description={post.summary || post.title}
+        path={`/novost/${post.id}`}
+        type="article"
+        image={post.thumbnail_url || undefined}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          headline: post.title,
+          datePublished: post.published_at || post.created_at,
+          image: post.thumbnail_url || undefined,
+          description: post.summary || undefined,
+          publisher: { "@type": "Organization", name: "JobFAIR" },
+        }}
+      />
       {/* Navbar */}
       <motion.nav
         className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md"
