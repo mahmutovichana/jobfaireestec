@@ -1,0 +1,19 @@
+# JobFAIR
+
+> Sajam zapošljavanja za studente i diplomce tehničko-tehnoloških fakulteta i ekonomije u Sarajevu, BiH. Organizator: EESTEC LC Sarajevo.
+
+JobFAIR povezuje studente i mlade diplomante sa kompanijama iz BiH regiona kroz dvodnevni sajam zapošljavanja, prateće radionice, predavanja, panel diskusije i networking aktivnosti.
+
+## Pages
+
+- [Početna](/): Pregled sajma, statistike, tim, partneri, lokacija.
+- [Aktivnosti](/aktivnosti): Radionice, prezentacije, paneli i prijava.
+- [Novosti](/novosti): Najnovije vijesti i obavještenja o JobFAIR-u.
+- [Oglasi](/oglasi): Aktuelni oglasi za posao od kompanija učesnica.
+- [Partneri](/partneri): Kompanije učesnice, mediji i sponzori.
+- [Ostavi CV](/ostavi-cv): Studenti šalju CV za bazu kompanija učesnica.
+- [Kontakt](/kontakt): Kontakt forma za kompanije zainteresovane za učešće.
+
+## Optional
+
+- [Prijava](/auth): Login za administratore i kompanije.

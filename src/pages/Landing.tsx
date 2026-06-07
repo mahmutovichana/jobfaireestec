@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { BackgroundBeams } from "@/components/landing/BackgroundBeams";
 import { useTheme } from "next-themes";
+import { SEO } from "@/components/SEO";
 
 import teamPhoto1 from "@/assets/team-photo-1.jpg";
 import teamPhoto2 from "@/assets/team-photo-2.jpg";
@@ -160,6 +161,11 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      <SEO
+        title="JobFAIR — Iskoristi svoju šansu!"
+        description="Sajam zapošljavanja za studente i diplomce tehničko-tehnoloških fakulteta i ekonomije u Sarajevu. Radionice, paneli, networking i susreti s kompanijama."
+        path="/"
+      />
       {/* ── Navbar ── */}
       <motion.nav
         className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-border/10"
@@ -176,7 +182,7 @@ const Landing = () => {
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/partneri">Partneri</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/kontakt">Za kompanije</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/auth">Prijava</Link></Button>
-            <Button variant="ghost" size="icon" className="rounded-full ml-1" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+            <Button aria-label="Promijeni temu" variant="ghost" size="icon" className="rounded-full ml-1" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
             <Button className="text-sm font-semibold rounded-full ml-1" asChild>
@@ -185,12 +191,12 @@ const Landing = () => {
           </div>
           {/* Mobile */}
           <div className="flex md:hidden items-center gap-1">
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+            <Button aria-label="Promijeni temu" variant="ghost" size="icon" className="rounded-full" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button aria-label="Otvori meni" variant="ghost" size="icon" className="rounded-full">
                   <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>

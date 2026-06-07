@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useJobAds } from "@/hooks/useJobAds";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
+import { SEO } from "@/components/SEO";
 import { ROUTES, JOB_AD_FILTERS, type JobAdFilterKey } from "@/lib/constants";
 import {
   CalendarDays, ArrowLeft, ExternalLink, Building2, Search, X,
@@ -47,6 +48,11 @@ const Oglasi = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Oglasi za posao"
+        description="Aktuelni oglasi za posao i prakse od kompanija učesnica JobFAIR sajma zapošljavanja u Sarajevu."
+        path="/oglasi"
+      />
       <PublicNavbar items={navItems} showRegister={false} />
 
       {/* Header */}
@@ -79,7 +85,7 @@ const Oglasi = () => {
                 className="pl-10 rounded-full bg-white/[0.06] backdrop-blur-sm border-white/[0.08]"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                <button aria-label="Obriši pretragu" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               )}

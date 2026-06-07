@@ -60,6 +60,7 @@ export function PublicNavbar({ items = defaultItems, showRegister = true }: Publ
             </Button>
           ))}
           <Button
+            aria-label="Promijeni temu"
             variant="ghost"
             size="icon"
             className="rounded-full ml-1"
@@ -76,12 +77,12 @@ export function PublicNavbar({ items = defaultItems, showRegister = true }: Publ
 
         {/* Mobile nav */}
         <div className="flex md:hidden items-center gap-1">
-          <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleTheme}>
+          <Button aria-label="Promijeni temu" variant="ghost" size="icon" className="rounded-full" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button aria-label="Otvori meni" variant="ghost" size="icon" className="rounded-full">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
