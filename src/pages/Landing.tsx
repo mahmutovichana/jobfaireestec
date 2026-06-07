@@ -161,6 +161,11 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      <SEO
+        title="JobFAIR — Iskoristi svoju šansu!"
+        description="Sajam zapošljavanja za studente i diplomce tehničko-tehnoloških fakulteta i ekonomije u Sarajevu. Radionice, paneli, networking i susreti s kompanijama."
+        path="/"
+      />
       {/* ── Navbar ── */}
       <motion.nav
         className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-2xl border-b border-border/10"

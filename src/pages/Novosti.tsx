@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useNewsPosts } from "@/hooks/useNews";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
+import { SEO } from "@/components/SEO";
 import { ROUTES } from "@/lib/constants";
 import { CalendarDays, ArrowRight, ArrowLeft, Search, X } from "lucide-react";
 import { format } from "date-fns";
@@ -33,6 +34,11 @@ const Novosti = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Novosti"
+        description="Najnovije vijesti, obavještenja i novosti vezane za JobFAIR sajam zapošljavanja u Sarajevu."
+        path="/novosti"
+      />
       <PublicNavbar items={navItems} showRegister={false} />
 
       {/* Header */}
@@ -64,7 +70,7 @@ const Novosti = () => {
               className="pl-10 rounded-full bg-white/[0.06] backdrop-blur-sm border-white/[0.08]"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <button aria-label="Obriši pretragu" onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
             )}

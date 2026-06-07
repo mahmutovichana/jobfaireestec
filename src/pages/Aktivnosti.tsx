@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
+import { SEO } from "@/components/SEO";
 
 const EVENT_TYPE_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
   webinar: { label: "Webinar / Podcast", icon: Radio },
@@ -198,6 +199,11 @@ export default function Aktivnosti() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title="Aktivnosti — radionice, paneli i prezentacije"
+        description="Prijavite se na radionice, predavanja, panele i networking aktivnosti JobFAIR-a u Sarajevu."
+        path="/aktivnosti"
+      />
       <PublicNavbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
