@@ -27,6 +27,7 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
 import { useReorderItems } from "@/hooks/useReorder";
+import { useAddParticipation, useDeleteParticipation, useUpdateParticipation } from "@/hooks/usePartnerParticipations";
 import {
   usePartners,
   useCreatePartner,
@@ -71,6 +72,12 @@ export default function PartnersManager() {
   const updatePartner = useUpdatePartner();
   const deletePartner = useDeletePartner();
   const reorderPartners = useReorderItems("partners", ["partners"]);
+  const addParticipation = useAddParticipation();
+  const updateParticipation = useUpdateParticipation();
+  const deleteParticipation = useDeleteParticipation();
+  const CURRENT_YEAR = new Date().getFullYear();
+  const [newYear, setNewYear] = useState<number>(CURRENT_YEAR);
+  const [newPkg, setNewPkg] = useState<PartnerPackage>("standard");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
