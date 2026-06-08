@@ -308,82 +308,102 @@ export default function TeamManager() {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Uredi člana" : "Dodaj člana"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Ime i prezime *</Label>
-              <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Ime Prezime" />
-            </div>
-            <div>
-              <Label>Pozicija / Uloga</Label>
-              <Input value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} placeholder="npr. Koordinator marketinga" />
-            </div>
-            <div>
-              <Label>Organizacioni odbor</Label>
-              <Select value={form.committee} onValueChange={(v) => setForm((f) => ({ ...f, committee: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {committees.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Godina mandata</Label>
-              <Input type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: parseInt(e.target.value) || CURRENT_YEAR }))} />
-              <p className="text-xs text-muted-foreground mt-1">Trenutna godina: {CURRENT_YEAR}</p>
-            </div>
-            <div>
-              <Label>Fotografija</Label>
-              <div className="flex items-center gap-3">
-                {form.photo_url && (
-                  <img src={form.photo_url} alt="" className="w-14 h-14 object-cover rounded-xl" />
-                )}
-                <label className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 transition-colors text-sm text-muted-foreground">
-                    <Upload className="w-4 h-4" />
-                    {uploading ? "Učitavanje..." : "Upload foto"}
+
+          <div className="grid md:grid-cols-[180px_1fr] gap-6 pt-2">
+            {/* Photo column */}
+            <div className="space-y-3">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Fotografija</Label>
+              <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/40 border border-border/50 flex items-center justify-center">
+                {form.photo_url ? (
+                  <img src={form.photo_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-3xl font-bold text-muted-foreground/40">
+                    {form.name ? form.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase() : "?"}
                   </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
-                </label>
+                )}
               </div>
-              <Input value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} placeholder="ili URL slike" className="mt-2" />
+              <label className="cursor-pointer block">
+                <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 transition-colors text-sm text-muted-foreground">
+                  <Upload className="w-4 h-4" />
+                  {uploading ? "Učitavanje..." : "Upload"}
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
+              </label>
+              <Input value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} placeholder="ili URL slike" className="text-xs" />
             </div>
-            <div>
-              <Label>LinkedIn</Label>
-              <div className="relative">
-                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input value={form.linkedin_url} onChange={(e) => setForm((f) => ({ ...f, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/..." className="pl-9" />
+
+            {/* Fields column */}
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>Ime i prezime *</Label>
+                  <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Ime Prezime" />
+                </div>
+                <div>
+                  <Label>Pozicija / Uloga</Label>
+                  <Input value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} placeholder="npr. Koordinator marketinga" />
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>Organizacioni odbor</Label>
+                  <Select value={form.committee} onValueChange={(v) => setForm((f) => ({ ...f, committee: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {committees.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Godina mandata</Label>
+                  <Input type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: parseInt(e.target.value) || CURRENT_YEAR }))} />
+                </div>
+              </div>
+
               <div>
-                <Label>Email</Label>
-                <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@primjer.com" />
+                <Label>LinkedIn</Label>
+                <div className="relative">
+                  <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input value={form.linkedin_url} onChange={(e) => setForm((f) => ({ ...f, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/in/..." className="pl-9" />
+                </div>
               </div>
-              <div>
-                <Label>Telefon</Label>
-                <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="+387..." />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>Email</Label>
+                  <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@primjer.com" />
+                </div>
+                <div>
+                  <Label>Telefon</Label>
+                  <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="+387..." />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                <div>
+                  <Label>Redoslijed prikaza</Label>
+                  <Input type="number" value={form.display_order} onChange={(e) => setForm((f) => ({ ...f, display_order: parseInt(e.target.value) || 0 }))} />
+                </div>
+                <div className="flex items-center gap-3 h-10">
+                  <Switch checked={form.visible} onCheckedChange={(v) => setForm((f) => ({ ...f, visible: v }))} />
+                  <Label>Vidljiv na stranici</Label>
+                </div>
               </div>
             </div>
-            <div>
-              <Label>Redoslijed</Label>
-              <Input type="number" value={form.display_order} onChange={(e) => setForm((f) => ({ ...f, display_order: parseInt(e.target.value) || 0 }))} />
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch checked={form.visible} onCheckedChange={(v) => setForm((f) => ({ ...f, visible: v }))} />
-              <Label>Vidljiv na stranici</Label>
-            </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSave} disabled={createMember.isPending || updateMember.isPending}>
-                {editing ? "Sačuvaj" : "Dodaj"}
-              </Button>
-            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border/40 mt-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+            <Button onClick={handleSave} disabled={createMember.isPending || updateMember.isPending}>
+              {editing ? "Sačuvaj" : "Dodaj"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
