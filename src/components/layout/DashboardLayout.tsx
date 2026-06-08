@@ -66,8 +66,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const baseItems = isAdmin ? adminNavItems : companyNavItems;
   const allItems = [
-    ...baseItems,
     ...(isAdmin ? [{ title: "Zahtjevi", url: "/dashboard/access-requests", icon: ShieldCheck }] : []),
+    ...baseItems,
   ];
 
   const isActive = (url: string) => {
