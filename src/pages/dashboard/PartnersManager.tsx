@@ -11,6 +11,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart, Search } from "lucide-react";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem } from "@/components/SortableItem";
+import { useReorderItems } from "@/hooks/useReorder";
+import {
   usePartners,
   useCreatePartner,
   useUpdatePartner,
@@ -53,6 +70,11 @@ export default function PartnersManager() {
   const createPartner = useCreatePartner();
   const updatePartner = useUpdatePartner();
   const deletePartner = useDeletePartner();
+  const reorderPartners = useReorderItems("partners", ["partners"]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const [activeTab, setActiveTab] = useState<PartnerCategory>("company");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -127,6 +149,22 @@ export default function PartnersManager() {
     await updatePartner.mutateAsync({ id: partnerId, package: newPackage });
   };
 
+  const handleDragEnd = (event: DragEndEvent, groupPartners: Partner[]) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = groupPartners.findIndex((p) => p.id === active.id);
+    const newIndex = groupPartners.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(groupPartners, oldIndex, newIndex);
+    // Build full ordered list: keep other groups' order, replace this group with reordered
+    const groupIds = new Set(groupPartners.map((p) => p.id));
+    const fullOrder = partners.map((p) => p.id);
+    // Replace ids in fullOrder that belong to this group with reordered ids in their slots
+    let i = 0;
+    const newFull = fullOrder.map((id) => (groupIds.has(id) ? reordered[i++].id : id));
+    reorderPartners.mutate(newFull);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -191,6 +229,7 @@ export default function PartnersManager() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-8"></TableHead>
                           <TableHead className="w-16">Logo</TableHead>
                           <TableHead>Naziv</TableHead>
                           {activeTab === "company" && <TableHead>Paket</TableHead>}
@@ -199,9 +238,15 @@ export default function PartnersManager() {
                           <TableHead className="w-28">Akcije</TableHead>
                         </TableRow>
                       </TableHeader>
-                      <TableBody>
-                        {group.partners.map((partner) => (
-                          <TableRow key={partner.id}>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(e) => handleDragEnd(e, group.partners)}
+                      >
+                        <SortableContext items={group.partners.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                          <TableBody>
+                            {group.partners.map((partner) => (
+                              <SortableItem key={partner.id} id={partner.id} as="tr" className="border-b transition-colors hover:bg-muted/50">
                             <TableCell>
                               {partner.logo_url ? (
                                 <img
@@ -264,9 +309,11 @@ export default function PartnersManager() {
                                 </Button>
                               </div>
                             </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
+                              </SortableItem>
+                            ))}
+                          </TableBody>
+                        </SortableContext>
+                      </DndContext>
                     </Table>
                   </div>
                 </div>
