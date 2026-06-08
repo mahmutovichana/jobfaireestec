@@ -27,7 +27,7 @@ const ContactInquiryConfirmationEmail = ({ company_name, contact_person }: Conta
           Primili smo vaš upit{company_name ? ` u ime kompanije ${company_name}` : ''} za učešće na {SITE_NAME}-u. Naš tim će pregledati vaš zahtjev i kontaktirati vas u najkraćem mogućem roku.
         </Text>
         <Text style={text}>
-          Ukoliko imate dodatnih pitanja, slobodno nas kontaktirajte na <strong>chair@eestec-sa.ba</strong>.
+          Ukoliko imate dodatnih pitanja, slobodno nas kontaktirajte na <strong>board@eestec-sa.ba</strong>.
         </Text>
         <Hr style={hr} />
         <Text style={footer}>

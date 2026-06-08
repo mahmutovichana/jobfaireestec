@@ -7,6 +7,8 @@ const corsHeaders = {
 };
 
 const INSTAGRAM_USERNAME = "jobfair.sarajevo";
+const RAPIDAPI_HOST = "instagram120.p.rapidapi.com";
+const RAPIDAPI_URL = `https://${RAPIDAPI_HOST}/api/instagram/posts`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -23,18 +25,17 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Step 1: Fetch posts from Instagram via RapidAPI scraper
     console.log(`Fetching posts for @${INSTAGRAM_USERNAME}...`);
 
-    const response = await fetch(
-      `https://instagram-scraper-api2.p.rapidapi.com/v1/posts?username_or_id_or_url=${INSTAGRAM_USERNAME}`,
-      {
-        headers: {
-          "x-rapidapi-host": "instagram-scraper-api2.p.rapidapi.com",
-          "x-rapidapi-key": rapidApiKey,
-        },
+    const response = await fetch(RAPIDAPI_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-rapidapi-host": RAPIDAPI_HOST,
+        "x-rapidapi-key": rapidApiKey,
       },
-    );
+      body: JSON.stringify({ username: INSTAGRAM_USERNAME, maxId: "" }),
+    });
 
     if (!response.ok) {
       const errBody = await response.text();
@@ -42,23 +43,24 @@ Deno.serve(async (req) => {
     }
 
     const result = await response.json();
-    const items = result?.data?.items || [];
+    // instagram120 returns: { result: { edges: [{ node: {...} }, ...] } }
+    const edges = result?.result?.edges || result?.data?.edges || [];
+    const items = edges.map((e: any) => e?.node ?? e).filter(Boolean);
 
     console.log(`Fetched ${items.length} posts from RapidAPI`);
 
-    // Take last 6 posts
     const posts = items.slice(0, 6);
 
-    // Step 2: Check which posts already exist
-    const igIds = posts.map((p: any) => p.id || p.pk?.toString() || p.code);
+    const igIds = posts
+      .map((p: any) => p.code || p.id || (p.pk != null ? String(p.pk) : null))
+      .filter(Boolean);
     const { data: existing } = await supabase
       .from("news_posts")
       .select("instagram_post_id")
-      .in("instagram_post_id", igIds.filter(Boolean));
+      .in("instagram_post_id", igIds);
 
     const existingIds = new Set((existing || []).map((r: any) => r.instagram_post_id));
 
-    // Step 3: Get admin user for attribution
     const { data: adminRole } = await supabase
       .from("user_roles")
       .select("user_id")
@@ -75,42 +77,41 @@ Deno.serve(async (req) => {
       userId = anyProfile.id;
     }
 
+    const pickImage = (media: any): string => {
+      return (
+        media?.image_versions2?.candidates?.[0]?.url ||
+        media?.image_versions?.items?.[0]?.url ||
+        media?.display_url ||
+        media?.thumbnail_url ||
+        ""
+      );
+    };
+
     let synced = 0;
 
     for (const post of posts) {
-      const postId = post.id || post.pk?.toString() || post.code;
+      const postId = post.code || post.id || (post.pk != null ? String(post.pk) : null);
       if (!postId || existingIds.has(postId)) {
         console.log(`Skipping already synced or invalid post: ${postId}`);
         continue;
       }
 
-      // Extract images from the post
       let thumbnailUrl = "";
       const galleryUrls: string[] = [];
 
-      if (post.carousel_media && post.carousel_media.length > 0) {
-        // Carousel post - first image is thumbnail, rest are gallery
-        for (let i = 0; i < post.carousel_media.length; i++) {
-          const media = post.carousel_media[i];
-          const imageUrl =
-            media.image_versions2?.candidates?.[0]?.url ||
-            media.image_versions?.items?.[0]?.url ||
-            media.thumbnail_url ||
-            "";
-          if (i === 0) {
-            thumbnailUrl = imageUrl;
-          } else if (imageUrl) {
-            galleryUrls.push(imageUrl);
-          }
-        }
+      const carousel =
+        post.carousel_media ||
+        post.edge_sidecar_to_children?.edges?.map((e: any) => e?.node) ||
+        null;
+
+      if (Array.isArray(carousel) && carousel.length > 0) {
+        carousel.forEach((media: any, i: number) => {
+          const url = pickImage(media);
+          if (i === 0) thumbnailUrl = url;
+          else if (url) galleryUrls.push(url);
+        });
       } else {
-        // Single image post
-        thumbnailUrl =
-          post.image_versions2?.candidates?.[0]?.url ||
-          post.image_versions?.items?.[0]?.url ||
-          post.thumbnail_url ||
-          post.display_url ||
-          "";
+        thumbnailUrl = pickImage(post);
       }
 
       if (!thumbnailUrl) {
@@ -118,14 +119,19 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const caption = post.caption?.text || post.caption || "Instagram post";
+      const caption =
+        post.caption?.text ||
+        post.edge_media_to_caption?.edges?.[0]?.node?.text ||
+        (typeof post.caption === "string" ? post.caption : "") ||
+        "Instagram post";
       const captionText = typeof caption === "string" ? caption : "Instagram post";
       const lines = captionText.split("\n");
-      const title = lines[0].substring(0, 200);
+      const title = (lines.find((l: string) => l.trim()) || "Instagram post").substring(0, 200);
       const content = captionText;
       const summary = captionText.substring(0, 300);
 
-      const publishedAt = post.taken_at ? new Date(post.taken_at * 1000).toISOString() : new Date().toISOString();
+      const takenAt = post.taken_at || post.taken_at_timestamp;
+      const publishedAt = takenAt ? new Date(takenAt * 1000).toISOString() : new Date().toISOString();
 
       const { error: insertError } = await supabase.from("news_posts").insert({
         user_id: userId,

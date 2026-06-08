@@ -263,8 +263,8 @@ export default function Kontakt() {
 
             <p className="text-xs text-muted-foreground text-center mt-4">
               Takođe nas možete kontaktirati direktno na{" "}
-              <a href="mailto:chair@eestec-sa.ba" className="text-primary hover:underline">
-                chair@eestec-sa.ba
+              <a href="mailto:board@eestec-sa.ba" className="text-primary hover:underline">
+                board@eestec-sa.ba
               </a>
             </p>
           </form>

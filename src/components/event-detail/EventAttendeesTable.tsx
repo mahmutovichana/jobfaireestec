@@ -43,8 +43,8 @@ export default function EventAttendeesTable({ eventId }: { eventId: string }) {
   const getValue = (r: any, col: SortColumn): string => {
     const data = r.data as Record<string, string>;
     switch (col) {
-      case "name": return (data["Full Name"] || data["Name"] || "").toLowerCase();
-      case "email": return (data["Email Address"] || data["Email"] || "").toLowerCase();
+      case "name": return (data["Full Name"] || data["Name"] || data["Ime i prezime"] || data["Ime"] || "").toLowerCase();
+      case "email": return (data["Email Address"] || data["Email"] || data["Email adresa"] || data["E-mail"] || "").toLowerCase();
       case "status": return r.status;
       case "date": return r.created_at;
     }
@@ -76,8 +76,8 @@ export default function EventAttendeesTable({ eventId }: { eventId: string }) {
     const rows = filtered.map(r => {
       const data = r.data as Record<string, string>;
       return [
-        data["Full Name"] || data["Name"] || "",
-        data["Email Address"] || data["Email"] || "",
+        data["Full Name"] || data["Name"] || data["Ime i prezime"] || data["Ime"] || "",
+        data["Email Address"] || data["Email"] || data["Email adresa"] || data["E-mail"] || "",
         r.status,
         format(new Date(r.created_at), "MMM d, yyyy"),
       ];
@@ -144,8 +144,8 @@ export default function EventAttendeesTable({ eventId }: { eventId: string }) {
                   const data = r.data as Record<string, string>;
                   return (
                     <TableRow key={r.id}>
-                      <TableCell className="font-medium">{data["Full Name"] || data["Name"] || "—"}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{data["Email Address"] || data["Email"] || "—"}</TableCell>
+                      <TableCell className="font-medium">{data["Full Name"] || data["Name"] || data["Ime i prezime"] || data["Ime"] || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{data["Email Address"] || data["Email"] || data["Email adresa"] || data["E-mail"] || "—"}</TableCell>
                       <TableCell>
                         <Badge className={`${statusStyle[r.status] || ""} capitalize text-xs`}>{r.status.replace("_", " ")}</Badge>
                       </TableCell>
