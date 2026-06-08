@@ -60,24 +60,7 @@ const NovostDetail = () => {
           publisher: { "@type": "Organization", name: "JobFAIR" },
         }}
       />
-      {/* Navbar */}
-      <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md"
-        initial={{ y: -100 }}
-        animate={{ y: navVisible ? 0 : -100 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-[72px] px-6 lg:px-8">
-          <Link to="/">
-            <Logo size="md" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-sm font-medium" asChild>
-              <Link to="/auth">Prijava</Link>
-            </Button>
-          </div>
-        </div>
-      </motion.nav>
+      <PublicNavbar />
 
       {/* Content */}
       <article className="pt-24 pb-20 lg:pt-32">
