@@ -1,10 +1,10 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { usePartners, PACKAGE_LABELS, PACKAGE_ORDER, type Partner, type PartnerPackage } from "@/hooks/usePartners";
+import { usePartners, PACKAGE_LABELS, type Partner, type PartnerPackage } from "@/hooks/usePartners";
 import { COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME } from "@/lib/constants";
 import { SEO } from "@/components/SEO";
 
@@ -23,9 +23,11 @@ const PACKAGE_BADGE: Record<PartnerPackage, string> = {
   promo: "bg-purple-500/15 text-purple-300 border-purple-500/20",
 };
 
-/* ── Partner card with description ── */
-function PartnerCard({ partner, index }: { partner: Partner; index: number }) {
-  const pkg = partner.package || "standard";
+/* ── Partner card with description and year/package badges ── */
+function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: number; yearFilter: number | null }) {
+  const parts = (partner.participations ?? []).slice().sort((a, b) => b.year - a.year);
+  const visibleParts = yearFilter ? parts.filter((p) => p.year === yearFilter) : parts;
+  const pkg = (visibleParts[0]?.package || partner.package || "standard") as PartnerPackage;
 
   return (
     <motion.a
@@ -53,7 +55,22 @@ function PartnerCard({ partner, index }: { partner: Partner; index: number }) {
       </div>
       <h3 className="font-display font-bold text-sm text-foreground mb-1">{partner.name}</h3>
       {partner.description && (
-        <p className="text-xs text-muted-foreground line-clamp-3">{partner.description}</p>
+        <p className="text-xs text-muted-foreground line-clamp-3 mb-2">{partner.description}</p>
+      )}
+      {visibleParts.length > 0 && (
+        <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
+          {visibleParts.map((p) => (
+            <span
+              key={p.id}
+              title={p.package ? `${PACKAGE_LABELS[p.package as PartnerPackage]} paket` : undefined}
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                p.package ? PACKAGE_BADGE[p.package as PartnerPackage] : "bg-white/[0.05] text-muted-foreground border-white/[0.08]"
+              }`}
+            >
+              {p.year}
+            </span>
+          ))}
+        </div>
       )}
       {partner.website && (
         <div className="mt-3 flex items-center justify-center gap-1 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -66,7 +83,7 @@ function PartnerCard({ partner, index }: { partner: Partner; index: number }) {
 }
 
 /* ── Section for a category ── */
-function CategorySection({ title, subtitle, partners, showPackages = false }: { title: string; subtitle?: string; partners: Partner[]; showPackages?: boolean }) {
+function CategorySection({ title, subtitle, partners, yearFilter }: { title: string; subtitle?: string; partners: Partner[]; yearFilter: number | null }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -88,43 +105,11 @@ function CategorySection({ title, subtitle, partners, showPackages = false }: { 
         </h2>
       </motion.div>
 
-      {showPackages ? (
-        <div className="space-y-12">
-          {PACKAGE_ORDER.map((pkg, pkgIdx) => {
-            const pkgPartners = partners.filter((p) => p.package === pkg);
-            if (pkgPartners.length === 0) return null;
-
-            return (
-              <motion.div
-                key={pkg}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: pkgIdx * 0.1 }}
-              >
-                <div className="flex items-center justify-center gap-3 mb-6">
-                  <div className="h-px flex-1 max-w-24 bg-gradient-to-r from-transparent to-white/[0.1]" />
-                  <span className={`text-sm font-semibold px-4 py-1.5 rounded-full border ${PACKAGE_BADGE[pkg]}`}>
-                    {PACKAGE_LABELS[pkg]} paket
-                  </span>
-                  <div className="h-px flex-1 max-w-24 bg-gradient-to-l from-transparent to-white/[0.1]" />
-                </div>
-
-                <div className={`grid gap-4 ${pkg === "gold" ? "sm:grid-cols-3" : pkg === "silver" ? "sm:grid-cols-4" : "sm:grid-cols-4 md:grid-cols-5"} max-w-5xl mx-auto px-6`}>
-                  {pkgPartners.map((partner, i) => (
-                    <PartnerCard key={partner.id} partner={partner} index={i} />
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto px-6">
-          {partners.map((partner, i) => (
-            <PartnerCard key={partner.id} partner={partner} index={i} />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto px-6">
+        {partners.map((partner, i) => (
+          <PartnerCard key={partner.id} partner={partner} index={i} yearFilter={yearFilter} />
+        ))}
+      </div>
     </section>
   );
 }
@@ -132,10 +117,22 @@ function CategorySection({ title, subtitle, partners, showPackages = false }: { 
 /* ── Main Page ── */
 export default function Partneri() {
   const { data: partners = [], isLoading } = usePartners(true);
+  const [yearFilter, setYearFilter] = useState<number | null>(null);
 
-  const companies = useMemo(() => partners.filter((p) => p.category === "company"), [partners]);
-  const media = useMemo(() => partners.filter((p) => p.category === "media"), [partners]);
-  const sponsors = useMemo(() => partners.filter((p) => p.category === "sponsor"), [partners]);
+  const allYears = useMemo(() => {
+    const set = new Set<number>();
+    partners.forEach((p) => p.participations?.forEach((pp) => set.add(pp.year)));
+    return Array.from(set).sort((a, b) => b - a);
+  }, [partners]);
+
+  const filterPartner = (p: Partner) => {
+    if (!yearFilter) return true;
+    return (p.participations ?? []).some((pp) => pp.year === yearFilter);
+  };
+
+  const companies = useMemo(() => partners.filter((p) => p.category === "company" && filterPartner(p)), [partners, yearFilter]);
+  const media = useMemo(() => partners.filter((p) => p.category === "media" && filterPartner(p)), [partners, yearFilter]);
+  const sponsors = useMemo(() => partners.filter((p) => p.category === "sponsor" && filterPartner(p)), [partners, yearFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -189,11 +186,37 @@ export default function Partneri() {
       {isLoading ? (
         <div className="text-center py-20 text-muted-foreground">Učitavanje partnera...</div>
       ) : (
-        <div className="max-w-7xl mx-auto">
-          <CategorySection title="Kompanije učesnice" subtitle="Učesnici" partners={companies} showPackages />
-          <CategorySection title="Mediji" subtitle="Medijska podrška" partners={media} />
-          <CategorySection title="Sponzori" subtitle="Podrška" partners={sponsors} />
-        </div>
+        <>
+          {/* Year filter */}
+          {allYears.length > 0 && (
+            <div className="max-w-5xl mx-auto px-6 flex flex-wrap items-center justify-center gap-2 pb-4">
+              <button
+                onClick={() => setYearFilter(null)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                  yearFilter === null ? "bg-primary text-primary-foreground border-primary" : "bg-white/[0.04] text-muted-foreground border-white/[0.08] hover:bg-white/[0.08]"
+                }`}
+              >
+                Sve godine
+              </button>
+              {allYears.map((y) => (
+                <button
+                  key={y}
+                  onClick={() => setYearFilter(y)}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                    yearFilter === y ? "bg-primary text-primary-foreground border-primary" : "bg-white/[0.04] text-muted-foreground border-white/[0.08] hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="max-w-7xl mx-auto">
+            <CategorySection title="Kompanije učesnice" subtitle="Učesnici" partners={companies} yearFilter={yearFilter} />
+            <CategorySection title="Mediji" subtitle="Medijska podrška" partners={media} yearFilter={yearFilter} />
+            <CategorySection title="Sponzori" subtitle="Podrška" partners={sponsors} yearFilter={yearFilter} />
+          </div>
+        </>
       )}
 
       {/* Footer */}

@@ -19,6 +19,14 @@ export interface Partner {
   user_id: string;
   created_at: string;
   updated_at: string;
+  participations?: PartnerParticipation[];
+}
+
+export interface PartnerParticipation {
+  id: string;
+  partner_id: string;
+  year: number;
+  package: PartnerPackage | null;
 }
 
 export const PACKAGE_LABELS: Record<PartnerPackage, string> = {
@@ -42,7 +50,7 @@ export function usePartners(onlyVisible = false) {
     queryFn: async () => {
       let query = supabase
         .from("partners")
-        .select("*")
+        .select("*, participations:partner_participations(id, partner_id, year, package)")
         .order("display_order", { ascending: true });
 
       if (onlyVisible) {

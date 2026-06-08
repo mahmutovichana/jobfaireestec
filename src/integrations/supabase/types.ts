@@ -513,6 +513,38 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_participations: {
+        Row: {
+          created_at: string
+          id: string
+          package: Database["public"]["Enums"]["partner_package"] | null
+          partner_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          package?: Database["public"]["Enums"]["partner_package"] | null
+          partner_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          package?: Database["public"]["Enums"]["partner_package"] | null
+          partner_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_participations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           category: Database["public"]["Enums"]["partner_category"]
