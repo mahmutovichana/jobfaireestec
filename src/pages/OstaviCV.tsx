@@ -13,6 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const faculties = [
   "Elektrotehnički fakultet",
@@ -178,6 +180,7 @@ export default function OstaviCV() {
         description="Priložite svoj CV i omogućite kompanijama učesnicama JobFAIR-a da vas pronađu."
         path="/ostavi-cv"
       />
+      <PublicNavbar />
       <div className="border-b border-border/50">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -318,6 +321,7 @@ export default function OstaviCV() {
           </form>
         </motion.div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

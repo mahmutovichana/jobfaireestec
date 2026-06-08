@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
 import { SEO } from "@/components/SEO";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const interestTypes = [
   { value: "participation", label: "Učešće na JobFAIR-u" },
@@ -150,6 +152,7 @@ export default function Kontakt() {
         description="Pošaljite upit za učešće, sponzorstvo ili medijsko partnerstvo na JobFAIR sajmu zapošljavanja."
         path="/kontakt"
       />
+      <PublicNavbar />
       <div className="border-b border-border/50">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -270,6 +273,7 @@ export default function Kontakt() {
           </form>
         </motion.div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

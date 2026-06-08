@@ -43,12 +43,13 @@ import activityPresentation from "@/assets/activity-presentation.jpg";
 import activityNetworking from "@/assets/activity-networking.jpg";
 import activityWorkshop from "@/assets/activity-workshop.jpg";
 
-import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE, COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME } from "@/lib/constants";
+import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE } from "@/lib/constants";
 import { useTeamMembers } from "@/hooks/useTeam";
 import { TeamSection } from "@/components/landing/TeamSection";
 import { GallerySection } from "@/components/landing/GallerySection";
 import { MapSection } from "@/components/landing/MapSection";
 import { PartnersStrip } from "@/components/landing/PartnersStrip";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const stats = LANDING_STATS.map((s, i) => ({
   icon: [Users, Briefcase, Building2, Camera][i],
@@ -177,6 +178,7 @@ const Landing = () => {
           <Link to="/"><Logo size="md" /></Link>
           {/* Desktop */}
           <div className="hidden md:flex items-center gap-1">
+            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/aktivnosti">Aktivnosti</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/novosti">Novosti</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/oglasi">Oglasi</Link></Button>
             <Button variant="ghost" className="text-sm font-medium rounded-full" asChild><Link to="/partneri">Partneri</Link></Button>
@@ -206,6 +208,7 @@ const Landing = () => {
                 </div>
                 <nav className="p-4 space-y-1">
                   {[
+                    { label: "Aktivnosti", to: "/aktivnosti" },
                     { label: "Novosti", to: "/novosti" },
                     { label: "Oglasi", to: "/oglasi" },
                     { label: "Partneri", to: "/partneri" },
@@ -607,16 +610,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="py-12 px-6 lg:px-8 border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href={EESTEC_WEBSITE} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">{EESTEC_ORG_NAME}</a>
-            <span>{COPYRIGHT_TEXT}</span>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };

@@ -332,91 +332,97 @@ export default function PartnersManager() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingPartner ? "Uredi partnera" : "Dodaj partnera"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Naziv *</Label>
-              <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Naziv kompanije" />
-            </div>
 
-            <div>
-              <Label>Kategorija</Label>
-              <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as PartnerCategory, package: v === "company" ? "standard" : null }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(CATEGORY_LABELS) as PartnerCategory[]).map((cat) => (
-                    <SelectItem key={cat} value={cat}>{CATEGORY_LABELS[cat]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {form.category === "company" && (
-              <div>
-                <Label>Paket</Label>
-                <Select value={form.package || "standard"} onValueChange={(v) => setForm((f) => ({ ...f, package: v as PartnerPackage }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PACKAGE_ORDER.map((pkg) => (
-                      <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div>
-              <Label>Logo</Label>
-              <div className="flex items-center gap-3">
-                {form.logo_url && (
-                  <img src={form.logo_url} alt="" className="w-12 h-12 object-contain rounded-lg bg-muted/50 p-1" />
-                )}
-                <label className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 transition-colors text-sm text-muted-foreground">
-                    <Upload className="w-4 h-4" />
-                    {uploading ? "Učitavanje..." : "Upload logo"}
+          <div className="grid md:grid-cols-[200px_1fr] gap-6 pt-2">
+            {/* Logo column */}
+            <div className="space-y-3">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Logo</Label>
+              <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/40 border border-border/50 flex items-center justify-center p-4">
+                {form.logo_url ? (
+                  <img src={form.logo_url} alt="" className="max-w-full max-h-full object-contain" />
+                ) : (
+                  <div className="text-3xl font-bold text-muted-foreground/40">
+                    {form.name ? form.name[0].toUpperCase() : "?"}
                   </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploading} />
-                </label>
-                {form.logo_url && (
-                  <Input value={form.logo_url} onChange={(e) => setForm((f) => ({ ...f, logo_url: e.target.value }))} placeholder="ili URL" className="flex-1" />
                 )}
               </div>
-              {!form.logo_url && (
-                <Input value={form.logo_url} onChange={(e) => setForm((f) => ({ ...f, logo_url: e.target.value }))} placeholder="Logo URL" className="mt-2" />
-              )}
+              <label className="cursor-pointer block">
+                <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 transition-colors text-sm text-muted-foreground">
+                  <Upload className="w-4 h-4" />
+                  {uploading ? "Učitavanje..." : "Upload"}
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploading} />
+              </label>
+              <Input value={form.logo_url} onChange={(e) => setForm((f) => ({ ...f, logo_url: e.target.value }))} placeholder="ili URL" className="text-xs" />
             </div>
 
-            <div>
-              <Label>Website</Label>
-              <Input value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} placeholder="https://..." />
-            </div>
+            {/* Fields column */}
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <Label>Naziv *</Label>
+                  <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Naziv kompanije" />
+                </div>
+                <div>
+                  <Label>Kategorija</Label>
+                  <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as PartnerCategory, package: v === "company" ? "standard" : null }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(CATEGORY_LABELS) as PartnerCategory[]).map((cat) => (
+                        <SelectItem key={cat} value={cat}>{CATEGORY_LABELS[cat]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.category === "company" && (
+                  <div>
+                    <Label>Paket (default)</Label>
+                    <Select value={form.package || "standard"} onValueChange={(v) => setForm((f) => ({ ...f, package: v as PartnerPackage }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {PACKAGE_ORDER.map((pkg) => (
+                          <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
 
-            <div>
-              <Label>Opis</Label>
-              <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Kratak opis partnera" rows={3} />
-            </div>
+              <div>
+                <Label>Website</Label>
+                <Input value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} placeholder="https://..." />
+              </div>
 
-            <div>
-              <Label>Redoslijed prikaza</Label>
-              <Input type="number" value={form.display_order} onChange={(e) => setForm((f) => ({ ...f, display_order: parseInt(e.target.value) || 0 }))} />
-            </div>
+              <div>
+                <Label>Opis</Label>
+                <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Kratak opis partnera" rows={3} />
+              </div>
 
-            <div className="flex items-center gap-3">
-              <Switch checked={form.visible} onCheckedChange={(v) => setForm((f) => ({ ...f, visible: v }))} />
-              <Label>Vidljiv na javnoj stranici</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                <div>
+                  <Label>Redoslijed prikaza</Label>
+                  <Input type="number" value={form.display_order} onChange={(e) => setForm((f) => ({ ...f, display_order: parseInt(e.target.value) || 0 }))} />
+                </div>
+                <div className="flex items-center gap-3 h-10">
+                  <Switch checked={form.visible} onCheckedChange={(v) => setForm((f) => ({ ...f, visible: v }))} />
+                  <Label>Vidljiv na javnoj stranici</Label>
+                </div>
+              </div>
             </div>
+          </div>
 
-            {editingPartner && (
+          {editingPartner && (
               <div className="border-t border-border/40 pt-4">
                 <Label className="text-sm font-semibold">Godine učešća</Label>
                 <p className="text-xs text-muted-foreground mt-1 mb-3">
                   Dodaj svaku godinu i paket — prihod se automatski računa u Finansije.
                 </p>
-                <div className="space-y-2 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                   {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => (
                     <div key={pp.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
                       <Badge variant="outline" className="font-mono">{pp.year}</Badge>
@@ -437,7 +443,7 @@ export default function PartnersManager() {
                     </div>
                   ))}
                   {(editingPartner.participations ?? []).length === 0 && (
-                    <p className="text-xs text-muted-foreground italic">Još nema učešća.</p>
+                    <p className="text-xs text-muted-foreground italic sm:col-span-2">Još nema učešća.</p>
                   )}
                 </div>
                 <div className="flex items-end gap-2">
@@ -469,12 +475,11 @@ export default function PartnersManager() {
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSave} disabled={createPartner.isPending || updatePartner.isPending}>
-                {editingPartner ? "Sačuvaj" : "Dodaj"}
-              </Button>
-            </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-border/40 mt-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+            <Button onClick={handleSave} disabled={createPartner.isPending || updatePartner.isPending}>
+              {editingPartner ? "Sačuvaj" : "Dodaj"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

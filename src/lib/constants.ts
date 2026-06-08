@@ -65,6 +65,13 @@ export const TIMELINE_YEARS = [
 export const EESTEC_WEBSITE = "https://www.eestec-sa.ba/";
 export const EESTEC_ORG_NAME = "EESTEC LC Sarajevo";
 
+// JobFAIR social links
+export const JOBFAIR_SOCIALS = {
+  instagram: "https://www.instagram.com/jobfair.ba/",
+  linkedin: "https://www.linkedin.com/company/jobfair-sarajevo/",
+  facebook: "https://www.facebook.com/JobFairSarajevo/",
+} as const;
+
 // Filter options
 export const JOB_AD_FILTERS = {
   all: "Svi",

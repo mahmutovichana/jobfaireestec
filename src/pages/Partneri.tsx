@@ -5,8 +5,9 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { usePartners, PACKAGE_LABELS, type Partner, type PartnerPackage } from "@/hooks/usePartners";
-import { COPYRIGHT_TEXT, EESTEC_WEBSITE, EESTEC_ORG_NAME } from "@/lib/constants";
 import { SEO } from "@/components/SEO";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 /* ── Package accent colors ── */
 const PACKAGE_ACCENT: Record<PartnerPackage, string> = {
@@ -141,28 +142,7 @@ export default function Partneri() {
         description="Kompanije učesnice, mediji i sponzori koji podržavaju JobFAIR sajam zapošljavanja u BiH."
         path="/partneri"
       />
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-6 lg:px-8">
-          <Link to="/">
-            <Logo size="md" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/novosti">Novosti</Link>
-            </Button>
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/oglasi">Oglasi</Link>
-            </Button>
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/partneri">Partneri</Link>
-            </Button>
-            <Button variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to="/auth">Prijava</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar />
 
       {/* Hero */}
       <section className="py-20 lg:py-28 text-center px-6">
@@ -219,18 +199,7 @@ export default function Partneri() {
         </>
       )}
 
-      {/* Footer */}
-      <footer className="py-12 px-6 lg:px-8 border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <a href={EESTEC_WEBSITE} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              {EESTEC_ORG_NAME}
-            </a>
-            <span>{COPYRIGHT_TEXT}</span>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

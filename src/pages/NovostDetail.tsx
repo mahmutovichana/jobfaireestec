@@ -1,24 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useNewsPost } from "@/hooks/useNews";
 import { ArrowLeft, CalendarDays, X } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const NovostDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: post, isLoading } = useNewsPost(id);
-  const [navVisible, setNavVisible] = useState(false);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
-
-  useEffect(() => {
-    const handleScroll = () => setNavVisible(window.scrollY > 80);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   if (isLoading) {
     return (
@@ -66,24 +60,7 @@ const NovostDetail = () => {
           publisher: { "@type": "Organization", name: "JobFAIR" },
         }}
       />
-      {/* Navbar */}
-      <motion.nav
-        className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-md"
-        initial={{ y: -100 }}
-        animate={{ y: navVisible ? 0 : -100 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-[72px] px-6 lg:px-8">
-          <Link to="/">
-            <Logo size="md" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-sm font-medium" asChild>
-              <Link to="/auth">Prijava</Link>
-            </Button>
-          </div>
-        </div>
-      </motion.nav>
+      <PublicNavbar />
 
       {/* Content */}
       <article className="pt-24 pb-20 lg:pt-32">
@@ -175,15 +152,7 @@ const NovostDetail = () => {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="py-12 px-6 lg:px-8 border-t border-border">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Logo size="md" />
-          <span className="text-sm text-muted-foreground">
-            © 2026 JobFAIR. Sva prava zadržana.
-          </span>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 };
