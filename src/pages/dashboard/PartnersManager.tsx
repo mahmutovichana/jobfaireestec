@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs as InnerTabs, TabsContent as InnerTabsContent, TabsList as InnerTabsList, TabsTrigger as InnerTabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart, Search } from "lucide-react";
 import {
@@ -332,12 +333,119 @@ export default function PartnersManager() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-5xl max-h-[88vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{editingPartner ? "Uredi partnera" : "Dodaj partnera"}</DialogTitle>
           </DialogHeader>
 
-          <div className="grid md:grid-cols-[200px_1fr] gap-6 pt-2">
+          {editingPartner ? (
+            <InnerTabs defaultValue="info" className="flex-1 overflow-hidden flex flex-col">
+              <InnerTabsList className="self-start">
+                <InnerTabsTrigger value="info">Osnovni podaci</InnerTabsTrigger>
+                <InnerTabsTrigger value="years">Godine učešća ({(editingPartner.participations ?? []).length})</InnerTabsTrigger>
+              </InnerTabsList>
+              <InnerTabsContent value="info" className="flex-1 overflow-y-auto mt-4">
+                <PartnerInfoFields
+                  form={form}
+                  setForm={setForm}
+                  uploading={uploading}
+                  handleLogoUpload={handleLogoUpload}
+                />
+              </InnerTabsContent>
+              <InnerTabsContent value="years" className="flex-1 overflow-y-auto mt-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Dodaj svaku godinu i paket — prihod se automatski računa u Finansije.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                    {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => (
+                      <div key={pp.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+                        <Badge variant="outline" className="font-mono">{pp.year}</Badge>
+                        <Select
+                          value={pp.package || "standard"}
+                          onValueChange={(v) => updateParticipation.mutate({ id: pp.id, package: v as PartnerPackage })}
+                        >
+                          <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {PACKAGE_ORDER.map((pkg) => (
+                              <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteParticipation.mutate(pp.id)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    {(editingPartner.participations ?? []).length === 0 && (
+                      <p className="text-xs text-muted-foreground italic sm:col-span-2">Još nema učešća.</p>
+                    )}
+                  </div>
+                  <div className="flex items-end gap-2 border-t border-border/40 pt-3">
+                    <div className="flex-1">
+                      <Label className="text-xs">Godina</Label>
+                      <Input type="number" value={newYear} onChange={(e) => setNewYear(parseInt(e.target.value) || CURRENT_YEAR)} className="h-9" />
+                    </div>
+                    <div className="flex-1">
+                      <Label className="text-xs">Paket</Label>
+                      <Select value={newPkg} onValueChange={(v) => setNewPkg(v as PartnerPackage)}>
+                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {PACKAGE_ORDER.map((pkg) => (
+                            <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => addParticipation.mutate({ partner_id: editingPartner.id, year: newYear, package: newPkg })}
+                      disabled={addParticipation.isPending}
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Dodaj
+                    </Button>
+                  </div>
+                </div>
+              </InnerTabsContent>
+            </InnerTabs>
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <PartnerInfoFields
+                form={form}
+                setForm={setForm}
+                uploading={uploading}
+                handleLogoUpload={handleLogoUpload}
+              />
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border/40 mt-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+            <Button onClick={handleSave} disabled={createPartner.isPending || updatePartner.isPending}>
+              {editingPartner ? "Sačuvaj" : "Dodaj"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function PartnerInfoFields({
+  form,
+  setForm,
+  uploading,
+  handleLogoUpload,
+}: {
+  form: typeof emptyForm;
+  setForm: React.Dispatch<React.SetStateAction<typeof emptyForm>>;
+  uploading: boolean;
+  handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="grid md:grid-cols-[200px_1fr] gap-6">
             {/* Logo column */}
             <div className="space-y-3">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Logo</Label>
@@ -414,75 +522,6 @@ export default function PartnersManager() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {editingPartner && (
-              <div className="border-t border-border/40 pt-4">
-                <Label className="text-sm font-semibold">Godine učešća</Label>
-                <p className="text-xs text-muted-foreground mt-1 mb-3">
-                  Dodaj svaku godinu i paket — prihod se automatski računa u Finansije.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-                  {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => (
-                    <div key={pp.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
-                      <Badge variant="outline" className="font-mono">{pp.year}</Badge>
-                      <Select
-                        value={pp.package || "standard"}
-                        onValueChange={(v) => updateParticipation.mutate({ id: pp.id, package: v as PartnerPackage })}
-                      >
-                        <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {PACKAGE_ORDER.map((pkg) => (
-                            <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteParticipation.mutate(pp.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  ))}
-                  {(editingPartner.participations ?? []).length === 0 && (
-                    <p className="text-xs text-muted-foreground italic sm:col-span-2">Još nema učešća.</p>
-                  )}
-                </div>
-                <div className="flex items-end gap-2">
-                  <div className="flex-1">
-                    <Label className="text-xs">Godina</Label>
-                    <Input type="number" value={newYear} onChange={(e) => setNewYear(parseInt(e.target.value) || CURRENT_YEAR)} className="h-8" />
-                  </div>
-                  <div className="flex-1">
-                    <Label className="text-xs">Paket</Label>
-                    <Select value={newPkg} onValueChange={(v) => setNewPkg(v as PartnerPackage)}>
-                      <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {PACKAGE_ORDER.map((pkg) => (
-                          <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addParticipation.mutate({ partner_id: editingPartner.id, year: newYear, package: newPkg })}
-                    disabled={addParticipation.isPending}
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Dodaj
-                  </Button>
-                </div>
-              </div>
-            )}
-
-          <div className="flex justify-end gap-3 pt-4 border-t border-border/40 mt-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-            <Button onClick={handleSave} disabled={createPartner.isPending || updatePartner.isPending}>
-              {editingPartner ? "Sačuvaj" : "Dodaj"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

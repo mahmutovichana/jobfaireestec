@@ -67,9 +67,9 @@ export const EESTEC_ORG_NAME = "EESTEC LC Sarajevo";
 
 // JobFAIR social links
 export const JOBFAIR_SOCIALS = {
-  instagram: "https://www.instagram.com/jobfair.ba/",
-  linkedin: "https://www.linkedin.com/company/jobfair-sarajevo/",
-  facebook: "https://www.facebook.com/JobFairSarajevo/",
+  instagram: "https://www.instagram.com/jobfair.sarajevo/",
+  linkedin: "https://www.linkedin.com/company/jobfair-iskoristi-svoju-sansu",
+  facebook: "https://www.facebook.com/JobfairIskoristiSvojuSansu",
 } as const;
 
 // Filter options
