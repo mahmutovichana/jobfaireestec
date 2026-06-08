@@ -64,11 +64,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     navigate("/auth");
   };
 
-  const baseItems = isAdmin ? adminNavItems : companyNavItems;
-  const allItems = [
-    ...(isAdmin ? [{ title: "Zahtjevi", url: "/dashboard/access-requests", icon: ShieldCheck }] : []),
-    ...baseItems,
-  ];
+  let allItems: { title: string; url: string; icon: typeof Home }[];
+  if (isAdmin) {
+    // Insert "Zahtjevi" right after "Upiti" and before "Analitika".
+    const items = [...adminNavItems];
+    const upitiIdx = items.findIndex((i) => i.url === "/dashboard/company-inquiries");
+    const insertAt = upitiIdx >= 0 ? upitiIdx + 1 : items.length;
+    items.splice(insertAt, 0, { title: "Zahtjevi", url: "/dashboard/access-requests", icon: ShieldCheck });
+    allItems = items;
+  } else {
+    allItems = companyNavItems;
+  }
 
   const isActive = (url: string) => {
     if (url === "/dashboard") return pathname === "/dashboard";

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,8 @@ const SettingsPage = () => {
   const [companySlug, setCompanySlug] = useState("");
   const [initialized, setInitialized] = useState(false);
 
-  if (profile && !initialized) {
+  useEffect(() => {
+    if (!profile || initialized) return;
     setFullName(profile.full_name || "");
     setCompany(profile.company || "");
     setWebsite((profile as any).website || "");
@@ -40,7 +41,7 @@ const SettingsPage = () => {
     setSocialLinks(Array.isArray(links) ? links : []);
     setCompanySlug((profile as any).company_slug || "");
     setInitialized(true);
-  }
+  }, [profile, initialized]);
 
   const handleSave = async () => {
     try {
