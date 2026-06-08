@@ -30,7 +30,7 @@ export function useTeamMembers(onlyVisible = false) {
           .select("*")
           .order("display_order", { ascending: true });
         if (error) throw error;
-        return (data ?? []) as TeamMember[];
+        return (data ?? []) as unknown as TeamMember[];
       }
       const { data, error } = await supabase
         .from("team_members")
