@@ -5,6 +5,7 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useIsAdmin } from "@/hooks/useUserRole";
+import { useBoardAccess } from "@/hooks/useBoardAccess";
 import { usePendingRequestCount } from "@/hooks/useAccessRequests";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -25,6 +26,7 @@ import {
   MessageSquare,
   ShieldCheck,
   ScrollText,
+  Wallet,
 } from "lucide-react";
 
 const adminNavItems = [
@@ -52,6 +54,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
   const { isAdmin } = useIsAdmin();
+  const { isBoard } = useBoardAccess();
   const { data: pendingCount = 0 } = usePendingRequestCount();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -71,7 +74,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const upitiIdx = items.findIndex((i) => i.url === "/dashboard/company-inquiries");
     const insertAt = upitiIdx >= 0 ? upitiIdx + 1 : items.length;
     items.splice(insertAt, 0, { title: "Zahtjevi", url: "/dashboard/access-requests", icon: ShieldCheck });
+    // Treasury for board members (admins always qualify)
+    const analyticsIdx = items.findIndex((i) => i.url === "/dashboard/analytics");
+    const treasuryAt = analyticsIdx >= 0 ? analyticsIdx : items.length;
+    items.splice(treasuryAt, 0, { title: "Finansije", url: "/dashboard/treasury", icon: Wallet });
     allItems = items;
+  } else if (isBoard) {
+    // Non-admin UO members get a minimal nav with Treasury
+    allItems = [
+      { title: "Početna", url: "/dashboard/home", icon: Home },
+      { title: "Finansije", url: "/dashboard/treasury", icon: Wallet },
+      { title: "Moj profil", url: "/dashboard/settings", icon: Settings },
+    ];
   } else {
     allItems = companyNavItems;
   }
