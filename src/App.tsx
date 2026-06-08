@@ -8,6 +8,8 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { initClarity } from "@/lib/clarity";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -50,6 +52,14 @@ function ScrollToTop() {
   return null;
 }
 
+function AnalyticsTracker() {
+  usePageTracking();
+  useEffect(() => {
+    initClarity();
+  }, []);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="app-theme">
@@ -59,6 +69,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
+            <AnalyticsTracker />
             <Routes>
               {/* Public */}
               <Route path="/" element={<Landing />} />
