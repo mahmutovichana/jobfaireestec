@@ -1,4 +1,4 @@
-import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase } from "lucide-react";
+import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase, Globe } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -6,6 +6,7 @@ import {
 import { useRegistrationStats } from "@/hooks/useRegistrations";
 import { usePartners } from "@/hooks/usePartners";
 import { useEvents } from "@/hooks/useEvents";
+import { usePageViews } from "@/hooks/usePageViews";
 import { useMemo } from "react";
 import { format, parseISO, startOfWeek } from "date-fns";
 
@@ -22,8 +23,40 @@ const Analytics = () => {
   const { data: stats, isLoading: statsLoading } = useRegistrationStats();
   const { data: partners = [], isLoading: partnersLoading } = usePartners();
   const { data: events = [], isLoading: eventsLoading } = useEvents();
+  const { data: pageViews = [], isLoading: pvLoading } = usePageViews(30);
 
-  const isLoading = statsLoading || partnersLoading || eventsLoading;
+  const isLoading = statsLoading || partnersLoading || eventsLoading || pvLoading;
+
+  // Top traffic sources (last 30 days, all pages)
+  const topSources = useMemo(() => {
+    const map: Record<string, number> = {};
+    pageViews.forEach((pv) => {
+      const src = pv.referrer_domain || "Direktno";
+      map[src] = (map[src] || 0) + 1;
+    });
+    return Object.entries(map)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8);
+  }, [pageViews]);
+
+  // Top sources broken down by page (path)
+  const sourcesByPage = useMemo(() => {
+    const pageMap: Record<string, Record<string, number>> = {};
+    pageViews.forEach((pv) => {
+      const src = pv.referrer_domain || "Direktno";
+      if (!pageMap[pv.path]) pageMap[pv.path] = {};
+      pageMap[pv.path][src] = (pageMap[pv.path][src] || 0) + 1;
+    });
+    return Object.entries(pageMap)
+      .map(([path, sources]) => {
+        const sorted = Object.entries(sources).sort((a, b) => b[1] - a[1]);
+        const total = sorted.reduce((s, [, v]) => s + v, 0);
+        return { path, total, top: sorted.slice(0, 3) };
+      })
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  }, [pageViews]);
 
   const perEventData = useMemo(() => {
     if (!stats?.events || !stats?.registrations) return [];
@@ -108,7 +141,7 @@ const Analytics = () => {
     { label: "Ukupno partnera", value: partners.length, icon: Building2 },
     { label: "Kompanije", value: partners.filter(p => p.category === "company").length, icon: Briefcase },
     { label: "Medijski partneri", value: partners.filter(p => p.category === "media").length, icon: Radio },
-    { label: "Ukupno evenata", value: events.length, icon: FileText },
+    { label: "Posjete (30d)", value: pageViews.length, icon: Globe },
   ];
 
   return (
@@ -255,6 +288,55 @@ const Analytics = () => {
           ))}
           {eventsByStatus.length === 0 && (
             <p className="col-span-3 text-muted-foreground text-center py-8 text-sm">Nema evenata.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Traffic sources */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-1">Top izvori prometa (30 dana)</h3>
+          <p className="text-xs text-muted-foreground mb-4">Odakle posjetitelji dolaze na sajt</p>
+          {topSources.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topSources} layout="vertical" margin={{ left: 8, right: 16, top: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                  <XAxis type="number" className="text-xs" allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" width={120} className="text-xs" tick={{ fontSize: 11 }} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} />
+                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka o posjetama.</p>
+          )}
+        </div>
+
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-1">Izvori po stranicama</h3>
+          <p className="text-xs text-muted-foreground mb-4">Najposjećenije stranice i top 3 izvora</p>
+          {sourcesByPage.length > 0 ? (
+            <div className="space-y-3 max-h-72 overflow-y-auto">
+              {sourcesByPage.map((p) => (
+                <div key={p.path} className="p-3 rounded-lg bg-muted/30">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <code className="text-sm font-medium text-foreground truncate">{p.path}</code>
+                    <span className="text-xs text-muted-foreground shrink-0 ml-2">{p.total} posjeta</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {p.top.map(([src, count]) => (
+                      <span key={src} className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        {src} · {count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
           )}
         </div>
       </div>
