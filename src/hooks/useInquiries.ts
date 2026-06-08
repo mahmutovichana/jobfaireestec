@@ -37,6 +37,24 @@ export function useCreateInquiry() {
         .select()
         .single();
       if (error) throw error;
+
+      // Fire-and-forget confirmation email (don't block UI on email errors)
+      try {
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "contact-inquiry-confirmation",
+            recipientEmail: inquiry.email,
+            idempotencyKey: `inquiry-${data.id}`,
+            templateData: {
+              company_name: inquiry.company_name,
+              contact_person: inquiry.contact_person,
+            },
+          },
+        });
+      } catch (e) {
+        console.warn("Failed to enqueue inquiry confirmation email", e);
+      }
+
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["company-inquiries"] }),
