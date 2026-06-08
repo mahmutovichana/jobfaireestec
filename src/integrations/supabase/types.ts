@@ -780,7 +780,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_team_members: {
+        Row: {
+          committee: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string | null
+          linkedin_url: string | null
+          name: string | null
+          photo_url: string | null
+          role: string | null
+          updated_at: string | null
+          visible: boolean | null
+        }
+        Insert: {
+          committee?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          linkedin_url?: string | null
+          name?: string | null
+          photo_url?: string | null
+          role?: string | null
+          updated_at?: string | null
+          visible?: boolean | null
+        }
+        Update: {
+          committee?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string | null
+          linkedin_url?: string | null
+          name?: string | null
+          photo_url?: string | null
+          role?: string | null
+          updated_at?: string | null
+          visible?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
