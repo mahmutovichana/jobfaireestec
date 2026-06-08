@@ -7,16 +7,11 @@ import { useJobAds } from "@/hooks/useJobAds";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { SEO } from "@/components/SEO";
-import { ROUTES, JOB_AD_FILTERS, type JobAdFilterKey } from "@/lib/constants";
+import { JOB_AD_FILTERS, type JobAdFilterKey } from "@/lib/constants";
 import {
   CalendarDays, ArrowLeft, ExternalLink, Building2, Search, X,
 } from "lucide-react";
 import { format, isPast } from "date-fns";
-
-const navItems = [
-  { label: "Novosti", to: ROUTES.NOVOSTI },
-  { label: "Prijava", to: ROUTES.AUTH },
-];
 
 const Oglasi = () => {
   const { data: ads, isLoading } = useJobAds(true);
@@ -53,7 +48,7 @@ const Oglasi = () => {
         description="Aktuelni oglasi za posao i prakse od kompanija učesnica JobFAIR sajma zapošljavanja u Sarajevu."
         path="/oglasi"
       />
-      <PublicNavbar items={navItems} showRegister={false} />
+      <PublicNavbar />
 
       {/* Header */}
       <section className="pt-24 pb-8 lg:pt-32 lg:pb-12">

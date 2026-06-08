@@ -7,14 +7,8 @@ import { useNewsPosts } from "@/hooks/useNews";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { SEO } from "@/components/SEO";
-import { ROUTES } from "@/lib/constants";
 import { CalendarDays, ArrowRight, ArrowLeft, Search, X } from "lucide-react";
 import { format } from "date-fns";
-
-const navItems = [
-  { label: "Oglasi", to: ROUTES.OGLASI },
-  { label: "Prijava", to: ROUTES.AUTH },
-];
 
 const Novosti = () => {
   const { data: posts, isLoading } = useNewsPosts(true);
@@ -39,7 +33,7 @@ const Novosti = () => {
         description="Najnovije vijesti, obavještenja i novosti vezane za JobFAIR sajam zapošljavanja u Sarajevu."
         path="/novosti"
       />
-      <PublicNavbar items={navItems} showRegister={false} />
+      <PublicNavbar />
 
       {/* Header */}
       <section className="pt-24 pb-8 lg:pt-32 lg:pb-12">
