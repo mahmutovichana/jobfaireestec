@@ -49,7 +49,9 @@ Deno.serve(async (req) => {
 
     console.log(`Fetched ${items.length} posts from RapidAPI`);
 
-    const posts = items.slice(0, 6);
+    // Process all returned posts so newly published ones aren't missed
+    // when older posts still occupy the top of the feed.
+    const posts = items;
 
     const igIds = posts
       .map((p: any) => p.code || p.id || (p.pk != null ? String(p.pk) : null))
