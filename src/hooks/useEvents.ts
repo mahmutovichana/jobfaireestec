@@ -18,7 +18,6 @@ export function useEvents(search?: string) {
       if (error) throw error;
       return data as Event[];
     },
-    enabled: !!user,
   });
 }
 
