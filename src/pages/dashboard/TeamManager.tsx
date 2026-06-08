@@ -36,6 +36,8 @@ import {
 
 const DEFAULT_COMMITTEES = ["Organizacioni odbor"];
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 const emptyForm = {
   name: "",
   role: "",
@@ -46,6 +48,7 @@ const emptyForm = {
   phone: "",
   display_order: 0,
   visible: true,
+  year: CURRENT_YEAR,
 };
 
 export default function TeamManager() {
@@ -65,6 +68,7 @@ export default function TeamManager() {
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterCommittee, setFilterCommittee] = useState("all");
+  const [filterYear, setFilterYear] = useState<number | "all">(CURRENT_YEAR);
 
   const committees = useMemo(() => {
     const set = new Set(members.map((m) => m.committee));
@@ -72,7 +76,14 @@ export default function TeamManager() {
     return Array.from(set);
   }, [members]);
 
+  const years = useMemo(() => {
+    const set = new Set<number>(members.map((m) => m.year));
+    set.add(CURRENT_YEAR);
+    return Array.from(set).sort((a, b) => b - a);
+  }, [members]);
+
   const filtered = members
+    .filter((m) => filterYear === "all" || m.year === filterYear)
     .filter((m) => filterCommittee === "all" || m.committee === filterCommittee)
     .filter((m) => m.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -103,6 +114,7 @@ export default function TeamManager() {
       phone: m.phone || "",
       display_order: m.display_order,
       visible: m.visible,
+      year: m.year ?? CURRENT_YEAR,
     });
     setDialogOpen(true);
   };
@@ -180,12 +192,53 @@ export default function TeamManager() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={String(filterYear)} onValueChange={(v) => setFilterYear(v === "all" ? "all" : parseInt(v))}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve godine</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Button onClick={openCreate} className="rounded-full gap-2">
           <Plus className="w-4 h-4" />
           Dodaj člana
         </Button>
       </div>
+
+      {/* Year timeline */}
+      {years.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setFilterYear("all")}
+            className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors whitespace-nowrap ${
+              filterYear === "all" ? "bg-foreground text-background border-foreground" : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted"
+            }`}
+          >
+            Cijeli historijat
+          </button>
+          {years.map((y) => {
+            const count = members.filter((m) => m.year === y).length;
+            return (
+              <button
+                key={y}
+                onClick={() => setFilterYear(y)}
+                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors whitespace-nowrap flex items-center gap-2 ${
+                  filterYear === y ? "bg-foreground text-background border-foreground" : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted"
+                }`}
+              >
+                {y === CURRENT_YEAR && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                {y}
+                <span className="opacity-60">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Učitavanje...</div>
@@ -278,6 +331,11 @@ export default function TeamManager() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Godina mandata</Label>
+              <Input type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: parseInt(e.target.value) || CURRENT_YEAR }))} />
+              <p className="text-xs text-muted-foreground mt-1">Trenutna godina: {CURRENT_YEAR}</p>
             </div>
             <div>
               <Label>Fotografija</Label>
