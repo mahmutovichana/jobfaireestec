@@ -9,6 +9,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Upload, Search, Linkedin, Users } from "lucide-react";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem } from "@/components/SortableItem";
+import { useReorderItems } from "@/hooks/useReorder";
+import {
   useTeamMembers,
   useCreateTeamMember,
   useUpdateTeamMember,
@@ -36,6 +53,11 @@ export default function TeamManager() {
   const createMember = useCreateTeamMember();
   const updateMember = useUpdateTeamMember();
   const deleteMember = useDeleteTeamMember();
+  const reorderTeam = useReorderItems("team_members", ["team-members"]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<TeamMember | null>(null);
@@ -113,6 +135,20 @@ export default function TeamManager() {
     await deleteMember.mutateAsync(id);
   };
 
+  const handleDragEnd = (event: DragEndEvent, groupMembers: TeamMember[]) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = groupMembers.findIndex((m) => m.id === active.id);
+    const newIndex = groupMembers.findIndex((m) => m.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(groupMembers, oldIndex, newIndex);
+    const groupIds = new Set(groupMembers.map((m) => m.id));
+    const fullOrder = members.map((m) => m.id);
+    let i = 0;
+    const newFull = fullOrder.map((id) => (groupIds.has(id) ? reordered[i++].id : id));
+    reorderTeam.mutate(newFull);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -165,12 +201,20 @@ export default function TeamManager() {
                 <Badge variant="secondary" className="text-xs">{members.length}</Badge>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-primary/30 transition-all"
-                  >
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => handleDragEnd(e, members)}
+              >
+                <SortableContext items={members.map((m) => m.id)} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {members.map((member) => (
+                      <SortableItem
+                        key={member.id}
+                        id={member.id}
+                        as="div"
+                        className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-primary/30 transition-all"
+                      >
                     <div className="aspect-square bg-muted/30 overflow-hidden">
                       {member.photo_url ? (
                         <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
@@ -199,9 +243,11 @@ export default function TeamManager() {
                         Skriveno
                       </div>
                     )}
+                      </SortableItem>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             </div>
           ))}
         </div>
