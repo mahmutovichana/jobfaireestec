@@ -48,6 +48,42 @@ export function useCreateRegistration() {
       if (error) {
         throw error;
       }
+
+      // Fire-and-forget confirmation email
+      const email =
+        data["Email Address"] || data["Email"] || data["Email adresa"] || data["E-mail"];
+      const fullName =
+        data["Full Name"] || data["Name"] || data["Ime i prezime"] || data["Ime"];
+      if (email) {
+        try {
+          // Fetch event for nice subject/body
+          const { data: ev } = await supabase
+            .from("events")
+            .select("name, event_date")
+            .eq("id", event_id)
+            .maybeSingle();
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "event-registration-confirmation",
+              recipientEmail: email,
+              idempotencyKey: `registration-${result}`,
+              templateData: {
+                full_name: fullName,
+                event_name: ev?.name,
+                event_date: ev?.event_date
+                  ? new Date(ev.event_date).toLocaleString("bs-BA", {
+                      dateStyle: "long",
+                      timeStyle: "short",
+                    })
+                  : undefined,
+              },
+            },
+          });
+        } catch (e) {
+          console.warn("Failed to enqueue registration confirmation email", e);
+        }
+      }
+
       return result;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["registrations"] }),
