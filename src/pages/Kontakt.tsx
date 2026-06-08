@@ -273,6 +273,7 @@ export default function Kontakt() {
           </form>
         </motion.div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

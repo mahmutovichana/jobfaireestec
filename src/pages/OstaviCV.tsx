@@ -321,6 +321,7 @@ export default function OstaviCV() {
           </form>
         </motion.div>
       </div>
+      <PublicFooter />
     </div>
   );
 }
