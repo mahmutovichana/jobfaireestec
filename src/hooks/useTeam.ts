@@ -14,6 +14,7 @@ export interface TeamMember {
   phone: string | null;
   display_order: number;
   visible: boolean;
+  year: number;
   user_id: string;
   created_at: string;
   updated_at: string;

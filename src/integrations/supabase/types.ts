@@ -513,6 +513,39 @@ export type Database = {
         }
         Relationships: []
       }
+      package_prices: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          package: Database["public"]["Enums"]["partner_package"]
+          price: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          package: Database["public"]["Enums"]["partner_package"]
+          price?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          package?: Database["public"]["Enums"]["partner_package"]
+          price?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           created_at: string
@@ -727,6 +760,7 @@ export type Database = {
           updated_at: string
           user_id: string
           visible: boolean
+          year: number
         }
         Insert: {
           committee?: string
@@ -742,6 +776,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           visible?: boolean
+          year?: number
         }
         Update: {
           committee?: string
@@ -757,6 +792,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           visible?: boolean
+          year?: number
         }
         Relationships: []
       }
@@ -792,6 +828,7 @@ export type Database = {
           role: string | null
           updated_at: string | null
           visible: boolean | null
+          year: number | null
         }
         Insert: {
           committee?: string | null
@@ -804,6 +841,7 @@ export type Database = {
           role?: string | null
           updated_at?: string | null
           visible?: boolean | null
+          year?: number | null
         }
         Update: {
           committee?: string | null
@@ -816,6 +854,7 @@ export type Database = {
           role?: string | null
           updated_at?: string | null
           visible?: boolean | null
+          year?: number | null
         }
         Relationships: []
       }
@@ -837,6 +876,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_board_member: { Args: { _user_id: string }; Returns: boolean }
       is_email_approved: { Args: { check_email: string }; Returns: boolean }
       move_to_dlq: {
         Args: {

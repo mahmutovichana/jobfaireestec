@@ -27,6 +27,7 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
 import { useReorderItems } from "@/hooks/useReorder";
+import { useAddParticipation, useDeleteParticipation, useUpdateParticipation } from "@/hooks/usePartnerParticipations";
 import {
   usePartners,
   useCreatePartner,
@@ -71,6 +72,12 @@ export default function PartnersManager() {
   const updatePartner = useUpdatePartner();
   const deletePartner = useDeletePartner();
   const reorderPartners = useReorderItems("partners", ["partners"]);
+  const addParticipation = useAddParticipation();
+  const updateParticipation = useUpdateParticipation();
+  const deleteParticipation = useDeleteParticipation();
+  const CURRENT_YEAR = new Date().getFullYear();
+  const [newYear, setNewYear] = useState<number>(CURRENT_YEAR);
+  const [newPkg, setNewPkg] = useState<PartnerPackage>("standard");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -402,6 +409,65 @@ export default function PartnersManager() {
               <Switch checked={form.visible} onCheckedChange={(v) => setForm((f) => ({ ...f, visible: v }))} />
               <Label>Vidljiv na javnoj stranici</Label>
             </div>
+
+            {editingPartner && (
+              <div className="border-t border-border/40 pt-4">
+                <Label className="text-sm font-semibold">Godine učešća</Label>
+                <p className="text-xs text-muted-foreground mt-1 mb-3">
+                  Dodaj svaku godinu i paket — prihod se automatski računa u Finansije.
+                </p>
+                <div className="space-y-2 mb-3">
+                  {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => (
+                    <div key={pp.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
+                      <Badge variant="outline" className="font-mono">{pp.year}</Badge>
+                      <Select
+                        value={pp.package || "standard"}
+                        onValueChange={(v) => updateParticipation.mutate({ id: pp.id, package: v as PartnerPackage })}
+                      >
+                        <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {PACKAGE_ORDER.map((pkg) => (
+                            <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteParticipation.mutate(pp.id)}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(editingPartner.participations ?? []).length === 0 && (
+                    <p className="text-xs text-muted-foreground italic">Još nema učešća.</p>
+                  )}
+                </div>
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <Label className="text-xs">Godina</Label>
+                    <Input type="number" value={newYear} onChange={(e) => setNewYear(parseInt(e.target.value) || CURRENT_YEAR)} className="h-8" />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs">Paket</Label>
+                    <Select value={newPkg} onValueChange={(v) => setNewPkg(v as PartnerPackage)}>
+                      <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {PACKAGE_ORDER.map((pkg) => (
+                          <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => addParticipation.mutate({ partner_id: editingPartner.id, year: newYear, package: newPkg })}
+                    disabled={addParticipation.isPending}
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Dodaj
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
