@@ -23,12 +23,19 @@ export function useTeamMembers(onlyVisible = false) {
   return useQuery({
     queryKey: ["team-members", onlyVisible],
     queryFn: async () => {
-      let query = supabase
+      // Public/visible-only path uses the email/phone-free view (safe for anon).
+      if (onlyVisible) {
+        const { data, error } = await supabase
+          .from("public_team_members" as any)
+          .select("*")
+          .order("display_order", { ascending: true });
+        if (error) throw error;
+        return (data ?? []) as TeamMember[];
+      }
+      const { data, error } = await supabase
         .from("team_members")
         .select("*")
         .order("display_order", { ascending: true });
-      if (onlyVisible) query = query.eq("visible", true);
-      const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as TeamMember[];
     },
