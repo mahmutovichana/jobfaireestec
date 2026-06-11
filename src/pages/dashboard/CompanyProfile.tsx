@@ -4,18 +4,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { PhotoCropper, type PhotoCrop } from "@/components/PhotoCropper";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Building2, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { SOCIAL_PLATFORMS } from "@/lib/constants";
+import { SOCIAL_PLATFORMS, SOCIAL_ICON_URLS } from "@/lib/constants";
 import { motion } from "framer-motion";
 
 type SocialLink = { platform: string; url: string };
 
 function generateCompanySlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Math.random().toString(36).substring(2, 6);
+}
+
+function isValidUrl(u: string): boolean {
+  if (!u) return false;
+  try {
+    const url = new URL(u.startsWith("http") ? u : `https://${u}`);
+    return !!url.hostname && url.hostname.includes(".");
+  } catch {
+    return false;
+  }
+}
+
+function SocialIcon({ platform }: { platform: string }) {
+  const url = SOCIAL_ICON_URLS[platform];
+  if (!url) return <span className="w-4 h-4 rounded-sm bg-muted-foreground/40 inline-block" />;
+  return (
+    <img
+      src={url.replace("/ffffff", "/64748b")}
+      alt=""
+      className="w-4 h-4 object-contain"
+    />
+  );
 }
 
 export default function CompanyProfile() {
@@ -30,6 +54,9 @@ export default function CompanyProfile() {
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [companySlug, setCompanySlug] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [logoCrop, setLogoCrop] = useState<PhotoCrop | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [tempCrop, setTempCrop] = useState<PhotoCrop | null>(null);
   const [uploading, setUploading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
@@ -42,34 +69,45 @@ export default function CompanyProfile() {
     setSocialLinks(Array.isArray(links) ? links as SocialLink[] : []);
     setCompanySlug(profile.company_slug || "");
     setLogoUrl(profile.avatar_url || "");
+    setLogoCrop(((profile as any).avatar_crop ?? null) as PhotoCrop | null);
     setInitialized(true);
   }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `logos/${user!.id}-${Date.now()}.${ext}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from("partner-logos")
-      .upload(path, file, { upsert: true });
-    
-    if (uploadError) {
-      toast.error("Greška pri uploadu logotipa");
-      setUploading(false);
+    if (!file.type.startsWith("image/")) {
+      toast.error("Molimo odaberite sliku.");
       return;
     }
-    
-    const { data: { publicUrl } } = supabase.storage
-      .from("partner-logos")
-      .getPublicUrl(path);
-    
-    setLogoUrl(publicUrl);
-    setUploading(false);
-    toast.success("Logotip uploadovan!");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Slika je prevelika (max 5MB).");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+      // Path must start with `logos/<user_id>/` to satisfy storage RLS
+      const path = `logos/${user!.id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("partner-logos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from("partner-logos").getPublicUrl(path);
+      setLogoUrl(publicUrl);
+      setLogoCrop({ x: 50, y: 50, zoom: 1 });
+      setTempCrop({ x: 50, y: 50, zoom: 1 });
+      setCropOpen(true);
+      toast.success("Logotip uploadovan! Podesi prikaz.");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Greška pri uploadu logotipa");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const handleSave = async () => {
@@ -77,7 +115,18 @@ export default function CompanyProfile() {
       toast.error("Naziv kompanije je obavezan.");
       return;
     }
-    
+    // Validate social links (platform + valid URL)
+    for (const link of socialLinks) {
+      if (!link.platform || !link.url.trim()) {
+        toast.error("Sve društvene mreže moraju imati platformu i link.");
+        return;
+      }
+      if (!isValidUrl(link.url.trim())) {
+        toast.error(`Neispravan link za ${link.platform}.`);
+        return;
+      }
+    }
+
     try {
       const slug = companySlug || generateCompanySlug(company);
       
@@ -89,8 +138,9 @@ export default function CompanyProfile() {
         company_description: companyDescription,
         social_links: socialLinks as any,
         avatar_url: logoUrl,
+        avatar_crop: logoCrop as any,
         company_slug: slug,
-      });
+      } as any);
       
       if (!companySlug && slug) setCompanySlug(slug);
 
@@ -139,6 +189,9 @@ export default function CompanyProfile() {
   if (isLoading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   }
+
+  const logoObjectPosition = logoCrop ? `${logoCrop.x}% ${logoCrop.y}%` : "center";
+  const logoTransform = logoCrop?.zoom && logoCrop.zoom !== 1 ? `scale(${logoCrop.zoom})` : undefined;
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -190,21 +243,35 @@ export default function CompanyProfile() {
           <Label className="text-sm font-medium">Logotip kompanije</Label>
           <div className="flex items-center gap-4">
             {logoUrl ? (
-              <div className="w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted flex items-center justify-center">
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain p-2" />
+              <div className="w-20 h-20 rounded-xl border border-border overflow-hidden bg-muted">
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: logoObjectPosition, transform: logoTransform, transformOrigin: logoObjectPosition }}
+                />
               </div>
             ) : (
               <div className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex items-center justify-center bg-muted/50">
                 <Building2 className="w-8 h-8 text-muted-foreground/50" />
               </div>
             )}
-            <div>
+            <div className="flex flex-col gap-1.5">
               <label className="cursor-pointer">
                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 <Button variant="outline" size="sm" className="rounded-full" asChild disabled={uploading}>
                   <span>{uploading ? "Upload..." : logoUrl ? "Promijeni logo" : "Dodaj logo"}</span>
                 </Button>
               </label>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => { setTempCrop(logoCrop ?? { x: 50, y: 50, zoom: 1 }); setCropOpen(true); }}
+                  className="text-xs text-primary hover:underline text-left"
+                >
+                  Podesi zoom i poziciju
+                </button>
+              )}
               <p className="text-xs text-muted-foreground mt-1">PNG, JPG. Preporučeno: 400x400px</p>
             </div>
           </div>
@@ -243,39 +310,82 @@ export default function CompanyProfile() {
         </div>
 
         <div className="space-y-3">
-          <Label>Društvene mreže</Label>
+          <div className="flex items-center justify-between gap-3">
+            <Label className="mb-0">Društvene mreže</Label>
+            <Button type="button" variant="ghost" size="sm" onClick={addSocialLink} className="rounded-full h-8">
+              <Plus className="w-4 h-4 mr-1" /> Dodaj mrežu
+            </Button>
+          </div>
           {socialLinks.map((link, i) => (
             <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <Select value={link.platform} onValueChange={v => updateSocialLink(i, "platform", v)}>
-                <SelectTrigger className="w-full sm:w-40 shrink-0 rounded-full">
-                  <SelectValue placeholder="Platforma" />
+                <SelectTrigger className="w-full sm:w-44 shrink-0 rounded-full">
+                  <SelectValue placeholder="Platforma">
+                    {link.platform && (
+                      <span className="flex items-center gap-2">
+                        <SocialIcon platform={link.platform} />
+                        <span>{link.platform}</span>
+                      </span>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {SOCIAL_PLATFORMS.map(p => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                    <SelectItem key={p} value={p}>
+                      <span className="flex items-center gap-2">
+                        <SocialIcon platform={p} />
+                        <span>{p}</span>
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Input
                 value={link.url}
                 onChange={e => updateSocialLink(i, "url", e.target.value)}
-                placeholder="https://…"
-                className="flex-1 rounded-full"
+                placeholder="https://… (obavezno)"
+                required
+                type="url"
+                className={`flex-1 rounded-full ${link.url && !isValidUrl(link.url) ? "border-destructive focus-visible:ring-destructive" : ""}`}
               />
               <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive self-end sm:self-auto" onClick={() => removeSocialLink(i)}>
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
           ))}
-          <Button type="button" variant="outline" size="sm" onClick={addSocialLink} className="rounded-full">
-            <Plus className="w-4 h-4 mr-1" /> Dodaj mrežu
-          </Button>
         </div>
 
         <Button onClick={handleSave} disabled={updateProfile.isPending} className="rounded-full w-full sm:w-auto">
           {updateProfile.isPending ? "Spremanje…" : "Sačuvaj profil kompanije"}
         </Button>
       </motion.div>
+
+      {/* Logo crop dialog */}
+      <Dialog open={cropOpen} onOpenChange={setCropOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Podesi prikaz logotipa</DialogTitle>
+          </DialogHeader>
+          {logoUrl && (
+            <div className="flex justify-center py-2">
+              <PhotoCropper
+                imageUrl={logoUrl}
+                value={tempCrop}
+                onChange={setTempCrop}
+              />
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setCropOpen(false)} className="rounded-full">Otkaži</Button>
+            <Button
+              onClick={() => { setLogoCrop(tempCrop); setCropOpen(false); toast.success("Prikaz spremljen — kliknite Sačuvaj profil."); }}
+              className="rounded-full"
+            >
+              Spremi prikaz
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

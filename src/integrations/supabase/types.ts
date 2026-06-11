@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       access_requests: {
         Row: {
+          approved_at: string | null
           company_domain: string | null
           company_name: string | null
           created_at: string
@@ -28,6 +29,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
           company_domain?: string | null
           company_name?: string | null
           created_at?: string
@@ -40,6 +42,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
           company_domain?: string | null
           company_name?: string | null
           created_at?: string
@@ -652,6 +655,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_crop: Json | null
           avatar_url: string | null
           company: string | null
           company_description: string | null
@@ -664,6 +668,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          avatar_crop?: Json | null
           avatar_url?: string | null
           company?: string | null
           company_description?: string | null
@@ -676,6 +681,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          avatar_crop?: Json | null
           avatar_url?: string | null
           company?: string | null
           company_description?: string | null
@@ -908,6 +914,8 @@ export type Database = {
       }
     }
     Functions: {
+      can_view_cv_database: { Args: { _user_id: string }; Returns: boolean }
+      cleanup_old_audit_logs: { Args: never; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
