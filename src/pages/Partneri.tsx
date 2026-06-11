@@ -22,10 +22,10 @@ const DEFAULT_ACCENT = "from-muted/20 via-muted/10 to-transparent border-border"
 const DEFAULT_BADGE = "bg-muted text-foreground border-border";
 
 /* ── Partner card with description and year/package badges ── */
-function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: number; yearFilter: number | null }) {
+function PartnerCard({ partner, index, yearFilter, typeMap }: { partner: Partner; index: number; yearFilter: number | null; typeMap: Record<string, { label: string; color_class: string }> }) {
   const parts = (partner.participations ?? []).slice().sort((a, b) => b.year - a.year);
   const visibleParts = yearFilter ? parts.filter((p) => p.year === yearFilter) : parts;
-  const pkg = (visibleParts[0]?.package || partner.package || "standard") as PartnerPackage;
+  const pkg = (visibleParts[0]?.package || partner.package || "standard");
 
   return (
     <motion.a
@@ -36,7 +36,7 @@ function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`group relative bg-gradient-to-b ${PACKAGE_ACCENT[pkg]} backdrop-blur-xl border rounded-2xl p-6 text-center hover:scale-[1.02] transition-all duration-500`}
+      className={`group relative bg-gradient-to-b ${PACKAGE_ACCENT[pkg] || DEFAULT_ACCENT} backdrop-blur-xl border rounded-2xl p-6 text-center hover:scale-[1.02] transition-all duration-500`}
     >
       <div className="flex items-center justify-center mb-4">
         {partner.logo_url ? (
@@ -57,17 +57,18 @@ function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: 
       )}
       {visibleParts.length > 0 && (
         <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
-          {visibleParts.map((p) => (
-            <span
-              key={p.id}
-              title={p.package ? `${PACKAGE_LABELS[p.package as PartnerPackage]} paket` : undefined}
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                p.package ? PACKAGE_BADGE[p.package as PartnerPackage] : "bg-white/[0.05] text-muted-foreground border-white/[0.08]"
-              }`}
-            >
-              {p.year}
-            </span>
-          ))}
+          {visibleParts.map((p) => {
+            const t = p.package ? typeMap[p.package] : null;
+            return (
+              <span
+                key={p.id}
+                title={t ? `${t.label} paket` : (p.package ? `${p.package} paket` : undefined)}
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${t?.color_class || DEFAULT_BADGE}`}
+              >
+                {p.year}
+              </span>
+            );
+          })}
         </div>
       )}
       {partner.website && (
