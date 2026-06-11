@@ -110,6 +110,7 @@ export default function TeamManager() {
       role: m.role,
       committee: m.committee,
       photo_url: m.photo_url || "",
+      photo_crop: m.photo_crop,
       linkedin_url: m.linkedin_url || "",
       email: m.email || "",
       phone: m.phone || "",
