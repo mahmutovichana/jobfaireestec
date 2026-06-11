@@ -271,11 +271,16 @@ export default function TeamManager() {
         <div className="text-center py-12 text-muted-foreground">Nema rezultata</div>
       ) : (
         <div className="space-y-8">
-          {grouped.map(([committee, members]) => (
-            <div key={committee}>
+          {grouped.map(([groupYear, members]) => (
+            <div key={groupYear}>
               <div className="flex items-center gap-3 mb-4">
                 <Users className="w-4 h-4 text-primary" />
-                <h3 className="font-display font-bold text-foreground">{committee}</h3>
+                <h3 className="font-display font-bold text-foreground">
+                  Generacija {groupYear}
+                  {groupYear === CURRENT_YEAR && (
+                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-primary">Aktivna</span>
+                  )}
+                </h3>
                 <Badge variant="secondary" className="text-xs">{members.length}</Badge>
               </div>
 
