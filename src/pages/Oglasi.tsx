@@ -69,6 +69,33 @@ const Oglasi = () => {
         title="Oglasi za posao"
         description="Aktuelni oglasi za posao i prakse od kompanija učesnica JobFAIR sajma zapošljavanja u Sarajevu."
         path="/oglasi"
+        jsonLd={ads && ads.length > 0 ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: ads.map((ad, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "JobPosting",
+              title: ad.title,
+              description: ad.description || ad.title,
+              datePosted: ad.created_at,
+              validThrough: ad.deadline || undefined,
+              hiringOrganization: {
+                "@type": "Organization",
+                name: ad.company_name,
+              },
+              jobLocation: {
+                "@type": "Place",
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "Sarajevo",
+                  addressCountry: "BA",
+                },
+              },
+            },
+          })),
+        } : undefined}
       />
       <PublicNavbar />
 
@@ -149,6 +176,7 @@ const Oglasi = () => {
       {/* Ads Grid */}
       <section className="pb-20">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
+          <h2 className="sr-only">Aktuelni oglasi</h2>
           {isLoading ? (
             <div className="grid md:grid-cols-2 gap-6">
               {[...Array(4)].map((_, i) => (

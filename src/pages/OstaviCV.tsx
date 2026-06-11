@@ -101,7 +101,7 @@ export default function OstaviCV() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <SEO title="CV poslan — JobFAIR" description="Vaš CV je uspješno priložen u bazu JobFAIR-a." path="/ostavi-cv" />
+        <SEO title="CV poslan — JobFAIR" description="Hvala! Vaš CV je uspješno priložen u bazu kandidata JobFAIR-a i bit će dostupan kompanijama učesnicama sajma zapošljavanja." path="/ostavi-cv" />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
