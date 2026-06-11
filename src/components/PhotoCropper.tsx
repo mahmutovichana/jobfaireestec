@@ -1,8 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { ZoomIn, ZoomOut } from "lucide-react";
 
 export interface PhotoCrop {
   x: number;
   y: number;
+  zoom?: number;
 }
 
 interface PhotoCropperProps {
@@ -12,19 +14,23 @@ interface PhotoCropperProps {
 }
 
 const CONTAINER_SIZE = 180;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 3;
 
 export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [dragging, setDragging] = useState(false);
+  const [zoom, setZoom] = useState<number>(value?.zoom ?? 1);
   const currentOffsetRef = useRef({ x: 0, y: 0 });
   const dragStartRef = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
   const imgKeyRef = useRef(imageUrl);
   const [, forceRender] = useState(0);
 
-  const scale =
+  const baseScale =
     naturalSize.w > 0 && naturalSize.h > 0
       ? Math.max(CONTAINER_SIZE / naturalSize.w, CONTAINER_SIZE / naturalSize.h)
       : 1;
+  const scale = baseScale * zoom;
 
   const rw = naturalSize.w * scale;
   const rh = naturalSize.h * scale;
@@ -36,6 +42,7 @@ export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
     if (imageUrl !== imgKeyRef.current) {
       imgKeyRef.current = imageUrl;
       setNaturalSize({ w: 0, h: 0 });
+      setZoom(value?.zoom ?? 1);
     }
 
     const maxOX = overflowX / 2;
@@ -119,7 +126,7 @@ export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
         overflowY > 0
           ? Math.max(0, Math.min(100, 50 - (currentOffsetRef.current.y / maxOY) * 50))
           : 50;
-      onChange({ x: Math.round(finalX * 10) / 10, y: Math.round(finalY * 10) / 10 });
+      onChange({ x: Math.round(finalX * 10) / 10, y: Math.round(finalY * 10) / 10, zoom });
     };
 
     window.addEventListener("mousemove", onMouseMove);
@@ -135,7 +142,19 @@ export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
     };
   }, [dragging, overflowX, overflowY, onChange]);
 
-  const isCustom = value && (value.x !== 50 || value.y !== 50);
+  const isCustom = value && (value.x !== 50 || value.y !== 50 || (value.zoom ?? 1) !== 1);
+
+  const commitZoom = (newZoom: number) => {
+    const z = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
+    setZoom(z);
+    onChange({ x: value?.x ?? 50, y: value?.y ?? 50, zoom: z });
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    commitZoom(zoom + delta);
+  };
 
   return (
     <div className="space-y-2">
@@ -144,7 +163,7 @@ export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
         {isCustom && (
           <button
             type="button"
-            onClick={() => onChange({ x: 50, y: 50 })}
+            onClick={() => { setZoom(1); onChange({ x: 50, y: 50, zoom: 1 }); }}
             className="text-xs text-primary hover:underline"
           >
             Reset
@@ -154,6 +173,7 @@ export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
       <div
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
+        onWheel={handleWheel}
         className={`relative rounded-xl overflow-hidden border border-border/50 bg-muted/30 select-none ${
           dragging ? "cursor-grabbing" : "cursor-grab"
         }`}
@@ -163,16 +183,46 @@ export function PhotoCropper({ imageUrl, value, onChange }: PhotoCropperProps) {
           src={imageUrl}
           alt="Preview"
           draggable={false}
-          className="w-full h-full pointer-events-none"
+          className="pointer-events-none absolute top-1/2 left-1/2"
           style={{
-            objectFit: "cover",
-            objectPosition: `${xPct}% ${yPct}%`,
+            width: naturalSize.w * scale,
+            height: naturalSize.h * scale,
+            transform: `translate(calc(-50% + ${currentOffsetRef.current.x}px), calc(-50% + ${currentOffsetRef.current.y}px))`,
+            maxWidth: "none",
           }}
           onLoad={(e) => {
             const img = e.currentTarget;
             setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
           }}
         />
+      </div>
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={() => commitZoom(zoom - 0.1)}
+          className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Smanji"
+        >
+          <ZoomOut className="w-3.5 h-3.5" />
+        </button>
+        <input
+          type="range"
+          min={MIN_ZOOM}
+          max={MAX_ZOOM}
+          step={0.05}
+          value={zoom}
+          onChange={(e) => commitZoom(parseFloat(e.target.value))}
+          className="flex-1 accent-primary"
+        />
+        <button
+          type="button"
+          onClick={() => commitZoom(zoom + 0.1)}
+          className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Uvećaj"
+        >
+          <ZoomIn className="w-3.5 h-3.5" />
+        </button>
+        <span className="text-[10px] text-muted-foreground w-8 text-right tabular-nums">{Math.round(zoom * 100)}%</span>
       </div>
     </div>
   );
