@@ -14,7 +14,7 @@ import {
 } from "@/hooks/useJobAds";
 import {
   Plus, Pencil, Trash2, Image as ImageIcon, X, Eye,
-  Upload, Loader2, ExternalLink, Building2,
+  Upload, Loader2, ExternalLink, Building2, Search,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -55,6 +55,49 @@ const JobAdsManager = () => {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
   const imageRef = useRef<HTMLInputElement>(null);
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "expired">("all");
+  const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"newest" | "deadline" | "title">("newest");
+
+  const adCompanies = useMemo(() => {
+    const set = new Set((ads ?? []).map(a => a.company_name));
+    return Array.from(set).sort();
+  }, [ads]);
+
+  const filteredAds = useMemo(() => {
+    let list = ads ?? [];
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(a =>
+        a.title.toLowerCase().includes(q) ||
+        a.company_name.toLowerCase().includes(q) ||
+        (a.description ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (statusFilter !== "all") {
+      list = list.filter(a => {
+        const expired = a.deadline && new Date(a.deadline) < new Date();
+        if (statusFilter === "published") return a.published && !expired;
+        if (statusFilter === "draft") return !a.published;
+        if (statusFilter === "expired") return !!expired;
+        return true;
+      });
+    }
+    if (companyFilter !== "all") {
+      list = list.filter(a => a.company_name === companyFilter);
+    }
+    return [...list].sort((a, b) => {
+      if (sortBy === "deadline") {
+        const ad = a.deadline ? +new Date(a.deadline) : Infinity;
+        const bd = b.deadline ? +new Date(b.deadline) : Infinity;
+        return ad - bd;
+      }
+      if (sortBy === "title") return a.title.localeCompare(b.title);
+      return +new Date(b.created_at) - +new Date(a.created_at);
+    });
+  }, [ads, search, statusFilter, companyFilter, sortBy]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -125,6 +168,45 @@ const JobAdsManager = () => {
         </Button>
       </div>
 
+      {/* Filters */}
+      {ads && ads.length > 0 && (
+        <div className="rounded-2xl border border-border/50 bg-card p-3 flex flex-wrap items-center gap-2 mb-5">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Pretraži oglase..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 rounded-full text-sm"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-36 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Svi statusi</SelectItem>
+              <SelectItem value="published">Aktivni</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="expired">Istekli</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="w-44 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve firme</SelectItem>
+              {adCompanies.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Najnovije</SelectItem>
+              <SelectItem value="deadline">Po roku</SelectItem>
+              <SelectItem value="title">Po naslovu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -137,18 +219,20 @@ const JobAdsManager = () => {
             </div>
           ))}
         </div>
-      ) : ads?.length === 0 ? (
+      ) : filteredAds.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-2xl border border-border">
           <Building2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-          <h3 className="font-display font-semibold text-foreground mb-2">Nema oglasa</h3>
-          <p className="text-sm text-muted-foreground mb-6">Kreirajte prvi oglas klikom na dugme iznad</p>
-          <Button onClick={openCreate}>
-            <Plus className="w-4 h-4 mr-2" /> Novi oglas
-          </Button>
+          <h3 className="font-display font-semibold text-foreground mb-2">{ads && ads.length > 0 ? "Nema rezultata" : "Nema oglasa"}</h3>
+          <p className="text-sm text-muted-foreground mb-6">{ads && ads.length > 0 ? "Pokušajte drugačije filtere" : "Kreirajte prvi oglas klikom na dugme iznad"}</p>
+          {(!ads || ads.length === 0) && (
+            <Button onClick={openCreate}>
+              <Plus className="w-4 h-4 mr-2" /> Novi oglas
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {ads?.map((ad) => {
+          {filteredAds.map((ad) => {
             const expired = ad.deadline && new Date(ad.deadline) < new Date();
             return (
               <div
@@ -225,84 +309,105 @@ const JobAdsManager = () => {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">{editingId ? "Uredi oglas" : "Novi oglas"}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-5 mt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="ad-title">Naslov *</Label>
-              <Input id="ad-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Npr. Frontend Developer" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="ad-company">Firma *</Label>
-              {companyNames.length > 0 ? (
-                <Select value={form.company_name} onValueChange={(v) => setForm((f) => ({ ...f, company_name: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Odaberi kompaniju" /></SelectTrigger>
-                  <SelectContent>
-                    {companyNames.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="ad-desc">Opis</Label>
-              <Textarea id="ad-desc" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Opis pozicije..." rows={4} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6 mt-2">
+            {/* Left column: main fields */}
+            <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="ad-deadline">Rok prijave</Label>
-                <Input id="ad-deadline" type="datetime-local" value={form.deadline} onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))} />
+                <Label htmlFor="ad-title">Naslov *</Label>
+                <Input id="ad-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Npr. Frontend Developer" />
               </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="ad-link">Eksterni link</Label>
-                <Input id="ad-link" value={form.external_link} onChange={(e) => setForm((f) => ({ ...f, external_link: e.target.value }))} placeholder="https://..." />
+                <Label htmlFor="ad-company">Firma *</Label>
+                {companyNames.length > 0 ? (
+                  <Select value={form.company_name} onValueChange={(v) => setForm((f) => ({ ...f, company_name: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Odaberi kompaniju" /></SelectTrigger>
+                    <SelectContent>
+                      {companyNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="ad-desc">Opis pozicije</Label>
+                <Textarea
+                  id="ad-desc"
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Opišite poziciju, odgovornosti i tražene vještine..."
+                  rows={14}
+                  className="resize-y min-h-[260px]"
+                />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Slika</Label>
-              {form.image_url ? (
-                <div className="relative inline-block">
-                  <img src={form.image_url} alt="Ad" className="h-32 rounded-lg object-cover" />
-                  <button onClick={() => setForm((f) => ({ ...f, image_url: "" }))} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1">
-                    <X className="w-3 h-3" />
-                  </button>
+            {/* Right column: meta + image + publish */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ad-deadline">Rok prijave</Label>
+                  <Input id="ad-deadline" type="datetime-local" value={form.deadline} onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))} />
                 </div>
-              ) : (
+                <div className="space-y-1.5">
+                  <Label htmlFor="ad-link">Eksterni link za prijavu</Label>
+                  <Input id="ad-link" value={form.external_link} onChange={(e) => setForm((f) => ({ ...f, external_link: e.target.value }))} placeholder="https://..." />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Slika oglasa</Label>
+                {form.image_url ? (
+                  <div className="relative">
+                    <img src={form.image_url} alt="Ad" className="w-full aspect-video object-cover rounded-lg" />
+                    <button onClick={() => setForm((f) => ({ ...f, image_url: "" }))} className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    <button
+                      onClick={() => imageRef.current?.click()}
+                      disabled={uploading}
+                      className="w-full aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                          <Upload className="w-5 h-5" />
+                          <span className="text-xs font-medium">Upload sliku</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
                 <div>
-                  <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  <Button variant="outline" onClick={() => imageRef.current?.click()} disabled={uploading}>
-                    {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                    Upload sliku
-                  </Button>
+                  <Label className="font-semibold">Objavi</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Objavljeni oglasi su vidljivi svima</p>
                 </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
-              <div>
-                <Label className="font-semibold">Objavi</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">Objavljeni oglasi su vidljivi svima</p>
+                <Switch checked={form.published} onCheckedChange={(v) => setForm((f) => ({ ...f, published: v }))} />
               </div>
-              <Switch checked={form.published} onCheckedChange={(v) => setForm((f) => ({ ...f, published: v }))} />
             </div>
+          </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSubmit} disabled={isSaving}>
-                {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingId ? "Sačuvaj" : "Kreiraj"}
-              </Button>
-            </div>
+          <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-border/40">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+            <Button onClick={handleSubmit} disabled={isSaving}>
+              {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {editingId ? "Sačuvaj" : "Kreiraj"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

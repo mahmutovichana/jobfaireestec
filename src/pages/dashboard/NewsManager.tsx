@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   useNewsPosts,
   useCreateNewsPost,
@@ -25,6 +26,7 @@ import {
   ArrowLeft,
   Loader2,
   RefreshCw,
+  Search,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -68,6 +70,38 @@ const NewsManager = () => {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const [yearFilter, setYearFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
+
+  const availableYears = useMemo(() => {
+    const years = new Set((posts ?? []).map(p => new Date(p.created_at).getFullYear().toString()));
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [posts]);
+
+  const filteredPosts = useMemo(() => {
+    let list = posts ?? [];
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        (p.summary ?? "").toLowerCase().includes(q) ||
+        (p.content ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (statusFilter !== "all") {
+      list = list.filter(p => (statusFilter === "published" ? p.published : !p.published));
+    }
+    if (yearFilter !== "all") {
+      list = list.filter(p => new Date(p.created_at).getFullYear().toString() === yearFilter);
+    }
+    return [...list].sort((a, b) => {
+      if (sortBy === "oldest") return +new Date(a.created_at) - +new Date(b.created_at);
+      if (sortBy === "title") return a.title.localeCompare(b.title);
+      return +new Date(b.created_at) - +new Date(a.created_at);
+    });
+  }, [posts, search, statusFilter, yearFilter, sortBy]);
 
   const handleInstagramSync = async () => {
     setSyncing(true);
@@ -186,6 +220,44 @@ const NewsManager = () => {
         </div>
       </div>
 
+      {/* Filters */}
+      {posts && posts.length > 0 && (
+        <div className="rounded-2xl border border-border/50 bg-card p-3 flex flex-wrap items-center gap-2 mb-5">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Pretraži novosti..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 rounded-full text-sm"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-36 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Svi statusi</SelectItem>
+              <SelectItem value="published">Objavljeno</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger className="w-32 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve godine</SelectItem>
+              {availableYears.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Najnovije</SelectItem>
+              <SelectItem value="oldest">Najstarije</SelectItem>
+              <SelectItem value="title">Po naslovu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -198,22 +270,24 @@ const NewsManager = () => {
             </div>
           ))}
         </div>
-      ) : posts?.length === 0 ? (
+      ) : filteredPosts.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-2xl border border-border">
           <ImageIcon className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
           <h3 className="font-display font-semibold text-foreground mb-2">
-            Nema novosti
+            {posts && posts.length > 0 ? "Nema rezultata" : "Nema novosti"}
           </h3>
           <p className="text-sm text-muted-foreground mb-6">
-            Kreirajte prvu novost klikom na dugme iznad
+            {posts && posts.length > 0 ? "Pokušajte drugačije filtere" : "Kreirajte prvu novost klikom na dugme iznad"}
           </p>
-          <Button onClick={openCreate}>
-            <Plus className="w-4 h-4 mr-2" /> Nova novost
-          </Button>
+          {(!posts || posts.length === 0) && (
+            <Button onClick={openCreate}>
+              <Plus className="w-4 h-4 mr-2" /> Nova novost
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {posts?.map((post) => (
+          {filteredPosts.map((post) => (
             <div
               key={post.id}
               className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all"
@@ -328,7 +402,8 @@ const NewsManager = () => {
                   value={form.summary}
                   onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
                   placeholder="Kratki sažetak koji se prikazuje na listi"
-                  rows={3}
+                  rows={5}
+                  className="resize-none"
                 />
               </div>
               <div className="space-y-1.5">
@@ -338,7 +413,8 @@ const NewsManager = () => {
                   value={form.content}
                   onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
                   placeholder="Puni tekst novosti..."
-                  rows={12}
+                  rows={18}
+                  className="resize-y min-h-[300px]"
                 />
               </div>
             </div>
