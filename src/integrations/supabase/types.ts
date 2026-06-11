@@ -755,6 +755,7 @@ export type Database = {
           linkedin_url: string | null
           name: string
           phone: string | null
+          photo_crop: Json | null
           photo_url: string | null
           role: string
           updated_at: string
@@ -771,6 +772,7 @@ export type Database = {
           linkedin_url?: string | null
           name: string
           phone?: string | null
+          photo_crop?: Json | null
           photo_url?: string | null
           role?: string
           updated_at?: string
@@ -787,6 +789,7 @@ export type Database = {
           linkedin_url?: string | null
           name?: string
           phone?: string | null
+          photo_crop?: Json | null
           photo_url?: string | null
           role?: string
           updated_at?: string
@@ -824,6 +827,7 @@ export type Database = {
           id: string | null
           linkedin_url: string | null
           name: string | null
+          photo_crop: Json | null
           photo_url: string | null
           role: string | null
           updated_at: string | null
@@ -837,6 +841,7 @@ export type Database = {
           id?: string | null
           linkedin_url?: string | null
           name?: string | null
+          photo_crop?: Json | null
           photo_url?: string | null
           role?: string | null
           updated_at?: string | null
@@ -850,6 +855,7 @@ export type Database = {
           id?: string | null
           linkedin_url?: string | null
           name?: string | null
+          photo_crop?: Json | null
           photo_url?: string | null
           role?: string | null
           updated_at?: string | null
