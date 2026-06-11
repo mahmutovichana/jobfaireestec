@@ -825,6 +825,36 @@ export type Database = {
       }
     }
     Views: {
+      public_company_profiles: {
+        Row: {
+          avatar_url: string | null
+          company: string | null
+          company_description: string | null
+          company_slug: string | null
+          id: string | null
+          social_links: Json | null
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          company?: string | null
+          company_description?: string | null
+          company_slug?: string | null
+          id?: string | null
+          social_links?: Json | null
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string | null
+          company_description?: string | null
+          company_slug?: string | null
+          id?: string | null
+          social_links?: Json | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       public_team_members: {
         Row: {
           committee: string | null

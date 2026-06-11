@@ -102,8 +102,10 @@ export function useDeleteJobAd() {
 }
 
 export async function uploadJobAdImage(file: File): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
   const ext = file.name.split(".").pop();
-  const path = `job-ads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const path = `${user.id}/job-ads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error } = await supabase.storage.from("news-images").upload(path, file, {
     cacheControl: "3600",
