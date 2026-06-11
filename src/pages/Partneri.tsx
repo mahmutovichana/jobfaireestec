@@ -5,24 +5,21 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { usePartners, PACKAGE_LABELS, type Partner, type PartnerPackage } from "@/hooks/usePartners";
+import { usePackageTypes } from "@/hooks/usePackageTypes";
 import { SEO } from "@/components/SEO";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 
-/* ── Package accent colors ── */
-const PACKAGE_ACCENT: Record<PartnerPackage, string> = {
+/* ── Package accent colors (fallbacks; dynamic colors come from package_types) ── */
+const PACKAGE_ACCENT: Record<string, string> = {
   gold: "from-yellow-500/20 via-yellow-600/10 to-transparent border-yellow-500/20",
   silver: "from-gray-300/20 via-gray-400/10 to-transparent border-gray-400/20",
   standard: "from-blue-500/15 via-blue-400/10 to-transparent border-blue-500/15",
   promo: "from-purple-500/15 via-purple-400/10 to-transparent border-purple-500/15",
+  custom: "from-emerald-500/15 via-emerald-400/10 to-transparent border-emerald-500/15",
 };
-
-const PACKAGE_BADGE: Record<PartnerPackage, string> = {
-  gold: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  silver: "bg-gray-300/20 text-gray-200 border-gray-400/30",
-  standard: "bg-blue-500/15 text-blue-300 border-blue-500/20",
-  promo: "bg-purple-500/15 text-purple-300 border-purple-500/20",
-};
+const DEFAULT_ACCENT = "from-muted/20 via-muted/10 to-transparent border-border";
+const DEFAULT_BADGE = "bg-muted text-foreground border-border";
 
 /* ── Partner card with description and year/package badges ── */
 function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: number; yearFilter: number | null }) {
