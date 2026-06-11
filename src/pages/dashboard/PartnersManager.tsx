@@ -99,14 +99,8 @@ export default function PartnersManager() {
     .filter((p) => p.category === activeTab)
     .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
-  // Group companies by package
-  const groupedByPackage = activeTab === "company"
-    ? PACKAGE_ORDER.map((pkg) => ({
-        pkg,
-        label: PACKAGE_LABELS[pkg],
-        partners: filtered.filter((p) => p.package === pkg),
-      })).filter((g) => g.partners.length > 0)
-    : [{ pkg: null as any, label: CATEGORY_LABELS[activeTab], partners: filtered }];
+  // Single flat group per category — package is now per-year (participations)
+  const groupedByPackage = [{ pkg: null as any, label: CATEGORY_LABELS[activeTab], partners: filtered }];
 
   const openCreate = () => {
     setEditingPartner(null);
