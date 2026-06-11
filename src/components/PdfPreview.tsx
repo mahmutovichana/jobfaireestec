@@ -32,7 +32,7 @@ export function PdfPreview({ url, pages = 1, scale = 1.1, className = "" }: PdfP
 
     (async () => {
       try {
-        const loadingTask = pdfjsLib.getDocument(url);
+        const loadingTask = pdfjsLib.getDocument({ url });
         const pdf = await loadingTask.promise;
         if (cancelled) return;
 
