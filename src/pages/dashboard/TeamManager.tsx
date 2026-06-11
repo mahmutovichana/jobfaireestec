@@ -273,7 +273,7 @@ export default function TeamManager() {
                       >
                     <div className="aspect-square bg-muted/30 overflow-hidden">
                       {member.photo_url ? (
-                        <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
+                        <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" style={{ objectPosition: getPhotoPosition(member.photo_crop) }} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-muted-foreground/30">
                           {member.name.split(" ").map((n) => n[0]).join("")}
@@ -322,7 +322,7 @@ export default function TeamManager() {
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Fotografija</Label>
               <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/40 border border-border/50 flex items-center justify-center">
                 {form.photo_url ? (
-                  <img src={form.photo_url} alt="" className="w-full h-full object-cover" />
+                  <img src={form.photo_url} alt="" className="w-full h-full object-cover" style={{ objectPosition: getPhotoPosition(form.photo_crop) }} />
                 ) : (
                   <div className="text-3xl font-bold text-muted-foreground/40">
                     {form.name ? form.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase() : "?"}
@@ -337,6 +337,13 @@ export default function TeamManager() {
                 <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
               </label>
               <Input value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} placeholder="ili URL slike" className="text-xs" />
+              {form.photo_url && (
+                <PhotoCropper
+                  imageUrl={form.photo_url}
+                  value={form.photo_crop}
+                  onChange={(crop) => setForm((f) => ({ ...f, photo_crop: crop }))}
+                />
+              )}
             </div>
 
             {/* Fields column */}
