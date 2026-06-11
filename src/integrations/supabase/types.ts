@@ -751,12 +751,14 @@ export type Database = {
           created_at: string
           display_order: number
           email: string | null
+          gender: string | null
           id: string
           linkedin_url: string | null
           name: string
           phone: string | null
           photo_crop: Json | null
           photo_url: string | null
+          position_key: string | null
           role: string
           updated_at: string
           user_id: string
@@ -768,12 +770,14 @@ export type Database = {
           created_at?: string
           display_order?: number
           email?: string | null
+          gender?: string | null
           id?: string
           linkedin_url?: string | null
           name: string
           phone?: string | null
           photo_crop?: Json | null
           photo_url?: string | null
+          position_key?: string | null
           role?: string
           updated_at?: string
           user_id: string
@@ -785,12 +789,14 @@ export type Database = {
           created_at?: string
           display_order?: number
           email?: string | null
+          gender?: string | null
           id?: string
           linkedin_url?: string | null
           name?: string
           phone?: string | null
           photo_crop?: Json | null
           photo_url?: string | null
+          position_key?: string | null
           role?: string
           updated_at?: string
           user_id?: string
@@ -824,11 +830,13 @@ export type Database = {
           committee: string | null
           created_at: string | null
           display_order: number | null
+          gender: string | null
           id: string | null
           linkedin_url: string | null
           name: string | null
           photo_crop: Json | null
           photo_url: string | null
+          position_key: string | null
           role: string | null
           updated_at: string | null
           visible: boolean | null
@@ -838,11 +846,13 @@ export type Database = {
           committee?: string | null
           created_at?: string | null
           display_order?: number | null
+          gender?: string | null
           id?: string | null
           linkedin_url?: string | null
           name?: string | null
           photo_crop?: Json | null
           photo_url?: string | null
+          position_key?: string | null
           role?: string | null
           updated_at?: string | null
           visible?: boolean | null
@@ -852,11 +862,13 @@ export type Database = {
           committee?: string | null
           created_at?: string | null
           display_order?: number | null
+          gender?: string | null
           id?: string | null
           linkedin_url?: string | null
           name?: string | null
           photo_crop?: Json | null
           photo_url?: string | null
+          position_key?: string | null
           role?: string | null
           updated_at?: string | null
           visible?: boolean | null
