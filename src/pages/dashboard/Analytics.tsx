@@ -7,6 +7,7 @@ import { useRegistrationStats } from "@/hooks/useRegistrations";
 import { usePartners } from "@/hooks/usePartners";
 import { useEvents } from "@/hooks/useEvents";
 import { usePageViews } from "@/hooks/usePageViews";
+import { TeamAnalytics } from "@/components/dashboard/TeamAnalytics";
 import { useMemo } from "react";
 import { format, parseISO, startOfWeek } from "date-fns";
 
@@ -339,6 +340,10 @@ const Analytics = () => {
             <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
           )}
         </div>
+      </div>
+
+      <div className="pt-2">
+        <TeamAnalytics />
       </div>
     </div>
   );
