@@ -5,7 +5,7 @@ import { ArrowLeft, History, Linkedin, Mail } from "lucide-react";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { SEO } from "@/components/SEO";
-import { useTeamMembers, type TeamMember } from "@/hooks/useTeam";
+import { useTeamMembers, getPhotoPosition, type TeamMember } from "@/hooks/useTeam";
 
 function initialsOf(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase();

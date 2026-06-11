@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Linkedin, Mail, Phone, Users, ArrowRight } from "lucide-react";
-import type { TeamMember } from "@/hooks/useTeam";
+import { getPhotoPosition, type TeamMember } from "@/hooks/useTeam";
 
 interface TeamSectionProps {
   teamMembers: TeamMember[];
