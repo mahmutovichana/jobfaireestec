@@ -43,6 +43,7 @@ const emptyForm = {
   role: "",
   committee: "Predsjedništvo",
   photo_url: "",
+  photo_crop: null as { x: number; y: number } | null,
   linkedin_url: "",
   email: "",
   phone: "",
