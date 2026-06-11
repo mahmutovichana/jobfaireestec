@@ -10,7 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs as InnerTabs, TabsContent as InnerTabsContent, TabsList as InnerTabsList, TabsTrigger as InnerTabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart, Search, Zap, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
@@ -94,6 +98,19 @@ export default function PartnersManager() {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
+
+  // Bulk assign state (top-of-page tool)
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkYear, setBulkYear] = useState<number>(CURRENT_YEAR);
+  const [bulkPkg, setBulkPkg] = useState<PartnerPackage>("standard");
+  const [bulkPrice, setBulkPrice] = useState<string>("");
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+  const [bulkPickerOpen, setBulkPickerOpen] = useState(false);
+
+  // Keep editingPartner in sync with latest data so participation changes show instantly
+  const currentEditing = editingPartner
+    ? partners.find((p) => p.id === editingPartner.id) ?? editingPartner
+    : null;
 
   const filtered = partners
     .filter((p) => p.category === activeTab)
