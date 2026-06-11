@@ -23,6 +23,7 @@ import OstaviCV from "./pages/OstaviCV";
 import Kontakt from "./pages/Kontakt";
 import Unsubscribe from "./pages/Unsubscribe";
 import Aktivnosti from "./pages/Aktivnosti";
+import HistorijatOdbora from "./pages/HistorijatOdbora";
 import Events from "./pages/dashboard/Events";
 import CreateEvent from "./pages/dashboard/CreateEvent";
 import EventDetail from "./pages/dashboard/EventDetail";
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="/ostavi-cv" element={<OstaviCV />} />
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/aktivnosti" element={<Aktivnosti />} />
+              <Route path="/historijat-odbora" element={<HistorijatOdbora />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
 
               {/* Dashboard (protected) */}
