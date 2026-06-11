@@ -69,18 +69,17 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error, data } = await supabase.from("access_requests").insert({
-        full_name: reqName,
-        email: reqEmail,
+      const { error } = await supabase.from("access_requests").insert({
+        full_name: reqName.trim(),
+        email: reqEmail.trim(),
         company_name: reqCompanyName || null,
         company_domain: reqCompanyDomain || null,
         message: reqMessage || null,
-      }).select();
+      });
       if (error) {
         console.error("Access request insert error:", error);
         toast.error(`Greška: ${error.message}`);
       } else {
-        console.log("Access request created:", data);
         setRequestSent(true);
         toast.success("Zahtjev poslan! Obavijestit ćemo vas kad bude odobren.");
       }
