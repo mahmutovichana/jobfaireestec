@@ -14,7 +14,7 @@ import {
 } from "@/hooks/useJobAds";
 import {
   Plus, Pencil, Trash2, Image as ImageIcon, X, Eye,
-  Upload, Loader2, ExternalLink, Building2,
+  Upload, Loader2, ExternalLink, Building2, Search,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -55,6 +55,49 @@ const JobAdsManager = () => {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
   const imageRef = useRef<HTMLInputElement>(null);
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "expired">("all");
+  const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"newest" | "deadline" | "title">("newest");
+
+  const adCompanies = useMemo(() => {
+    const set = new Set((ads ?? []).map(a => a.company_name));
+    return Array.from(set).sort();
+  }, [ads]);
+
+  const filteredAds = useMemo(() => {
+    let list = ads ?? [];
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(a =>
+        a.title.toLowerCase().includes(q) ||
+        a.company_name.toLowerCase().includes(q) ||
+        (a.description ?? "").toLowerCase().includes(q)
+      );
+    }
+    if (statusFilter !== "all") {
+      list = list.filter(a => {
+        const expired = a.deadline && new Date(a.deadline) < new Date();
+        if (statusFilter === "published") return a.published && !expired;
+        if (statusFilter === "draft") return !a.published;
+        if (statusFilter === "expired") return !!expired;
+        return true;
+      });
+    }
+    if (companyFilter !== "all") {
+      list = list.filter(a => a.company_name === companyFilter);
+    }
+    return [...list].sort((a, b) => {
+      if (sortBy === "deadline") {
+        const ad = a.deadline ? +new Date(a.deadline) : Infinity;
+        const bd = b.deadline ? +new Date(b.deadline) : Infinity;
+        return ad - bd;
+      }
+      if (sortBy === "title") return a.title.localeCompare(b.title);
+      return +new Date(b.created_at) - +new Date(a.created_at);
+    });
+  }, [ads, search, statusFilter, companyFilter, sortBy]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -125,6 +168,45 @@ const JobAdsManager = () => {
         </Button>
       </div>
 
+      {/* Filters */}
+      {ads && ads.length > 0 && (
+        <div className="rounded-2xl border border-border/50 bg-card p-3 flex flex-wrap items-center gap-2 mb-5">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Pretraži oglase..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9 rounded-full text-sm"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+            <SelectTrigger className="w-36 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Svi statusi</SelectItem>
+              <SelectItem value="published">Aktivni</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="expired">Istekli</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="w-44 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve firme</SelectItem>
+              {adCompanies.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 rounded-full h-9 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Najnovije</SelectItem>
+              <SelectItem value="deadline">Po roku</SelectItem>
+              <SelectItem value="title">Po naslovu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -137,18 +219,20 @@ const JobAdsManager = () => {
             </div>
           ))}
         </div>
-      ) : ads?.length === 0 ? (
+      ) : filteredAds.length === 0 ? (
         <div className="text-center py-20 bg-card rounded-2xl border border-border">
           <Building2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-          <h3 className="font-display font-semibold text-foreground mb-2">Nema oglasa</h3>
-          <p className="text-sm text-muted-foreground mb-6">Kreirajte prvi oglas klikom na dugme iznad</p>
-          <Button onClick={openCreate}>
-            <Plus className="w-4 h-4 mr-2" /> Novi oglas
-          </Button>
+          <h3 className="font-display font-semibold text-foreground mb-2">{ads && ads.length > 0 ? "Nema rezultata" : "Nema oglasa"}</h3>
+          <p className="text-sm text-muted-foreground mb-6">{ads && ads.length > 0 ? "Pokušajte drugačije filtere" : "Kreirajte prvi oglas klikom na dugme iznad"}</p>
+          {(!ads || ads.length === 0) && (
+            <Button onClick={openCreate}>
+              <Plus className="w-4 h-4 mr-2" /> Novi oglas
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {ads?.map((ad) => {
+          {filteredAds.map((ad) => {
             const expired = ad.deadline && new Date(ad.deadline) < new Date();
             return (
               <div
