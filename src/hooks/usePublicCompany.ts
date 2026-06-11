@@ -6,8 +6,8 @@ export function useCompanyBySlug(slug: string | undefined) {
     queryKey: ["public-company", slug],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, company, company_description, website, avatar_url, social_links, company_slug")
+        .from("public_company_profiles" as any)
+        .select("id, company, company_description, website, avatar_url, social_links, company_slug")
         .eq("company_slug", slug!)
         .single();
       if (error) throw error;
