@@ -211,6 +211,26 @@ export default function Aktivnosti() {
         title="Aktivnosti — radionice, paneli i prezentacije"
         description="Prijavite se na radionice, predavanja, panele i networking aktivnosti JobFAIR-a u Sarajevu."
         path="/aktivnosti"
+        jsonLd={upcomingEvents.length > 0 ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: upcomingEvents.map((e, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "Event",
+              name: e.name,
+              startDate: e.event_date || undefined,
+              eventStatus: "https://schema.org/EventScheduled",
+              eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+              location: e.location_value ? {
+                "@type": "Place",
+                name: e.location_value,
+              } : undefined,
+              organizer: { "@type": "Organization", name: "EESTEC LC Sarajevo" },
+            },
+          })),
+        } : undefined}
       />
       <PublicNavbar />
       <main className="flex-1 pt-24 pb-16">
@@ -247,6 +267,7 @@ export default function Aktivnosti() {
               </div>
 
               <TabsContent value="upcoming">
+                <h2 className="sr-only">Nadolazeće aktivnosti</h2>
                 {upcomingEvents.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
                     <CalendarDays className="w-12 h-12 mx-auto mb-3 opacity-40" />
@@ -263,6 +284,7 @@ export default function Aktivnosti() {
               </TabsContent>
 
               <TabsContent value="past">
+                <h2 className="sr-only">Prošle aktivnosti</h2>
                 {pastEvents.length === 0 ? (
                   <div className="text-center py-16 text-muted-foreground">
                     <Clock className="w-12 h-12 mx-auto mb-3 opacity-40" />
