@@ -6,6 +6,7 @@ import { toast } from "sonner";
 export interface PhotoCrop {
   x: number;
   y: number;
+  zoom?: number;
 }
 
 export interface TeamMember {
@@ -31,6 +32,16 @@ export interface TeamMember {
 export function getPhotoPosition(crop?: PhotoCrop | null): string {
   if (!crop) return "50% 50%";
   return `${crop.x}% ${crop.y}%`;
+}
+
+export function getPhotoStyle(crop?: PhotoCrop | null): React.CSSProperties {
+  if (!crop) return { objectPosition: "50% 50%" };
+  const zoom = crop.zoom && crop.zoom > 1 ? crop.zoom : 1;
+  return {
+    objectPosition: `${crop.x}% ${crop.y}%`,
+    transform: zoom !== 1 ? `scale(${zoom})` : undefined,
+    transformOrigin: `${crop.x}% ${crop.y}%`,
+  };
 }
 
 export function useTeamMembers(onlyVisible = false) {
