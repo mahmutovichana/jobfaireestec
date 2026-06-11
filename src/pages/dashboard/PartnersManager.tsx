@@ -14,7 +14,6 @@ import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 import {
   DndContext,
   closestCenter,
