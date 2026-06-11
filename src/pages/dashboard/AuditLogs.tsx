@@ -49,6 +49,84 @@ const META_LABELS: Record<string, string> = {
   published: "Objavljeno",
 };
 
+const FIELD_LABELS: Record<string, string> = {
+  full_name: "Ime i prezime",
+  first_name: "Ime",
+  last_name: "Prezime",
+  email: "Email",
+  phone: "Telefon",
+  title: "Naslov",
+  summary: "Sažetak",
+  content: "Sadržaj",
+  description: "Opis",
+  position: "Pozicija",
+  position_id: "Pozicija",
+  gender: "Spol",
+  year: "Godina",
+  status: "Status",
+  published: "Objavljeno",
+  photo_url: "Fotografija",
+  photo_crop: "Kadriranje fotografije",
+  sort_order: "Redoslijed",
+  thumbnail_url: "Thumbnail",
+  gallery_urls: "Galerija",
+  company_name: "Naziv firme",
+  company_domain: "Domena firme",
+  message: "Poruka",
+  deadline: "Krajnji rok",
+  location: "Lokacija",
+  start_date: "Datum početka",
+  end_date: "Datum završetka",
+  capacity: "Kapacitet",
+  notes: "Bilješke",
+};
+
+function fieldLabel(key: string) {
+  return FIELD_LABELS[key] ?? key.replace(/_/g, " ");
+}
+
+function formatFieldValue(v: unknown): string {
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "boolean") return v ? "Da" : "Ne";
+  if (Array.isArray(v)) return v.length ? `[${v.length}] ${JSON.stringify(v).slice(0, 60)}` : "[]";
+  if (typeof v === "object") return JSON.stringify(v).slice(0, 120);
+  const s = String(v);
+  return s.length > 160 ? s.slice(0, 160) + "…" : s;
+}
+
+function ChangesDisplay({ changes }: { changes: Record<string, { old: unknown; new: unknown }> }) {
+  const entries = Object.entries(changes);
+  if (entries.length === 0) return null;
+  return (
+    <div className="mt-2 space-y-1.5">
+      <p className="text-[11px] font-semibold text-foreground/70 uppercase tracking-wide">
+        Izmijenjena polja ({entries.length})
+      </p>
+      <div className="space-y-1.5">
+        {entries.map(([key, diff]) => (
+          <div key={key} className="rounded-lg border border-border/40 bg-muted/30 p-2 text-[11px]">
+            <p className="font-semibold text-foreground mb-1">{fieldLabel(key)}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <div className="rounded-md bg-red-500/5 border border-red-500/15 p-1.5">
+                <span className="text-[10px] uppercase text-red-600/80 font-medium">Prije</span>
+                <p className="text-foreground/80 break-words mt-0.5 line-clamp-3">
+                  {formatFieldValue(diff?.old)}
+                </p>
+              </div>
+              <div className="rounded-md bg-emerald-500/5 border border-emerald-500/15 p-1.5">
+                <span className="text-[10px] uppercase text-emerald-600/80 font-medium">Sada</span>
+                <p className="text-foreground/80 break-words mt-0.5 line-clamp-3">
+                  {formatFieldValue(diff?.new)}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function getActionBadge(action: string) {
   const info = ACTION_LABELS[action] ?? { label: action, color: "bg-muted text-muted-foreground" };
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${info.color}`}>{info.label}</span>;
@@ -78,27 +156,29 @@ function formatExactTime(iso: string) {
 
 function MetadataDisplay({ metadata }: { metadata: Record<string, unknown> | null }) {
   if (!metadata || Object.keys(metadata).length === 0) return null;
+  const changes = metadata.changes as Record<string, { old: unknown; new: unknown }> | undefined;
   const entries = Object.entries(metadata).filter(([k, v]) =>
-    v !== null && v !== undefined && v !== "" && k !== "id"
+    v !== null && v !== undefined && v !== "" && k !== "id" && k !== "changes"
   );
-  if (entries.length === 0) return null;
+  if (entries.length === 0 && !changes) return null;
 
   return (
-    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 p-2.5 rounded-lg bg-muted/40 border border-border/30">
-      {entries.map(([key, value]) => {
-        const label = META_LABELS[key] ?? key;
-        let display: string;
-        if (typeof value === "boolean") display = value ? "Da" : "Ne";
-        else if (typeof value === "object") display = JSON.stringify(value);
-        else display = String(value);
-        if (display.length > 80) display = display.slice(0, 80) + "…";
-        return (
-          <div key={key} className="flex gap-1.5 text-[11px] min-w-0">
-            <span className="text-muted-foreground/70 shrink-0">{label}:</span>
-            <span className="text-foreground/80 truncate font-medium">{display}</span>
-          </div>
-        );
-      })}
+    <div className="mt-2 space-y-2">
+      {entries.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 p-2.5 rounded-lg bg-muted/40 border border-border/30">
+          {entries.map(([key, value]) => {
+            const label = META_LABELS[key] ?? fieldLabel(key);
+            const display = formatFieldValue(value);
+            return (
+              <div key={key} className="flex gap-1.5 text-[11px] min-w-0">
+                <span className="text-muted-foreground/70 shrink-0">{label}:</span>
+                <span className="text-foreground/80 truncate font-medium">{display}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {changes && <ChangesDisplay changes={changes} />}
     </div>
   );
 }

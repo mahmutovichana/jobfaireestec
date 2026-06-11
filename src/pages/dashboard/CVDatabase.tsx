@@ -11,29 +11,43 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
-function CVHoverPreview({ cvUrl, children }: { cvUrl: string; children: React.ReactNode }) {
-  const [signed, setSigned] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+// Module-level cache so signed URLs are reused across renders/hover sessions
+const signedUrlCache = new Map<string, { url: string; expires: number }>();
 
+async function getCachedSignedUrl(path: string): Promise<string | null> {
+  const now = Date.now();
+  const cached = signedUrlCache.get(path);
+  if (cached && cached.expires > now) return cached.url;
+  const { data, error } = await supabase.storage
+    .from("cv-uploads")
+    .createSignedUrl(path, 600);
+  if (error || !data) return null;
+  signedUrlCache.set(path, { url: data.signedUrl, expires: now + 9 * 60 * 1000 });
+  return data.signedUrl;
+}
+
+function CVHoverPreview({ cvUrl, children }: { cvUrl: string; children: React.ReactNode }) {
+  const [signed, setSigned] = useState<string | null>(() => signedUrlCache.get(cvUrl)?.url ?? null);
+
+  // Prefetch the signed URL as soon as the card mounts so hover is instant.
   useEffect(() => {
-    if (!open || signed) return;
-    supabase.storage
-      .from("cv-uploads")
-      .createSignedUrl(cvUrl, 300)
-      .then(({ data, error }) => {
-        if (!error && data) setSigned(data.signedUrl);
-      });
-  }, [open, cvUrl, signed]);
+    if (signed) return;
+    let cancelled = false;
+    getCachedSignedUrl(cvUrl).then((u) => {
+      if (!cancelled && u) setSigned(u);
+    });
+    return () => { cancelled = true; };
+  }, [cvUrl, signed]);
 
   return (
-    <HoverCard openDelay={200} closeDelay={100} onOpenChange={setOpen}>
+    <HoverCard openDelay={80} closeDelay={80}>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
       <HoverCardContent
         side="right"
         align="start"
         className="w-[440px] h-[580px] p-0 overflow-hidden rounded-2xl border-border/60 shadow-2xl"
       >
-        <PdfPreview url={signed} pages={2} scale={1.2} />
+        <PdfPreview url={signed} pages={1} scale={1.0} />
       </HoverCardContent>
     </HoverCard>
   );
