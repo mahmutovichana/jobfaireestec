@@ -147,67 +147,80 @@ const JobAdsManager = () => {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {ads?.map((ad) => (
-            <div key={ad.id} className="flex gap-4 bg-card rounded-xl p-4 border border-border hover:shadow-sm transition-shadow">
-              {ad.image_url ? (
-                <img src={ad.image_url} alt={ad.title} className="w-24 h-16 rounded-lg object-cover shrink-0" />
-              ) : (
-                <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <ImageIcon className="w-6 h-6 text-muted-foreground/30" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="font-display font-semibold text-foreground truncate">{ad.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {ad.company_name}
-                      {ad.deadline && (
-                        <span className="ml-2">• Do {format(new Date(ad.deadline), "dd.MM.yyyy")}</span>
-                      )}
-                    </p>
-                  </div>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                    ad.published ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {ads?.map((ad) => {
+            const expired = ad.deadline && new Date(ad.deadline) < new Date();
+            return (
+              <div
+                key={ad.id}
+                className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all"
+              >
+                <div className="relative aspect-[16/10] bg-muted overflow-hidden">
+                  {ad.image_url ? (
+                    <img src={ad.image_url} alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+                      <Building2 className="w-10 h-10 text-primary/40" />
+                    </div>
+                  )}
+                  <span className={`absolute top-3 left-3 text-[10px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md ${
+                    ad.published ? "bg-success/90 text-success-foreground" : "bg-background/80 text-muted-foreground border border-border"
                   }`}>
                     {ad.published ? "Aktivan" : "Draft"}
                   </span>
+                  {expired && (
+                    <span className="absolute top-3 right-3 text-[10px] font-semibold px-2 py-1 rounded-full bg-destructive/90 text-destructive-foreground backdrop-blur-md">
+                      Istekao
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex-1 flex flex-col p-4">
+                  <p className="text-[11px] font-medium text-primary uppercase tracking-wide truncate">{ad.company_name}</p>
+                  <h3 className="font-display font-semibold text-foreground line-clamp-2 leading-snug mt-1">{ad.title}</h3>
+                  {ad.description && (
+                    <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">{ad.description}</p>
+                  )}
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/40">
+                    <p className="text-[11px] text-muted-foreground">
+                      {ad.deadline ? `Do ${format(new Date(ad.deadline), "dd.MM.yyyy")}` : "—"}
+                    </p>
+                    <div className="flex items-center gap-0.5">
+                      {ad.external_link && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                          <a href={ad.external_link} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(ad)}>
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Obrisati oglas?</AlertDialogTitle>
+                            <AlertDialogDescription>Ova akcija se ne može poništiti.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Otkaži</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteAd.mutate(ad.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Obriši
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {ad.external_link && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                    <a href={ad.external_link} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </Button>
-                )}
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(ad)}>
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Obrisati oglas?</AlertDialogTitle>
-                      <AlertDialogDescription>Ova akcija se ne može poništiti.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Otkaži</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteAd.mutate(ad.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Obriši
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
