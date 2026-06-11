@@ -26,6 +26,7 @@ function MemberTile({ member, idx }: { member: TeamMember; idx: number }) {
             alt={member.name}
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            style={{ objectPosition: getPhotoPosition(member.photo_crop) }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl font-display font-bold text-muted-foreground/40">

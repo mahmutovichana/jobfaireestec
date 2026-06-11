@@ -29,6 +29,7 @@ function MemberCard({ member, index, isLeader = false }: { member: TeamMember; i
               src={member.photo_url}
               alt={member.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              style={{ objectPosition: getPhotoPosition(member.photo_crop) }}
               loading="lazy"
             />
           ) : (
