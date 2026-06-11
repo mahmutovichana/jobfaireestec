@@ -12,6 +12,7 @@ import { useIsAdmin } from "@/hooks/useUserRole";
 import { useTreasury } from "@/hooks/useTreasury";
 import { usePackagePrices, useUpsertPackagePrice } from "@/hooks/usePackagePrices";
 import { usePackageTypes, useUpsertPackageType, useDeletePackageType, type PackageType } from "@/hooks/usePackageTypes";
+import { CATEGORY_LABELS } from "@/hooks/usePartners";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -343,7 +344,7 @@ export default function Treasury() {
                     return (
                       <TableRow key={pp.id}>
                         <TableCell className="font-medium">{p.name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground capitalize">{p.category}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{CATEGORY_LABELS[p.category] ?? p.category}</TableCell>
                         <TableCell>
                           {t ? <Badge variant="outline" className={t.color_class}>{t.label}</Badge> : pp.package}
                         </TableCell>

@@ -455,6 +455,10 @@ export default function PartnersManager() {
                         if (isCustom && (!newCustomPrice || isNaN(parseFloat(newCustomPrice)))) {
                           return alert("Unesi custom cijenu");
                         }
+                        const existing = (currentEditing.participations ?? []).find((pp) => pp.year === newYear);
+                        if (existing) {
+                          return alert(`Već postoji paket za ${newYear}. Uredi postojeći unos iznad ili obriši pa dodaj novi.`);
+                        }
                         addParticipation.mutate({
                           partner_id: currentEditing.id,
                           year: newYear,
