@@ -5,7 +5,6 @@ import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useIsAdmin } from "@/hooks/useUserRole";
-import { useBoardAccess } from "@/hooks/useBoardAccess";
 import { usePendingRequestCount } from "@/hooks/useAccessRequests";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -54,7 +53,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
   const { isAdmin } = useIsAdmin();
-  const { isBoard } = useBoardAccess();
+  // (board access no longer drives nav — finances are admin-only)
   const { data: pendingCount = 0 } = usePendingRequestCount();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
