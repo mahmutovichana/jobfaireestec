@@ -212,102 +212,88 @@ const NewsManager = () => {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {posts?.map((post) => (
             <div
               key={post.id}
-              className="flex gap-4 bg-card rounded-xl p-4 border border-border hover:shadow-sm transition-shadow"
+              className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-primary/40 hover:shadow-lg transition-all"
             >
-              {post.thumbnail_url ? (
-                <img
-                  src={post.thumbnail_url}
-                  alt={post.title}
-                  className="w-24 h-16 rounded-lg object-cover shrink-0"
-                />
-              ) : (
-                <div className="w-24 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <ImageIcon className="w-6 h-6 text-muted-foreground/30" />
-                </div>
-              )}
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="font-display font-semibold text-foreground truncate">
-                      {post.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {format(new Date(post.created_at), "dd.MM.yyyy")}
-                      {post.gallery_urls.length > 0 && (
-                        <span className="ml-2">
-                          📸 {post.gallery_urls.length} slika
-                        </span>
-                      )}
-                    </p>
+              <div className="relative aspect-[16/10] bg-muted overflow-hidden">
+                {post.thumbnail_url ? (
+                  <img
+                    src={post.thumbnail_url}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="w-10 h-10 text-muted-foreground/30" />
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        post.published
-                          ? "bg-success/10 text-success"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {post.published ? "Objavljeno" : "Draft"}
-                    </span>
-                  </div>
-                </div>
-                {post.summary && (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                    {post.summary}
-                  </p>
+                )}
+                <span
+                  className={`absolute top-3 left-3 text-[10px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-md ${
+                    post.published
+                      ? "bg-success/90 text-success-foreground"
+                      : "bg-background/80 text-muted-foreground border border-border"
+                  }`}
+                >
+                  {post.published ? "Objavljeno" : "Draft"}
+                </span>
+                {post.gallery_urls.length > 0 && (
+                  <span className="absolute top-3 right-3 text-[10px] font-medium px-2 py-1 rounded-full bg-background/80 backdrop-blur-md text-foreground">
+                    📸 {post.gallery_urls.length}
+                  </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                {post.published && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                    <Link to={`/novost/${post.id}`} target="_blank">
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                  </Button>
+              <div className="flex-1 flex flex-col p-4">
+                <h3 className="font-display font-semibold text-foreground line-clamp-2 leading-snug">
+                  {post.title}
+                </h3>
+                {post.summary && (
+                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                    {post.summary}
+                  </p>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => openEdit(post)}
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/40">
+                  <p className="text-[11px] text-muted-foreground">
+                    {format(new Date(post.created_at), "dd.MM.yyyy")}
+                  </p>
+                  <div className="flex items-center gap-0.5">
+                    {post.published && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                        <Link to={`/novost/${post.id}`} target="_blank">
+                          <Eye className="w-3.5 h-3.5" />
+                        </Link>
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(post)}>
+                      <Pencil className="w-3.5 h-3.5" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Obrisati novost?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Ova akcija se ne može poništiti.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Otkaži</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deletePost.mutate(post.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Obriši
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Obrisati novost?</AlertDialogTitle>
+                          <AlertDialogDescription>Ova akcija se ne može poništiti.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Otkaži</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deletePost.mutate(post.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Obriši
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
