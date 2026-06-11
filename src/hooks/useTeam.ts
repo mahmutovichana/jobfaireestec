@@ -24,6 +24,8 @@ export interface TeamMember {
   user_id: string;
   created_at: string;
   updated_at: string;
+  gender: string | null;
+  position_key: string | null;
 }
 
 export function getPhotoPosition(crop?: PhotoCrop | null): string {
