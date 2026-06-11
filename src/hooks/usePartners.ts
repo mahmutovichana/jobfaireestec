@@ -53,7 +53,7 @@ export function usePartners(onlyVisible = false) {
     queryFn: async () => {
       let query = supabase
         .from("partners")
-        .select("*, participations:partner_participations(id, partner_id, year, package)")
+        .select("*, participations:partner_participations(id, partner_id, year, package, custom_price, currency)")
         .order("display_order", { ascending: true });
 
       if (onlyVisible) {
