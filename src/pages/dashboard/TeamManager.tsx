@@ -195,14 +195,25 @@ export default function TeamManager() {
               className="pl-9 w-56"
             />
           </div>
-          <Select value={filterCommittee} onValueChange={setFilterCommittee}>
-            <SelectTrigger className="w-44">
-              <SelectValue placeholder="Svi odbori" />
+          <Select value={filterPosition} onValueChange={setFilterPosition}>
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="Sve pozicije" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Svi odbori</SelectItem>
-              {committees.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+              <SelectItem value="all">Sve pozicije</SelectItem>
+              {TEAM_POSITIONS.map((p) => (
+                <SelectItem key={p.key} value={p.key}>{p.short}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterGender} onValueChange={setFilterGender}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Spol" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Svi</SelectItem>
+              {GENDER_OPTIONS.map((g) => (
+                <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
