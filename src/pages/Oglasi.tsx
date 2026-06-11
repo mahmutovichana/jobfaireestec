@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useJobAds } from "@/hooks/useJobAds";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
@@ -17,6 +18,14 @@ const Oglasi = () => {
   const { data: ads, isLoading } = useJobAds(true);
   const [search, setSearch] = useState("");
   const [showActive, setShowActive] = useState<JobAdFilterKey>("all");
+  const [company, setCompany] = useState<string>("all");
+  const [sort, setSort] = useState<"newest" | "deadline">("newest");
+
+  const companies = useMemo(() => {
+    const set = new Set<string>();
+    ads?.forEach((a) => set.add(a.company_name));
+    return Array.from(set).sort();
+  }, [ads]);
 
   const filtered = useMemo(() => {
     if (!ads) return [];
@@ -38,8 +47,21 @@ const Oglasi = () => {
       result = result.filter((ad) => ad.deadline && isPast(new Date(ad.deadline)));
     }
 
+    if (company !== "all") {
+      result = result.filter((ad) => ad.company_name === company);
+    }
+
+    result = [...result].sort((a, b) => {
+      if (sort === "deadline") {
+        const da = a.deadline ? new Date(a.deadline).getTime() : Number.POSITIVE_INFINITY;
+        const db = b.deadline ? new Date(b.deadline).getTime() : Number.POSITIVE_INFINITY;
+        return da - db;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
     return result;
-  }, [ads, search, showActive]);
+  }, [ads, search, showActive, company, sort]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,8 +92,9 @@ const Oglasi = () => {
       {/* Search & Filters */}
       <section className="pb-4">
         <div className="max-w-5xl mx-auto px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Pretraži po nazivu, firmi..."
@@ -84,8 +107,29 @@ const Oglasi = () => {
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               )}
+              </div>
+              <Select value={company} onValueChange={setCompany}>
+                <SelectTrigger className="w-full sm:w-56 rounded-full bg-white/[0.06] border-white/[0.08]">
+                  <SelectValue placeholder="Sve kompanije" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Sve kompanije</SelectItem>
+                  {companies.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sort} onValueChange={(v) => setSort(v as any)}>
+                <SelectTrigger className="w-full sm:w-44 rounded-full bg-white/[0.06] border-white/[0.08]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Najnoviji</SelectItem>
+                  <SelectItem value="deadline">Po roku prijave</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-             <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {(Object.keys(JOB_AD_FILTERS) as JobAdFilterKey[]).map((filter) => (
                 <Button
                   key={filter}
