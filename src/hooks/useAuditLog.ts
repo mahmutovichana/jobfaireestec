@@ -31,6 +31,9 @@ export function useAuditLogs(filters?: { entity_type?: string; limit?: number })
       if (error) throw error;
       return (data ?? []) as AuditLog[];
     },
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
   });
 }
 

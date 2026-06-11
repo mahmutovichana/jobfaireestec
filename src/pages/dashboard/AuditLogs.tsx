@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Clock, Filter, User, FileText, Handshake, ShieldCheck, Newspaper, Megaphone, UsersRound, CalendarDays, Activity, TrendingUp, Users, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, User, FileText, Handshake, ShieldCheck, Newspaper, Megaphone, UsersRound, CalendarDays, Activity, TrendingUp, Users, Search, X } from "lucide-react";
 
 const ENTITY_TYPES = [
   { value: "all", label: "Sve" },
@@ -393,16 +393,8 @@ export default function AuditLogs() {
                               <span className="font-mono text-[10px] text-muted-foreground/60 truncate">{log.entity_id.slice(0, 8)}</span>
                             </>
                           )}
-                          {hasDetails && (
-                            <button
-                              onClick={() => toggleExpand(log.id)}
-                              className="ml-auto inline-flex items-center gap-0.5 text-primary/80 hover:text-primary text-[11px] font-medium"
-                            >
-                              {isOpen ? <>Sakrij <ChevronUp className="w-3 h-3" /></> : <>Detalji <ChevronDown className="w-3 h-3" /></>}
-                            </button>
-                          )}
                         </div>
-                        {isOpen && <MetadataDisplay metadata={meta} />}
+                        {hasDetails && <MetadataDisplay metadata={meta} />}
                       </div>
                     </motion.div>
                   );
