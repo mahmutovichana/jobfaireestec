@@ -163,7 +163,7 @@ export default function Kontakt() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button variant="ghost" size="icon" onClick={signOut} title="Odjavi se">
+            <Button variant="ghost" size="icon" onClick={signOut} aria-label="Odjavi se" title="Odjavi se">
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
