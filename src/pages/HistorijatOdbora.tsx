@@ -82,6 +82,7 @@ export default function HistorijatOdbora() {
       <SEO
         title="Historijat odbora — JobFAIR"
         description="Pregled svih generacija organizacionog odbora JobFAIR-a kroz godine."
+        path="/historijat-odbora"
       />
       <PublicNavbar />
 
