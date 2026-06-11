@@ -45,7 +45,7 @@ const emptyForm = {
   role: "",
   committee: DEFAULT_COMMITTEE,
   photo_url: "",
-  photo_crop: null as { x: number; y: number } | null,
+  photo_crop: null as { x: number; y: number; zoom?: number } | null,
   linkedin_url: "",
   email: DEFAULT_EMAIL_DOMAIN,
   phone: "",
