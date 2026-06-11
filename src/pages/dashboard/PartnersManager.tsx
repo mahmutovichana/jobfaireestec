@@ -222,14 +222,9 @@ export default function PartnersManager() {
             <div className="space-y-8">
               {groupedByPackage.map((group) => (
                 <div key={group.pkg ?? "all"}>
-                  {activeTab === "company" && (
-                    <div className="flex items-center gap-3 mb-4">
-                      <Badge className={`${PACKAGE_COLORS[group.pkg]} text-sm px-3 py-1`}>
-                        {group.label} paket
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{group.partners.length} kompanija</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-xs text-muted-foreground">{group.partners.length} {activeTab === "company" ? "kompanija" : "partnera"}</span>
+                  </div>
 
                   <div className="rounded-xl border border-border/50 overflow-hidden">
                     <Table>
@@ -238,7 +233,7 @@ export default function PartnersManager() {
                           <TableHead className="w-8"></TableHead>
                           <TableHead className="w-16">Logo</TableHead>
                           <TableHead>Naziv</TableHead>
-                          {activeTab === "company" && <TableHead>Paket</TableHead>}
+                          {activeTab === "company" && <TableHead>Paket ({CURRENT_YEAR})</TableHead>}
                           <TableHead>Website</TableHead>
                           <TableHead className="w-20">Vidljiv</TableHead>
                           <TableHead className="w-28">Akcije</TableHead>
@@ -276,19 +271,14 @@ export default function PartnersManager() {
                             </TableCell>
                             {activeTab === "company" && (
                               <TableCell>
-                                <Select
-                                  value={partner.package || "standard"}
-                                  onValueChange={(v) => handlePackageChange(partner.id, v as PartnerPackage)}
-                                >
-                                  <SelectTrigger className="w-32 h-8">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {PACKAGE_ORDER.map((pkg) => (
-                                      <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                {(() => {
+                                  const cur = (partner.participations ?? []).find((pp) => pp.year === CURRENT_YEAR);
+                                  const t = cur?.package ? pkgTypes.find((x) => x.key === cur.package) : null;
+                                  if (!cur || !cur.package) {
+                                    return <span className="text-xs text-muted-foreground italic">— (uredi za dodjelu)</span>;
+                                  }
+                                  return <Badge variant="outline" className={t?.color_class || FALLBACK_PKG_COLOR}>{t?.label || cur.package}</Badge>;
+                                })()}
                               </TableCell>
                             )}
                             <TableCell>
