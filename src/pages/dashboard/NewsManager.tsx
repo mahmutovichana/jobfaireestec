@@ -402,7 +402,8 @@ const NewsManager = () => {
                   value={form.summary}
                   onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
                   placeholder="Kratki sažetak koji se prikazuje na listi"
-                  rows={3}
+                  rows={5}
+                  className="resize-none"
                 />
               </div>
               <div className="space-y-1.5">
@@ -412,7 +413,8 @@ const NewsManager = () => {
                   value={form.content}
                   onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
                   placeholder="Puni tekst novosti..."
-                  rows={12}
+                  rows={18}
+                  className="resize-y min-h-[300px]"
                 />
               </div>
             </div>
