@@ -85,7 +85,8 @@ export function TeamSection({ teamMembers }: TeamSectionProps) {
   const { currentYear, yearMembers, hasHistory } = useMemo(() => {
     const nowYear = new Date().getFullYear();
     const years = Array.from(new Set(teamMembers.map((m) => m.year ?? nowYear))).sort((a, b) => b - a);
-    const cur = years[0] ?? nowYear;
+    // Always prefer the current calendar year if it has members, otherwise fall back to latest.
+    const cur = years.includes(nowYear) ? nowYear : (years[0] ?? nowYear);
     const members = teamMembers
       .filter((m) => (m.year ?? nowYear) === cur)
       .sort((a, b) => a.display_order - b.display_order);

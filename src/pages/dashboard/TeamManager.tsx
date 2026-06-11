@@ -34,15 +34,15 @@ import {
   type TeamMember,
 } from "@/hooks/useTeam";
 import { PhotoCropper } from "@/components/PhotoCropper";
-
-const DEFAULT_COMMITTEES = ["Organizacioni odbor"];
+import { TEAM_POSITIONS, GENDER_OPTIONS, positionLabel, positionShort } from "@/lib/teamPositions";
 
 const CURRENT_YEAR = new Date().getFullYear();
+const DEFAULT_COMMITTEE = "Organizacioni odbor";
 
 const emptyForm = {
   name: "",
   role: "",
-  committee: "Predsjedništvo",
+  committee: DEFAULT_COMMITTEE,
   photo_url: "",
   photo_crop: null as { x: number; y: number } | null,
   linkedin_url: "",
@@ -51,6 +51,8 @@ const emptyForm = {
   display_order: 0,
   visible: true,
   year: CURRENT_YEAR,
+  gender: "" as "" | "m" | "f" | "other",
+  position_key: "" as string,
 };
 
 export default function TeamManager() {
@@ -69,14 +71,9 @@ export default function TeamManager() {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
-  const [filterCommittee, setFilterCommittee] = useState("all");
+  const [filterPosition, setFilterPosition] = useState("all");
+  const [filterGender, setFilterGender] = useState("all");
   const [filterYear, setFilterYear] = useState<number | "all">(CURRENT_YEAR);
-
-  const committees = useMemo(() => {
-    const set = new Set(members.map((m) => m.committee));
-    DEFAULT_COMMITTEES.forEach((c) => set.add(c));
-    return Array.from(set);
-  }, [members]);
 
   const years = useMemo(() => {
     const set = new Set<number>(members.map((m) => m.year));
@@ -86,16 +83,19 @@ export default function TeamManager() {
 
   const filtered = members
     .filter((m) => filterYear === "all" || m.year === filterYear)
-    .filter((m) => filterCommittee === "all" || m.committee === filterCommittee)
+    .filter((m) => filterPosition === "all" || m.position_key === filterPosition)
+    .filter((m) => filterGender === "all" || m.gender === filterGender)
     .filter((m) => m.name.toLowerCase().includes(search.toLowerCase()));
 
   const grouped = useMemo(() => {
-    const map = new Map<string, TeamMember[]>();
+    // Group by year so the user always sees the current generation first.
+    const map = new Map<number, TeamMember[]>();
     for (const m of filtered) {
-      if (!map.has(m.committee)) map.set(m.committee, []);
-      map.get(m.committee)!.push(m);
+      const y = m.year ?? CURRENT_YEAR;
+      if (!map.has(y)) map.set(y, []);
+      map.get(y)!.push(m);
     }
-    return Array.from(map.entries());
+    return Array.from(map.entries()).sort((a, b) => b[0] - a[0]);
   }, [filtered]);
 
   const openCreate = () => {
@@ -118,6 +118,8 @@ export default function TeamManager() {
       display_order: m.display_order,
       visible: m.visible,
       year: m.year ?? CURRENT_YEAR,
+      gender: (m.gender as any) || "",
+      position_key: m.position_key || "",
     });
     setDialogOpen(true);
   };
@@ -137,10 +139,19 @@ export default function TeamManager() {
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
+    const derivedRole = form.position_key
+      ? positionLabel(form.position_key, form.gender || "m")
+      : form.role;
+    const payload = {
+      ...form,
+      role: derivedRole || form.role,
+      gender: form.gender || null,
+      position_key: form.position_key || null,
+    };
     if (editing) {
-      await updateMember.mutateAsync({ id: editing.id, ...form });
+      await updateMember.mutateAsync({ id: editing.id, ...payload });
     } else {
-      await createMember.mutateAsync(form);
+      await createMember.mutateAsync(payload as any);
     }
     setDialogOpen(false);
   };
@@ -184,14 +195,25 @@ export default function TeamManager() {
               className="pl-9 w-56"
             />
           </div>
-          <Select value={filterCommittee} onValueChange={setFilterCommittee}>
-            <SelectTrigger className="w-44">
-              <SelectValue placeholder="Svi odbori" />
+          <Select value={filterPosition} onValueChange={setFilterPosition}>
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="Sve pozicije" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Svi odbori</SelectItem>
-              {committees.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+              <SelectItem value="all">Sve pozicije</SelectItem>
+              {TEAM_POSITIONS.map((p) => (
+                <SelectItem key={p.key} value={p.key}>{p.short}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterGender} onValueChange={setFilterGender}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Spol" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Svi</SelectItem>
+              {GENDER_OPTIONS.map((g) => (
+                <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -249,11 +271,16 @@ export default function TeamManager() {
         <div className="text-center py-12 text-muted-foreground">Nema rezultata</div>
       ) : (
         <div className="space-y-8">
-          {grouped.map(([committee, members]) => (
-            <div key={committee}>
+          {grouped.map(([groupYear, members]) => (
+            <div key={groupYear}>
               <div className="flex items-center gap-3 mb-4">
                 <Users className="w-4 h-4 text-primary" />
-                <h3 className="font-display font-bold text-foreground">{committee}</h3>
+                <h3 className="font-display font-bold text-foreground">
+                  Generacija {groupYear}
+                  {groupYear === CURRENT_YEAR && (
+                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-primary">Aktivna</span>
+                  )}
+                </h3>
                 <Badge variant="secondary" className="text-xs">{members.length}</Badge>
               </div>
 
@@ -354,19 +381,28 @@ export default function TeamManager() {
                   <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Ime Prezime" />
                 </div>
                 <div>
-                  <Label>Pozicija / Uloga</Label>
-                  <Input value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} placeholder="npr. Koordinator marketinga" />
+                  <Label>Spol</Label>
+                  <Select value={form.gender || "__none"} onValueChange={(v) => setForm((f) => ({ ...f, gender: v === "__none" ? "" : (v as any) }))}>
+                    <SelectTrigger><SelectValue placeholder="Odaberi" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">—</SelectItem>
+                      {GENDER_OPTIONS.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label>Organizacioni odbor</Label>
-                  <Select value={form.committee} onValueChange={(v) => setForm((f) => ({ ...f, committee: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label>Pozicija</Label>
+                  <Select value={form.position_key || "__none"} onValueChange={(v) => setForm((f) => ({ ...f, position_key: v === "__none" ? "" : v }))}>
+                    <SelectTrigger><SelectValue placeholder="Odaberi poziciju" /></SelectTrigger>
                     <SelectContent>
-                      {committees.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem value="__none">— bez pozicije —</SelectItem>
+                      {TEAM_POSITIONS.map((p) => (
+                        <SelectItem key={p.key} value={p.key}>{p.short}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -375,6 +411,19 @@ export default function TeamManager() {
                   <Label>Godina mandata</Label>
                   <Input type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: parseInt(e.target.value) || CURRENT_YEAR }))} />
                 </div>
+              </div>
+
+              <div>
+                <Label>Naziv prikaza</Label>
+                <Input
+                  value={form.position_key ? positionLabel(form.position_key, form.gender || "m") : form.role}
+                  onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                  placeholder="Automatski iz pozicije i spola, ili upiši ručno"
+                  disabled={!!form.position_key}
+                />
+                {form.position_key && (
+                  <p className="text-[11px] text-muted-foreground mt-1">Automatski generisano iz pozicije i spola.</p>
+                )}
               </div>
 
               <div>
