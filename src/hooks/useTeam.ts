@@ -3,12 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+export interface PhotoCrop {
+  x: number;
+  y: number;
+}
+
 export interface TeamMember {
   id: string;
   name: string;
   role: string;
   committee: string;
   photo_url: string | null;
+  photo_crop: PhotoCrop | null;
   linkedin_url: string | null;
   email: string | null;
   phone: string | null;
@@ -18,6 +24,11 @@ export interface TeamMember {
   user_id: string;
   created_at: string;
   updated_at: string;
+}
+
+export function getPhotoPosition(crop?: PhotoCrop | null): string {
+  if (!crop) return "50% 50%";
+  return `${crop.x}% ${crop.y}%`;
 }
 
 export function useTeamMembers(onlyVisible = false) {
@@ -38,7 +49,7 @@ export function useTeamMembers(onlyVisible = false) {
         .select("*")
         .order("display_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as TeamMember[];
+      return (data ?? []) as unknown as TeamMember[];
     },
   });
 }

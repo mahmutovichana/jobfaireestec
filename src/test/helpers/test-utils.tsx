@@ -183,6 +183,7 @@ export function createFakeTeamMember(overrides: Record<string, any> = {}) {
     role: "Developer",
     committee: "IT",
     photo_url: null,
+    photo_crop: null,
     linkedin_url: null,
     email: "member@test.com",
     phone: null,
