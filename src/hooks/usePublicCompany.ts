@@ -11,7 +11,16 @@ export function useCompanyBySlug(slug: string | undefined) {
         .eq("company_slug", slug!)
         .single();
       if (error) throw error;
-      return data;
+      return data as unknown as {
+        id: string;
+        company: string | null;
+        company_description: string | null;
+        website: string | null;
+        avatar_url: string | null;
+        social_links: any;
+        company_slug: string | null;
+        full_name?: string | null;
+      };
     },
     enabled: !!slug,
   });
