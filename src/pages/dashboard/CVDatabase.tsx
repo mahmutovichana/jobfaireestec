@@ -1,13 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, FileText, Download, Trash2, User, GraduationCap, Mail, Phone, Calendar } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Search, FileText, Download, Trash2, User, GraduationCap, Mail, Phone, Calendar, Eye, Loader2 } from "lucide-react";
 import { useCVSubmissions, useDeleteCV, type CVSubmission } from "@/hooks/useCV";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+
+function CVHoverPreview({ cvUrl, children }: { cvUrl: string; children: React.ReactNode }) {
+  const [signed, setSigned] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open || signed || loading) return;
+    setLoading(true);
+    supabase.storage
+      .from("cv-uploads")
+      .createSignedUrl(cvUrl, 300)
+      .then(({ data, error }) => {
+        if (!error && data) setSigned(data.signedUrl);
+        setLoading(false);
+      });
+  }, [open, cvUrl, signed, loading]);
+
+  return (
+    <HoverCard openDelay={200} closeDelay={100} onOpenChange={setOpen}>
+      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
+      <HoverCardContent
+        side="right"
+        align="start"
+        className="w-[420px] h-[560px] p-0 overflow-hidden rounded-2xl border-border/60 shadow-2xl"
+      >
+        {loading || !signed ? (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-muted/30">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">Učitavanje pregleda...</p>
+          </div>
+        ) : (
+          <iframe
+            src={`${signed}#toolbar=0&navpanes=0&view=FitH`}
+            title="CV Preview"
+            className="w-full h-full border-0"
+          />
+        )}
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
 
 export default function CVDatabase() {
   const { data: submissions = [], isLoading } = useCVSubmissions();
@@ -66,48 +109,50 @@ export default function CVDatabase() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((cv) => (
-            <div
-              key={cv.id}
-              className="group rounded-2xl border border-border/50 bg-card p-5 hover:border-primary/30 transition-all cursor-pointer"
-              onClick={() => setSelected(cv)}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
+            <CVHoverPreview key={cv.id} cvUrl={cv.cv_url}>
+              <div
+                className="group rounded-2xl border border-border/50 bg-card p-5 hover:border-primary/40 hover:shadow-md transition-all cursor-pointer"
+                onClick={() => setSelected(cv)}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => { e.stopPropagation(); handleDownload(cv.cv_url, cv.full_name); }}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(cv.id); }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => { e.stopPropagation(); handleDownload(cv.cv_url, cv.full_name); }}
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(cv.id); }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <h3 className="font-medium text-foreground truncate">{cv.full_name}</h3>
+                <p className="text-xs text-muted-foreground truncate">{cv.email}</p>
+                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  {cv.faculty && <Badge variant="secondary" className="text-[10px]">{cv.faculty}</Badge>}
+                  {cv.year_of_study && <Badge variant="outline" className="text-[10px]">{cv.year_of_study}</Badge>}
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <p className="text-[10px] text-muted-foreground/60">
+                    {format(new Date(cv.created_at), "dd.MM.yyyy HH:mm")}
+                  </p>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-primary/70">
+                    <Eye className="w-3 h-3" /> Hover za pregled
+                  </span>
                 </div>
               </div>
-              <h3 className="font-medium text-foreground truncate">{cv.full_name}</h3>
-              <p className="text-xs text-muted-foreground truncate">{cv.email}</p>
-              <div className="flex items-center gap-2 mt-3 flex-wrap">
-                {cv.faculty && (
-                  <Badge variant="secondary" className="text-[10px]">{cv.faculty}</Badge>
-                )}
-                {cv.year_of_study && (
-                  <Badge variant="outline" className="text-[10px]">{cv.year_of_study}</Badge>
-                )}
-              </div>
-              <p className="text-[10px] text-muted-foreground/60 mt-2">
-                {format(new Date(cv.created_at), "dd.MM.yyyy HH:mm")}
-              </p>
-            </div>
+            </CVHoverPreview>
           ))}
         </div>
       )}
