@@ -79,13 +79,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const treasuryAt = analyticsIdx >= 0 ? analyticsIdx : items.length;
     items.splice(treasuryAt, 0, { title: "Finansije", url: "/dashboard/treasury", icon: Wallet });
     allItems = items;
-  } else if (isBoard) {
-    // Non-admin UO members get a minimal nav with Treasury
-    allItems = [
-      { title: "Početna", url: "/dashboard/home", icon: Home },
-      { title: "Finansije", url: "/dashboard/treasury", icon: Wallet },
-      { title: "Moj profil", url: "/dashboard/settings", icon: Settings },
-    ];
   } else {
     allItems = companyNavItems;
   }
