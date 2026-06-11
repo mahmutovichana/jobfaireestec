@@ -189,8 +189,6 @@ export default function AuditLogs() {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
   const { data: logs = [], isLoading } = useAuditLogs(
     entityFilter !== "all" ? { entity_type: entityFilter } : undefined
   );
@@ -237,15 +235,6 @@ export default function AuditLogs() {
     });
     return groups;
   }, [filteredLogs]);
-
-  const toggleExpand = (id: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const resetFilters = () => {
     setEntityFilter("all");
@@ -360,7 +349,6 @@ export default function AuditLogs() {
                   const meta = (log.metadata ?? {}) as Record<string, unknown>;
                   const summary = (meta.display_name || meta.name || meta.old_name || meta.title || meta.full_name) as string | undefined;
                   const hasDetails = Object.keys(meta).length > 0;
-                  const isOpen = expanded.has(log.id);
                   return (
                     <motion.div
                       key={log.id}
