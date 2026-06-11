@@ -151,9 +151,6 @@ export default function PartnersManager() {
     await deletePartner.mutateAsync(id);
   };
 
-  const handlePackageChange = async (partnerId: string, newPackage: PartnerPackage) => {
-    await updatePartner.mutateAsync({ id: partnerId, package: newPackage });
-  };
 
   const handleDragEnd = (event: DragEndEvent, groupPartners: Partner[]) => {
     const { active, over } = event;
@@ -566,19 +563,6 @@ function PartnerInfoFields({
                     </SelectContent>
                   </Select>
                 </div>
-                {form.category === "company" && (
-                  <div>
-                    <Label>Paket (default)</Label>
-                    <Select value={form.package || "standard"} onValueChange={(v) => setForm((f) => ({ ...f, package: v as PartnerPackage }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {PACKAGE_ORDER.map((pkg) => (
-                          <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
               </div>
 
               <div>
