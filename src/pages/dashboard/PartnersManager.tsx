@@ -10,7 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs as InnerTabs, TabsContent as InnerTabsContent, TabsList as InnerTabsList, TabsTrigger as InnerTabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, Upload, Building2, Newspaper, Heart, Search, Zap, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DndContext,
   closestCenter,
@@ -94,6 +97,19 @@ export default function PartnersManager() {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
+
+  // Bulk assign state (top-of-page tool)
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkYear, setBulkYear] = useState<number>(CURRENT_YEAR);
+  const [bulkPkg, setBulkPkg] = useState<PartnerPackage>("standard");
+  const [bulkPrice, setBulkPrice] = useState<string>("");
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+  const [bulkPickerOpen, setBulkPickerOpen] = useState(false);
+
+  // Keep editingPartner in sync with latest data so participation changes show instantly
+  const currentEditing = editingPartner
+    ? partners.find((p) => p.id === editingPartner.id) ?? editingPartner
+    : null;
 
   const filtered = partners
     .filter((p) => p.category === activeTab)
@@ -215,6 +231,16 @@ export default function PartnersManager() {
               <Plus className="w-4 h-4" />
               Dodaj
             </Button>
+            {activeTab === "company" && (
+              <Button
+                onClick={() => setBulkOpen(true)}
+                variant="outline"
+                className="rounded-full gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Brza dodjela paketa
+              </Button>
+            )}
           </div>
         </div>
 
@@ -331,11 +357,11 @@ export default function PartnersManager() {
             <DialogTitle>{editingPartner ? "Uredi partnera" : "Dodaj partnera"}</DialogTitle>
           </DialogHeader>
 
-          {editingPartner ? (
+          {currentEditing ? (
             <InnerTabs defaultValue="info" className="flex-1 overflow-hidden flex flex-col">
               <InnerTabsList className="self-start">
                 <InnerTabsTrigger value="info">Osnovni podaci</InnerTabsTrigger>
-                <InnerTabsTrigger value="years">Godine učešća ({(editingPartner.participations ?? []).length})</InnerTabsTrigger>
+                <InnerTabsTrigger value="years">Godine učešća ({(currentEditing.participations ?? []).length})</InnerTabsTrigger>
               </InnerTabsList>
               <InnerTabsContent value="info" className="flex-1 overflow-y-auto mt-4">
                 <PartnerInfoFields
@@ -348,12 +374,12 @@ export default function PartnersManager() {
               <InnerTabsContent value="years" className="flex-1 overflow-y-auto mt-4">
                 <div className="space-y-5">
                   <p className="text-xs text-muted-foreground">
-                    Svaka godina ima svoj paket — prihod se automatski računa u <strong>Finansije</strong>. Za <em>custom</em> paket unesi i cijenu.
+                    Promjene paketa i godina se spremaju <strong>automatski</strong>. Za <em>custom</em> paket unesi i cijenu.
                   </p>
 
                   {/* Existing participations */}
                   <div className="space-y-2">
-                    {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => {
+                    {(currentEditing.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => {
                       const t = pp.package ? pkgTypes.find((x) => x.key === pp.package) : null;
                       const isCustom = !!t?.is_custom;
                       return (
@@ -392,7 +418,7 @@ export default function PartnersManager() {
                         </div>
                       );
                     })}
-                    {(editingPartner.participations ?? []).length === 0 && (
+                    {(currentEditing.participations ?? []).length === 0 && (
                       <p className="text-xs text-muted-foreground italic">Još nema učešća.</p>
                     )}
                   </div>
@@ -430,7 +456,7 @@ export default function PartnersManager() {
                           return alert("Unesi custom cijenu");
                         }
                         addParticipation.mutate({
-                          partner_id: editingPartner.id,
+                          partner_id: currentEditing.id,
                           year: newYear,
                           package: newPkg,
                           custom_price: isCustom ? parseFloat(newCustomPrice) : null,
@@ -481,7 +507,7 @@ export default function PartnersManager() {
                           if (isCustom && (price == null || isNaN(price))) return alert("Unesi custom cijenu");
                           const rows = [];
                           for (let y = lo; y <= hi; y++) {
-                            rows.push({ partner_id: editingPartner.id, year: y, package: batchPkg, custom_price: price });
+                            rows.push({ partner_id: currentEditing.id, year: y, package: batchPkg, custom_price: price });
                           }
                           batchUpsertParticipations.mutate(rows);
                           setBatchCustomPrice("");
@@ -509,12 +535,212 @@ export default function PartnersManager() {
           <div className="flex justify-end gap-3 pt-4 border-t border-border/40 mt-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
             <Button onClick={handleSave} disabled={createPartner.isPending || updatePartner.isPending}>
-              {editingPartner ? "Sačuvaj" : "Dodaj"}
+              {editingPartner ? "Spremi osnovne podatke" : "Dodaj"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk assign dialog */}
+      <BulkAssignDialog
+        open={bulkOpen}
+        onOpenChange={(o) => {
+          setBulkOpen(o);
+          if (!o) {
+            setBulkSelected(new Set());
+            setBulkPrice("");
+          }
+        }}
+        year={bulkYear}
+        setYear={setBulkYear}
+        pkg={bulkPkg}
+        setPkg={setBulkPkg}
+        price={bulkPrice}
+        setPrice={setBulkPrice}
+        selected={bulkSelected}
+        setSelected={setBulkSelected}
+        pickerOpen={bulkPickerOpen}
+        setPickerOpen={setBulkPickerOpen}
+        pkgTypes={pkgTypes}
+        companies={partners.filter((p) => p.category === "company")}
+        onApply={async () => {
+          if (bulkSelected.size === 0) return;
+          const pkgType = pkgTypes.find((x) => x.key === bulkPkg);
+          const isCustom = !!pkgType?.is_custom;
+          const price = isCustom ? parseFloat(bulkPrice) : null;
+          if (isCustom && (price == null || isNaN(price))) {
+            return alert("Unesi custom cijenu");
+          }
+          const rows = Array.from(bulkSelected).map((id) => ({
+            partner_id: id,
+            year: bulkYear,
+            package: bulkPkg,
+            custom_price: price,
+          }));
+          await batchUpsertParticipations.mutateAsync(rows);
+          setBulkSelected(new Set());
+          setBulkPrice("");
+          setBulkOpen(false);
+        }}
+        isPending={batchUpsertParticipations.isPending}
+      />
     </div>
+  );
+}
+
+function BulkAssignDialog({
+  open, onOpenChange, year, setYear, pkg, setPkg, price, setPrice,
+  selected, setSelected, pickerOpen, setPickerOpen, pkgTypes, companies, onApply, isPending,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  year: number;
+  setYear: (y: number) => void;
+  pkg: string;
+  setPkg: (p: string) => void;
+  price: string;
+  setPrice: (p: string) => void;
+  selected: Set<string>;
+  setSelected: (s: Set<string>) => void;
+  pickerOpen: boolean;
+  setPickerOpen: (o: boolean) => void;
+  pkgTypes: any[];
+  companies: Partner[];
+  onApply: () => void;
+  isPending: boolean;
+}) {
+  const pkgType = pkgTypes.find((x) => x.key === pkg);
+  const isCustom = !!pkgType?.is_custom;
+
+  const toggle = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+  };
+
+  const selectAll = () => setSelected(new Set(companies.map((c) => c.id)));
+  const clearAll = () => setSelected(new Set());
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" /> Brza dodjela paketa
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Odaberi godinu i paket, zatim označi sve kompanije kojima se dodjeljuje. Postojeći unosi se ažuriraju.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="col-span-1">
+              <Label className="text-xs">Godina</Label>
+              <Input type="number" value={year} onChange={(e) => setYear(parseInt(e.target.value) || year)} className="h-9" />
+            </div>
+            <div className="col-span-2">
+              <Label className="text-xs">Paket</Label>
+              <Select value={pkg} onValueChange={setPkg}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {pkgTypes.map((p) => (
+                    <SelectItem key={p.key} value={p.key}>{p.label}{p.is_custom ? " (custom)" : ""}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {isCustom && (
+              <div className="col-span-1">
+                <Label className="text-xs">Cijena</Label>
+                <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0" className="h-9" />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-xs">Kompanije ({selected.size} odabrano)</Label>
+              <div className="flex gap-2">
+                <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={selectAll}>Sve</Button>
+                <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={clearAll}>Očisti</Button>
+              </div>
+            </div>
+            <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between h-10">
+                  <span className="truncate text-sm">
+                    {selected.size === 0 ? "Pretraži i označi kompanije..." : `${selected.size} odabrano`}
+                  </span>
+                  <ChevronsUpDown className="w-4 h-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0 w-[--radix-popover-trigger-width] max-w-[600px]" align="start">
+                <Command>
+                  <CommandInput placeholder="Pretraži kompanije..." />
+                  <CommandList className="max-h-[320px]">
+                    <CommandEmpty>Nema rezultata.</CommandEmpty>
+                    <CommandGroup>
+                      {companies.map((c) => {
+                        const existing = (c.participations ?? []).find((pp) => pp.year === year);
+                        const isSel = selected.has(c.id);
+                        return (
+                          <CommandItem
+                            key={c.id}
+                            value={c.name}
+                            onSelect={() => toggle(c.id)}
+                            className="flex items-center gap-3 cursor-pointer"
+                          >
+                            <Checkbox checked={isSel} onCheckedChange={() => toggle(c.id)} />
+                            {c.logo_url ? (
+                              <img src={c.logo_url} alt="" className="w-6 h-6 rounded object-contain bg-muted/30" />
+                            ) : (
+                              <div className="w-6 h-6 rounded bg-muted/50 flex items-center justify-center text-[10px]">{c.name[0]}</div>
+                            )}
+                            <span className="flex-1 truncate">{c.name}</span>
+                            {existing?.package && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {pkgTypes.find((x) => x.key === existing.package)?.label || existing.package}
+                              </Badge>
+                            )}
+                            {isSel && <Check className="w-4 h-4 text-primary" />}
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {selected.size > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3 max-h-28 overflow-y-auto">
+                {Array.from(selected).map((id) => {
+                  const c = companies.find((x) => x.id === id);
+                  if (!c) return null;
+                  return (
+                    <Badge key={id} variant="secondary" className="gap-1 cursor-pointer" onClick={() => toggle(id)}>
+                      {c.name}
+                      <span className="opacity-60">×</span>
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-border/40 mt-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Otkaži</Button>
+          <Button onClick={onApply} disabled={isPending || selected.size === 0}>
+            <Zap className="w-4 h-4 mr-1" />
+            Dodijeli {selected.size > 0 ? `(${selected.size})` : ""}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
