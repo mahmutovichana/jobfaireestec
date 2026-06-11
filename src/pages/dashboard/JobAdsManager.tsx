@@ -309,84 +309,105 @@ const JobAdsManager = () => {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">{editingId ? "Uredi oglas" : "Novi oglas"}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-5 mt-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="ad-title">Naslov *</Label>
-              <Input id="ad-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Npr. Frontend Developer" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="ad-company">Firma *</Label>
-              {companyNames.length > 0 ? (
-                <Select value={form.company_name} onValueChange={(v) => setForm((f) => ({ ...f, company_name: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Odaberi kompaniju" /></SelectTrigger>
-                  <SelectContent>
-                    {companyNames.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="ad-desc">Opis</Label>
-              <Textarea id="ad-desc" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Opis pozicije..." rows={4} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6 mt-2">
+            {/* Left column: main fields */}
+            <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="ad-deadline">Rok prijave</Label>
-                <Input id="ad-deadline" type="datetime-local" value={form.deadline} onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))} />
+                <Label htmlFor="ad-title">Naslov *</Label>
+                <Input id="ad-title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Npr. Frontend Developer" />
               </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="ad-link">Eksterni link</Label>
-                <Input id="ad-link" value={form.external_link} onChange={(e) => setForm((f) => ({ ...f, external_link: e.target.value }))} placeholder="https://..." />
+                <Label htmlFor="ad-company">Firma *</Label>
+                {companyNames.length > 0 ? (
+                  <Select value={form.company_name} onValueChange={(v) => setForm((f) => ({ ...f, company_name: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Odaberi kompaniju" /></SelectTrigger>
+                    <SelectContent>
+                      {companyNames.map((name) => (
+                        <SelectItem key={name} value={name}>{name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input id="ad-company" value={form.company_name} onChange={(e) => setForm((f) => ({ ...f, company_name: e.target.value }))} placeholder="Naziv kompanije" />
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="ad-desc">Opis pozicije</Label>
+                <Textarea
+                  id="ad-desc"
+                  value={form.description}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Opišite poziciju, odgovornosti i tražene vještine..."
+                  rows={14}
+                  className="resize-y min-h-[260px]"
+                />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Slika</Label>
-              {form.image_url ? (
-                <div className="relative inline-block">
-                  <img src={form.image_url} alt="Ad" className="h-32 rounded-lg object-cover" />
-                  <button onClick={() => setForm((f) => ({ ...f, image_url: "" }))} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1">
-                    <X className="w-3 h-3" />
-                  </button>
+            {/* Right column: meta + image + publish */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ad-deadline">Rok prijave</Label>
+                  <Input id="ad-deadline" type="datetime-local" value={form.deadline} onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))} />
                 </div>
-              ) : (
+                <div className="space-y-1.5">
+                  <Label htmlFor="ad-link">Eksterni link za prijavu</Label>
+                  <Input id="ad-link" value={form.external_link} onChange={(e) => setForm((f) => ({ ...f, external_link: e.target.value }))} placeholder="https://..." />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Slika oglasa</Label>
+                {form.image_url ? (
+                  <div className="relative">
+                    <img src={form.image_url} alt="Ad" className="w-full aspect-video object-cover rounded-lg" />
+                    <button onClick={() => setForm((f) => ({ ...f, image_url: "" }))} className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    <button
+                      onClick={() => imageRef.current?.click()}
+                      disabled={uploading}
+                      className="w-full aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                          <Upload className="w-5 h-5" />
+                          <span className="text-xs font-medium">Upload sliku</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
                 <div>
-                  <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  <Button variant="outline" onClick={() => imageRef.current?.click()} disabled={uploading}>
-                    {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                    Upload sliku
-                  </Button>
+                  <Label className="font-semibold">Objavi</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Objavljeni oglasi su vidljivi svima</p>
                 </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
-              <div>
-                <Label className="font-semibold">Objavi</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">Objavljeni oglasi su vidljivi svima</p>
+                <Switch checked={form.published} onCheckedChange={(v) => setForm((f) => ({ ...f, published: v }))} />
               </div>
-              <Switch checked={form.published} onCheckedChange={(v) => setForm((f) => ({ ...f, published: v }))} />
             </div>
+          </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
-              <Button onClick={handleSubmit} disabled={isSaving}>
-                {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {editingId ? "Sačuvaj" : "Kreiraj"}
-              </Button>
-            </div>
+          <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-border/40">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Otkaži</Button>
+            <Button onClick={handleSubmit} disabled={isSaving}>
+              {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {editingId ? "Sačuvaj" : "Kreiraj"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
