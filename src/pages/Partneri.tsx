@@ -82,7 +82,7 @@ function PartnerCard({ partner, index, yearFilter, typeMap }: { partner: Partner
 }
 
 /* ── Section for a category ── */
-function CategorySection({ title, subtitle, partners, yearFilter }: { title: string; subtitle?: string; partners: Partner[]; yearFilter: number | null }) {
+function CategorySection({ title, subtitle, partners, yearFilter, typeMap }: { title: string; subtitle?: string; partners: Partner[]; yearFilter: number | null; typeMap: Record<string, { label: string; color_class: string }> }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -106,7 +106,7 @@ function CategorySection({ title, subtitle, partners, yearFilter }: { title: str
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto px-6">
         {partners.map((partner, i) => (
-          <PartnerCard key={partner.id} partner={partner} index={i} yearFilter={yearFilter} />
+          <PartnerCard key={partner.id} partner={partner} index={i} yearFilter={yearFilter} typeMap={typeMap} />
         ))}
       </div>
     </section>
@@ -116,6 +116,12 @@ function CategorySection({ title, subtitle, partners, yearFilter }: { title: str
 /* ── Main Page ── */
 export default function Partneri() {
   const { data: partners = [], isLoading } = usePartners(true);
+  const { data: pkgTypes = [] } = usePackageTypes();
+  const typeMap = useMemo(() => {
+    const m: Record<string, { label: string; color_class: string }> = {};
+    pkgTypes.forEach((t) => (m[t.key] = { label: t.label, color_class: t.color_class }));
+    return m;
+  }, [pkgTypes]);
   const [yearFilter, setYearFilter] = useState<number | null>(null);
 
   const allYears = useMemo(() => {
@@ -190,9 +196,9 @@ export default function Partneri() {
             </div>
           )}
           <div className="max-w-7xl mx-auto">
-            <CategorySection title="Kompanije učesnice" subtitle="Učesnici" partners={companies} yearFilter={yearFilter} />
-            <CategorySection title="Mediji" subtitle="Medijska podrška" partners={media} yearFilter={yearFilter} />
-            <CategorySection title="Sponzori" subtitle="Podrška" partners={sponsors} yearFilter={yearFilter} />
+            <CategorySection title="Kompanije učesnice" subtitle="Učesnici" partners={companies} yearFilter={yearFilter} typeMap={typeMap} />
+            <CategorySection title="Mediji" subtitle="Medijska podrška" partners={media} yearFilter={yearFilter} typeMap={typeMap} />
+            <CategorySection title="Sponzori" subtitle="Podrška" partners={sponsors} yearFilter={yearFilter} typeMap={typeMap} />
           </div>
         </>
       )}
