@@ -28,7 +28,8 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
 import { useReorderItems } from "@/hooks/useReorder";
-import { useAddParticipation, useDeleteParticipation, useUpdateParticipation } from "@/hooks/usePartnerParticipations";
+import { useAddParticipation, useDeleteParticipation, useUpdateParticipation, useBatchUpsertParticipations } from "@/hooks/usePartnerParticipations";
+import { usePackageTypes } from "@/hooks/usePackageTypes";
 import {
   usePartners,
   useCreatePartner,
@@ -49,12 +50,8 @@ const CATEGORY_ICONS: Record<PartnerCategory, typeof Building2> = {
   sponsor: Heart,
 };
 
-const PACKAGE_COLORS: Record<PartnerPackage, string> = {
-  gold: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-  silver: "bg-gray-300/15 text-gray-300 border-gray-400/30",
-  standard: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  promo: "bg-purple-500/15 text-purple-400 border-purple-500/30",
-};
+// Package colors come from package_types (color_class). Fallback below.
+const FALLBACK_PKG_COLOR = "bg-muted text-foreground border-border";
 
 const emptyForm = {
   name: "",
