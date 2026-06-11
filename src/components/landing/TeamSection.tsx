@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Linkedin, Mail, Phone, Users, ArrowRight } from "lucide-react";
-import { getPhotoPosition, type TeamMember } from "@/hooks/useTeam";
+import { getPhotoStyle, type TeamMember } from "@/hooks/useTeam";
 
 interface TeamSectionProps {
   teamMembers: TeamMember[];
@@ -29,7 +29,7 @@ function MemberCard({ member, index, isLeader = false }: { member: TeamMember; i
               src={member.photo_url}
               alt={member.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              style={{ objectPosition: getPhotoPosition(member.photo_crop) }}
+              style={getPhotoStyle(member.photo_crop)}
               loading="lazy"
             />
           ) : (
