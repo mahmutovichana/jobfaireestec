@@ -73,9 +73,16 @@ export default function PartnersManager() {
   const addParticipation = useAddParticipation();
   const updateParticipation = useUpdateParticipation();
   const deleteParticipation = useDeleteParticipation();
+  const batchUpsertParticipations = useBatchUpsertParticipations();
+  const { data: pkgTypes = [] } = usePackageTypes();
   const CURRENT_YEAR = new Date().getFullYear();
   const [newYear, setNewYear] = useState<number>(CURRENT_YEAR);
   const [newPkg, setNewPkg] = useState<PartnerPackage>("standard");
+  const [newCustomPrice, setNewCustomPrice] = useState<string>("");
+  const [batchFrom, setBatchFrom] = useState<number>(CURRENT_YEAR - 2);
+  const [batchTo, setBatchTo] = useState<number>(CURRENT_YEAR);
+  const [batchPkg, setBatchPkg] = useState<PartnerPackage>("standard");
+  const [batchCustomPrice, setBatchCustomPrice] = useState<string>("");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
