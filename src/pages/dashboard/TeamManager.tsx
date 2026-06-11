@@ -38,6 +38,7 @@ import { TEAM_POSITIONS, GENDER_OPTIONS, positionLabel, positionShort } from "@/
 
 const CURRENT_YEAR = new Date().getFullYear();
 const DEFAULT_COMMITTEE = "Organizacioni odbor";
+const DEFAULT_EMAIL_DOMAIN = "@eestec-sa.ba";
 
 const emptyForm = {
   name: "",
@@ -46,7 +47,7 @@ const emptyForm = {
   photo_url: "",
   photo_crop: null as { x: number; y: number } | null,
   linkedin_url: "",
-  email: "",
+  email: DEFAULT_EMAIL_DOMAIN,
   phone: "",
   display_order: 0,
   visible: true,
@@ -347,15 +348,19 @@ export default function TeamManager() {
             {/* Photo column */}
             <div className="space-y-3">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Fotografija</Label>
-              <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/40 border border-border/50 flex items-center justify-center">
-                {form.photo_url ? (
-                  <img src={form.photo_url} alt="" className="w-full h-full object-cover" style={{ objectPosition: getPhotoPosition(form.photo_crop) }} />
-                ) : (
+              {form.photo_url ? (
+                <PhotoCropper
+                  imageUrl={form.photo_url}
+                  value={form.photo_crop}
+                  onChange={(crop) => setForm((f) => ({ ...f, photo_crop: crop }))}
+                />
+              ) : (
+                <div className="w-[180px] h-[180px] rounded-2xl overflow-hidden bg-muted/40 border border-border/50 flex items-center justify-center">
                   <div className="text-3xl font-bold text-muted-foreground/40">
                     {form.name ? form.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase() : "?"}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
               <label className="cursor-pointer block">
                 <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 transition-colors text-sm text-muted-foreground">
                   <Upload className="w-4 h-4" />
@@ -364,13 +369,6 @@ export default function TeamManager() {
                 <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
               </label>
               <Input value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} placeholder="ili URL slike" className="text-xs" />
-              {form.photo_url && (
-                <PhotoCropper
-                  imageUrl={form.photo_url}
-                  value={form.photo_crop}
-                  onChange={(crop) => setForm((f) => ({ ...f, photo_crop: crop }))}
-                />
-              )}
             </div>
 
             {/* Fields column */}
@@ -437,7 +435,14 @@ export default function TeamManager() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Email</Label>
-                  <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@primjer.com" />
+                  <Input
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    placeholder="ime@eestec-sa.ba"
+                  />
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Predefinisano <code>@eestec-sa.ba</code> — slobodno prepiši bilo kojim drugim emailom.
+                  </p>
                 </div>
                 <div>
                   <Label>Telefon</Label>

@@ -60,7 +60,7 @@ export default function AccessRequests() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-display font-bold text-foreground">Zahtjevi za pristup</h1>
         <p className="text-muted-foreground mt-1">Pregled i odobravanje zahtjeva za registraciju i partner profile.</p>

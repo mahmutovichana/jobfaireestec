@@ -316,163 +316,154 @@ const NewsManager = () => {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">
               {editingId ? "Uredi novost" : "Nova novost"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-5 mt-2">
-            {/* Title */}
-            <div className="space-y-1.5">
-              <Label htmlFor="title">Naslov *</Label>
-              <Input
-                id="title"
-                value={form.title}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, title: e.target.value }))
-                }
-                placeholder="Naslov novosti"
-              />
+          <div className="grid md:grid-cols-2 gap-6 mt-2">
+            {/* Left: text content */}
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="title">Naslov *</Label>
+                <Input
+                  id="title"
+                  value={form.title}
+                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  placeholder="Naslov novosti"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="summary">Kratak opis</Label>
+                <Textarea
+                  id="summary"
+                  value={form.summary}
+                  onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
+                  placeholder="Kratki sažetak koji se prikazuje na listi"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="content">Sadržaj</Label>
+                <Textarea
+                  id="content"
+                  value={form.content}
+                  onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                  placeholder="Puni tekst novosti..."
+                  rows={12}
+                />
+              </div>
             </div>
 
-            {/* Summary */}
-            <div className="space-y-1.5">
-              <Label htmlFor="summary">Kratak opis</Label>
-              <Textarea
-                id="summary"
-                value={form.summary}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, summary: e.target.value }))
-                }
-                placeholder="Kratki sažetak koji se prikazuje na listi"
-                rows={2}
-              />
-            </div>
-
-            {/* Content */}
-            <div className="space-y-1.5">
-              <Label htmlFor="content">Sadržaj</Label>
-              <Textarea
-                id="content"
-                value={form.content}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, content: e.target.value }))
-                }
-                placeholder="Puni tekst novosti..."
-                rows={8}
-              />
-            </div>
-
-            {/* Thumbnail */}
-            <div className="space-y-1.5">
-              <Label>Thumbnail slika</Label>
-              {form.thumbnail_url ? (
-                <div className="relative inline-block">
-                  <img
-                    src={form.thumbnail_url}
-                    alt="Thumbnail"
-                    className="h-32 rounded-lg object-cover"
-                  />
-                  <button
-                    onClick={() =>
-                      setForm((f) => ({ ...f, thumbnail_url: "" }))
-                    }
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <input
-                    ref={thumbnailRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleThumbnailUpload}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => thumbnailRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4 mr-2" />
-                    )}
-                    Upload thumbnail
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Gallery */}
-            <div className="space-y-1.5">
-              <Label>Galerija slika</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {form.gallery_urls.map((url, i) => (
-                  <div key={i} className="relative aspect-square">
+            {/* Right: media + publish */}
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Thumbnail slika</Label>
+                {form.thumbnail_url ? (
+                  <div className="relative">
                     <img
-                      src={url}
-                      alt={`Galerija ${i + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
+                      src={form.thumbnail_url}
+                      alt="Thumbnail"
+                      className="w-full aspect-video object-cover rounded-lg"
                     />
                     <button
-                      onClick={() => removeGalleryImage(i)}
-                      className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-1"
+                      onClick={() => setForm((f) => ({ ...f, thumbnail_url: "" }))}
+                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                ))}
-                <div>
-                  <input
-                    ref={galleryRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleGalleryUpload}
-                  />
-                  <button
-                    onClick={() => galleryRef.current?.click()}
-                    disabled={uploading}
-                    className="aspect-square w-full rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {uploading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <>
-                        <Plus className="w-5 h-5" />
-                        <span className="text-[10px] font-medium">Dodaj</span>
-                      </>
-                    )}
-                  </button>
+                ) : (
+                  <>
+                    <input
+                      ref={thumbnailRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleThumbnailUpload}
+                    />
+                    <button
+                      onClick={() => thumbnailRef.current?.click()}
+                      disabled={uploading}
+                      className="w-full aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {uploading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5" />
+                          <span className="text-xs font-medium">Upload thumbnail</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Galerija slika</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {form.gallery_urls.map((url, i) => (
+                    <div key={i} className="relative aspect-square">
+                      <img
+                        src={url}
+                        alt={`Galerija ${i + 1}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <button
+                        onClick={() => removeGalleryImage(i)}
+                        className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-1"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <div>
+                    <input
+                      ref={galleryRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleGalleryUpload}
+                    />
+                    <button
+                      onClick={() => galleryRef.current?.click()}
+                      disabled={uploading}
+                      className="aspect-square w-full rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {uploading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Plus className="w-5 h-5" />
+                          <span className="text-[10px] font-medium">Dodaj</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Published toggle */}
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
-              <div>
-                <Label className="font-semibold">Objavi</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Objavljene novosti su vidljive svima
-                </p>
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
+                <div>
+                  <Label className="font-semibold">Objavi</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Objavljene novosti su vidljive svima
+                  </p>
+                </div>
+                <Switch
+                  checked={form.published}
+                  onCheckedChange={(v) => setForm((f) => ({ ...f, published: v }))}
+                />
               </div>
-              <Switch
-                checked={form.published}
-                onCheckedChange={(v) =>
-                  setForm((f) => ({ ...f, published: v }))
-                }
-              />
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-border/40">
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
@@ -485,7 +476,6 @@ const NewsManager = () => {
                 ) : null}
                 {editingId ? "Sačuvaj" : "Kreiraj"}
               </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -8,6 +8,7 @@ import { usePartners } from "@/hooks/usePartners";
 import { useEvents } from "@/hooks/useEvents";
 import { usePageViews } from "@/hooks/usePageViews";
 import { TeamAnalytics } from "@/components/dashboard/TeamAnalytics";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo } from "react";
 import { format, parseISO, startOfWeek } from "date-fns";
 
@@ -167,8 +168,16 @@ const Analytics = () => {
         ))}
       </div>
 
-      {/* Charts row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <Tabs defaultValue="events" className="w-full">
+        <TabsList className="bg-muted rounded-full p-1 flex flex-wrap h-auto">
+          <TabsTrigger value="events" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Eventi & registracije</TabsTrigger>
+          <TabsTrigger value="partners" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Partneri</TabsTrigger>
+          <TabsTrigger value="traffic" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Promet</TabsTrigger>
+          <TabsTrigger value="team" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Tim</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="events" className="mt-6 space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-card rounded-xl p-5 sm:p-6">
           <h3 className="font-display font-semibold mb-4">Registracije po eventu</h3>
           {perEventData.length > 0 ? (
@@ -212,10 +221,48 @@ const Analytics = () => {
             <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka o registracijama.</p>
           )}
         </div>
-      </div>
+          </div>
 
-      {/* Charts row 2: Partner breakdowns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Events by status summary */}
+          <div className="bg-card rounded-xl p-5 sm:p-6">
+            <h3 className="font-display font-semibold mb-4">Pregled evenata po statusu</h3>
+            <div className="grid grid-cols-3 gap-4">
+              {eventsByStatus.map((item) => (
+                <div key={item.name} className="text-center p-4 rounded-xl bg-muted/30">
+                  <p className="text-2xl font-display font-bold">{item.value}</p>
+                  <p className="text-sm text-muted-foreground">{item.name}</p>
+                </div>
+              ))}
+              {eventsByStatus.length === 0 && (
+                <p className="col-span-3 text-muted-foreground text-center py-8 text-sm">Nema evenata.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-card rounded-xl p-5 sm:p-6">
+            <h3 className="font-display font-semibold mb-4">Status registracija</h3>
+            {registrationsByStatus.length > 0 ? (
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={registrationsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={80} label>
+                      {registrationsByStatus.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka.</p>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="partners" className="mt-6 space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-card rounded-xl p-5 sm:p-6">
           <h3 className="font-display font-semibold mb-4">Partneri po kategoriji</h3>
           {partnersByCategory.length > 0 ? (
@@ -254,47 +301,11 @@ const Analytics = () => {
             <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka.</p>
           )}
         </div>
+          </div>
+        </TabsContent>
 
-        <div className="bg-card rounded-xl p-5 sm:p-6">
-          <h3 className="font-display font-semibold mb-4">Status registracija</h3>
-          {registrationsByStatus.length > 0 ? (
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={registrationsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={80} label>
-                    {registrationsByStatus.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-12 text-sm">Nema podataka.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Events by status summary */}
-      <div className="bg-card rounded-xl p-5 sm:p-6">
-        <h3 className="font-display font-semibold mb-4">Pregled evenata po statusu</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {eventsByStatus.map((item) => (
-            <div key={item.name} className="text-center p-4 rounded-xl bg-muted/30">
-              <p className="text-2xl font-display font-bold">{item.value}</p>
-              <p className="text-sm text-muted-foreground">{item.name}</p>
-            </div>
-          ))}
-          {eventsByStatus.length === 0 && (
-            <p className="col-span-3 text-muted-foreground text-center py-8 text-sm">Nema evenata.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Traffic sources */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <TabsContent value="traffic" className="mt-6 space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="bg-card rounded-xl p-5 sm:p-6">
           <h3 className="font-display font-semibold mb-1">Top izvori prometa (30 dana)</h3>
           <p className="text-xs text-muted-foreground mb-4">Odakle posjetitelji dolaze na sajt</p>
@@ -340,11 +351,13 @@ const Analytics = () => {
             <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
           )}
         </div>
-      </div>
+          </div>
+        </TabsContent>
 
-      <div className="pt-2">
-        <TeamAnalytics />
-      </div>
+        <TabsContent value="team" className="mt-6">
+          <TeamAnalytics />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
