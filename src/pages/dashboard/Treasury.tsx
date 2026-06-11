@@ -4,16 +4,43 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Wallet, TrendingUp, Users, Calendar, Lock, Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { Wallet, TrendingUp, Users, Calendar, Lock, Plus, Trash2, Pencil, Check, X, Tags, Coins, LayoutDashboard } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { useTreasury } from "@/hooks/useTreasury";
 import { usePackagePrices, useUpsertPackagePrice } from "@/hooks/usePackagePrices";
 import { usePackageTypes, useUpsertPackageType, useDeletePackageType, type PackageType } from "@/hooks/usePackageTypes";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+
+// Curated color palette — auto-assigned to new package types so users never deal with raw Tailwind.
+const COLOR_PALETTE = [
+  "bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-300",
+  "bg-slate-500/15 text-slate-700 border-slate-500/30 dark:text-slate-300",
+  "bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-300",
+  "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-300",
+  "bg-violet-500/15 text-violet-700 border-violet-500/30 dark:text-violet-300",
+  "bg-rose-500/15 text-rose-700 border-rose-500/30 dark:text-rose-300",
+  "bg-cyan-500/15 text-cyan-700 border-cyan-500/30 dark:text-cyan-300",
+  "bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-300",
+];
+
+function slugifyKey(label: string, existing: string[]): string {
+  const base = label
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 32) || "paket";
+  let key = base;
+  let i = 2;
+  while (existing.includes(key)) key = `${base}_${i++}`;
+  return key;
+}
 
 const fmt = (n: number, currency = "BAM") =>
   `${n.toLocaleString("bs-BA", { maximumFractionDigits: 0 })} ${currency}`;
@@ -30,7 +57,7 @@ export default function Treasury() {
   const [editingYear, setEditingYear] = useState<number>(new Date().getFullYear());
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [typeDialog, setTypeDialog] = useState<PackageType | null>(null);
-  const [typeForm, setTypeForm] = useState<PackageType>({ key: "", label: "", color_class: "bg-muted text-foreground border-border", sort_order: 99, is_custom: false });
+  const [typeForm, setTypeForm] = useState<PackageType>({ key: "", label: "", color_class: COLOR_PALETTE[0], sort_order: 99, is_custom: false });
 
   const priceFor = (year: number, key: string) =>
     prices.find((p) => p.year === year && p.package === key);
@@ -66,22 +93,28 @@ export default function Treasury() {
       setTypeForm(t);
       setTypeDialog(t);
     } else {
-      const blank: PackageType = { key: "", label: "", color_class: "bg-muted text-foreground border-border", sort_order: (pkgTypes.at(-1)?.sort_order ?? 0) + 1, is_custom: false };
+      const sort = (pkgTypes.at(-1)?.sort_order ?? 0) + 1;
+      const color = COLOR_PALETTE[(pkgTypes.length) % COLOR_PALETTE.length];
+      const blank: PackageType = { key: "", label: "", color_class: color, sort_order: sort, is_custom: false };
       setTypeForm(blank);
       setTypeDialog(blank);
     }
   };
 
   const saveType = async () => {
-    if (!typeForm.key.trim() || !typeForm.label.trim()) return;
-    await upsertType.mutateAsync({ ...typeForm, key: typeForm.key.trim().toLowerCase() });
+    if (!typeForm.label.trim()) return;
+    const isNew = !pkgTypes.find((t) => t.key === typeForm.key);
+    const key = isNew
+      ? slugifyKey(typeForm.label, pkgTypes.map((t) => t.key))
+      : typeForm.key;
+    await upsertType.mutateAsync({ ...typeForm, key });
     setTypeDialog(null);
   };
 
   const fixedTypes = pkgTypes.filter((t) => !t.is_custom);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
@@ -96,7 +129,7 @@ export default function Treasury() {
         </Badge>
       </div>
 
-      {/* KPI cards — uniform height via items-stretch + h-full */}
+      {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
         {[
           { icon: TrendingUp, label: "Ukupni prihod (svi mandati)", value: fmt(grandTotal, currency) },
@@ -117,96 +150,108 @@ export default function Treasury() {
         ))}
       </div>
 
-      {/* Per-year breakdown */}
-      <div>
-        <h2 className="text-lg font-display font-bold mb-3">Prihod po godini</h2>
-        {isLoading ? (
-          <div className="text-center py-10 text-muted-foreground">Učitavanje...</div>
-        ) : breakdown.length === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground">
-            Još nema dodijeljenih paketa po godinama. Otvori <strong>Partneri</strong> tab i dodaj učešća.
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-            {breakdown.map((yb) => (
-              <motion.div key={yb.year} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="h-full">
-                <Card className="p-5 h-full flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-display font-bold">{yb.year}</h3>
-                      <p className="text-xs text-muted-foreground">{yb.partnerCount} učesnika</p>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="bg-muted rounded-full p-1 flex flex-wrap h-auto">
+          <TabsTrigger value="overview" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5">
+            <LayoutDashboard className="w-3.5 h-3.5" /> Pregled
+          </TabsTrigger>
+          <TabsTrigger value="types" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5">
+            <Tags className="w-3.5 h-3.5" /> Tipovi paketa
+          </TabsTrigger>
+          <TabsTrigger value="prices" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5">
+            <Coins className="w-3.5 h-3.5" /> Cijene
+          </TabsTrigger>
+          <TabsTrigger value="partners" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Partneri po godini
+          </TabsTrigger>
+        </TabsList>
+
+        {/* OVERVIEW */}
+        <TabsContent value="overview" className="mt-6">
+          {isLoading ? (
+            <div className="text-center py-10 text-muted-foreground">Učitavanje...</div>
+          ) : breakdown.length === 0 ? (
+            <Card className="p-8 text-center text-muted-foreground">
+              Još nema dodijeljenih paketa po godinama. Otvori <strong>Partneri</strong> tab i dodaj učešća.
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+              {breakdown.map((yb) => (
+                <motion.div key={yb.year} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="h-full">
+                  <Card className="p-6 h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <h3 className="text-2xl font-display font-bold">{yb.year}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{yb.partnerCount} učesnika</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Prihod</p>
+                        <p className="text-2xl font-display font-bold text-primary">{fmt(yb.total, yb.currency)}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">Prihod</p>
-                      <p className="text-2xl font-display font-bold text-primary">{fmt(yb.total, yb.currency)}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    {pkgTypes.map((t) => {
-                      const data = yb.byPackage[t.key];
-                      if (!data) return null;
-                      return (
-                        <div key={t.key} className="flex items-center justify-between text-sm border-t border-border/40 pt-2">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`${t.color_class} text-xs`}>{t.label}</Badge>
-                            <span className="text-muted-foreground">
-                              {data.count}× {t.is_custom ? "(custom)" : `× ${fmt(data.price, yb.currency)}`}
-                            </span>
+                    <div className="space-y-2.5 flex-1">
+                      {pkgTypes.map((t) => {
+                        const data = yb.byPackage[t.key];
+                        if (!data) return null;
+                        return (
+                          <div key={t.key} className="flex items-center justify-between text-sm border-t border-border/40 pt-2.5">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className={`${t.color_class} text-xs`}>{t.label}</Badge>
+                              <span className="text-muted-foreground">
+                                {data.count}× {t.is_custom ? "(custom)" : `× ${fmt(data.price, yb.currency)}`}
+                              </span>
+                            </div>
+                            <span className="font-medium">{fmt(data.revenue, yb.currency)}</span>
                           </div>
-                          <span className="font-medium">{fmt(data.revenue, yb.currency)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Package types editor */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-display font-bold">Tipovi paketa</h2>
-          <Button size="sm" onClick={() => openTypeDialog()} className="gap-2"><Plus className="w-4 h-4" />Novi tip</Button>
-        </div>
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Naziv</TableHead>
-                <TableHead>Ključ</TableHead>
-                <TableHead>Custom</TableHead>
-                <TableHead>Redoslijed</TableHead>
-                <TableHead className="w-24"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pkgTypes.map((t) => (
-                <TableRow key={t.key}>
-                  <TableCell><Badge variant="outline" className={t.color_class}>{t.label}</Badge></TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono">{t.key}</TableCell>
-                  <TableCell className="text-xs">{t.is_custom ? "Da (cijena po partneru)" : "—"}</TableCell>
-                  <TableCell className="text-xs">{t.sort_order}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openTypeDialog(t)}><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { if (confirm(`Obrisati paket "${t.label}"?`)) deleteType.mutate(t.key); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                        );
+                      })}
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </Card>
+                </motion.div>
               ))}
-            </TableBody>
-          </Table>
-        </Card>
-      </div>
+            </div>
+          )}
+        </TabsContent>
 
-      {/* Price editor (only for non-custom types) */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-display font-bold">Cijene paketa po godini</h2>
+        {/* PACKAGE TYPES */}
+        <TabsContent value="types" className="mt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Tipovi paketa, redoslijed i boje. Ključ i boja se dodjeljuju automatski.</p>
+            <Button size="sm" onClick={() => openTypeDialog()} className="gap-2 rounded-full"><Plus className="w-4 h-4" />Novi tip</Button>
+          </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Naziv</TableHead>
+                  <TableHead>Custom cijena</TableHead>
+                  <TableHead>Redoslijed</TableHead>
+                  <TableHead className="w-24 text-right">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pkgTypes.map((t) => (
+                  <TableRow key={t.key}>
+                    <TableCell><Badge variant="outline" className={t.color_class}>{t.label}</Badge></TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{t.is_custom ? "Da — po partneru" : "Ne — fiksna po godini"}</TableCell>
+                    <TableCell className="text-xs">{t.sort_order}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 justify-end">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openTypeDialog(t)}><Pencil className="w-3.5 h-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { if (confirm(`Obrisati paket "${t.label}"?`)) deleteType.mutate(t.key); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* PRICES */}
+        <TabsContent value="prices" className="mt-6 space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground mr-1">Godina:</span>
             {allYears.map((y) => (
               <button
                 key={y}
@@ -218,49 +263,60 @@ export default function Treasury() {
                 {y}
               </button>
             ))}
-            <Button variant="outline" size="sm" onClick={() => setEditingYear(Math.min(...allYears) - 1)} className="text-xs">+ Dodaj godinu</Button>
+            <Button variant="outline" size="sm" onClick={() => setEditingYear(Math.min(...allYears) - 1)} className="text-xs rounded-full">+ Dodaj godinu</Button>
           </div>
-        </div>
 
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Paket ({editingYear})</TableHead>
-                <TableHead>Cijena</TableHead>
-                <TableHead>Valuta</TableHead>
-                <TableHead className="w-28"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fixedTypes.map((t) => {
-                const current = priceFor(editingYear, t.key);
-                const key = `${editingYear}:${t.key}`;
-                const value = draft[key] ?? (current?.price?.toString() ?? "");
-                const dirty = draft[key] !== undefined && draft[key] !== (current?.price?.toString() ?? "");
-                return (
-                  <TableRow key={t.key}>
-                    <TableCell><Badge variant="outline" className={t.color_class}>{t.label}</Badge></TableCell>
-                    <TableCell>
-                      <Input type="number" value={value} onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))} placeholder="0" className="w-32" />
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{current?.currency ?? "BAM"}</TableCell>
-                    <TableCell>
-                      {dirty && <Button size="sm" onClick={() => savePrice(editingYear, t.key)} disabled={upsertPrice.isPending}>Sačuvaj</Button>}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Card>
-        <p className="text-xs text-muted-foreground mt-2">Custom paketi nemaju fiksnu cijenu — iznos se unosi za svaku godinu učešća kod partnera.</p>
-      </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Paket ({editingYear})</TableHead>
+                  <TableHead>Cijena</TableHead>
+                  <TableHead>Valuta</TableHead>
+                  <TableHead className="w-28 text-right">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fixedTypes.map((t) => {
+                  const current = priceFor(editingYear, t.key);
+                  const key = `${editingYear}:${t.key}`;
+                  const value = draft[key] ?? (current?.price?.toString() ?? "");
+                  const dirty = draft[key] !== undefined && draft[key] !== (current?.price?.toString() ?? "");
+                  return (
+                    <TableRow key={t.key}>
+                      <TableCell><Badge variant="outline" className={t.color_class}>{t.label}</Badge></TableCell>
+                      <TableCell>
+                        <Input type="number" value={value} onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))} placeholder="0" className="w-32" />
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{current?.currency ?? "BAM"}</TableCell>
+                      <TableCell className="text-right">
+                        {dirty && <Button size="sm" onClick={() => savePrice(editingYear, t.key)} disabled={upsertPrice.isPending}>Sačuvaj</Button>}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+          <p className="text-xs text-muted-foreground">Custom paketi nemaju fiksnu cijenu — iznos se unosi za svaku godinu učešća kod partnera.</p>
+        </TabsContent>
 
-      {/* Detail table for active year */}
-      {currentYearData && (
-        <div>
-          <h2 className="text-lg font-display font-bold mb-3">Partneri za {editingYear}</h2>
+        {/* PARTNERS BY YEAR */}
+        <TabsContent value="partners" className="mt-6 space-y-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground mr-1">Godina:</span>
+            {allYears.map((y) => (
+              <button
+                key={y}
+                onClick={() => setEditingYear(y)}
+                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${
+                  editingYear === y ? "bg-foreground text-background border-foreground" : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted"
+                }`}
+              >
+                {y}
+              </button>
+            ))}
+          </div>
           <Card>
             <Table>
               <TableHeader>
@@ -295,41 +351,44 @@ export default function Treasury() {
                       </TableRow>
                     );
                   })}
+                {!currentYearData && (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8 text-sm">Nema učesnika za {editingYear}.</TableCell></TableRow>
+                )}
               </TableBody>
             </Table>
           </Card>
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
 
-      {/* Package type dialog */}
+      {/* Package type dialog — no key/color inputs, auto-generated */}
       <Dialog open={typeDialog !== null} onOpenChange={(o) => !o && setTypeDialog(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>{typeDialog && pkgTypes.find((t) => t.key === typeDialog.key) ? "Uredi paket" : "Novi paket"}</DialogTitle></DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <Label>Naziv (prikazani)</Label>
-              <Input value={typeForm.label} onChange={(e) => setTypeForm((f) => ({ ...f, label: e.target.value }))} placeholder="npr. Platinasti" />
+              <Label>Naziv</Label>
+              <Input
+                value={typeForm.label}
+                onChange={(e) => setTypeForm((f) => ({ ...f, label: e.target.value }))}
+                placeholder="npr. Platinasti"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Boja i interni ključ se postavljaju automatski.</p>
             </div>
             <div>
-              <Label>Ključ (kratki identifikator, npr. "platinum")</Label>
-              <Input value={typeForm.key} onChange={(e) => setTypeForm((f) => ({ ...f, key: e.target.value }))} placeholder="platinum" disabled={!!pkgTypes.find((t) => t.key === typeForm.key)} />
-            </div>
-            <div>
-              <Label>CSS klase boje (Tailwind)</Label>
-              <Input value={typeForm.color_class} onChange={(e) => setTypeForm((f) => ({ ...f, color_class: e.target.value }))} />
-              <div className="mt-2"><Badge variant="outline" className={typeForm.color_class}>{typeForm.label || "Pregled"}</Badge></div>
-            </div>
-            <div>
-              <Label>Redoslijed</Label>
+              <Label>Redoslijed prikaza</Label>
               <Input type="number" value={typeForm.sort_order} onChange={(e) => setTypeForm((f) => ({ ...f, sort_order: parseInt(e.target.value) || 0 }))} />
             </div>
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-3 pt-1">
               <Switch checked={typeForm.is_custom} onCheckedChange={(v) => setTypeForm((f) => ({ ...f, is_custom: v }))} />
-              <Label>Custom — cijena se unosi po svakom partneru/godini</Label>
+              <Label className="cursor-pointer">Custom — cijena se unosi po svakom partneru/godini</Label>
+            </div>
+            <div className="pt-1">
+              <Label className="text-xs">Pregled</Label>
+              <div className="mt-1.5"><Badge variant="outline" className={typeForm.color_class}>{typeForm.label || "Naziv paketa"}</Badge></div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setTypeDialog(null)}><X className="w-4 h-4 mr-1" />Otkaži</Button>
-              <Button onClick={saveType} disabled={upsertType.isPending}><Check className="w-4 h-4 mr-1" />Sačuvaj</Button>
+              <Button onClick={saveType} disabled={upsertType.isPending || !typeForm.label.trim()}><Check className="w-4 h-4 mr-1" />Sačuvaj</Button>
             </div>
           </div>
         </DialogContent>

@@ -97,7 +97,15 @@ export default function PartnersManager() {
 
   const filtered = partners
     .filter((p) => p.category === activeTab)
-    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+    .slice()
+    .sort((a, b) => {
+      // Current-year participants first
+      const aHas = (a.participations ?? []).some((pp) => pp.year === CURRENT_YEAR && pp.package) ? 0 : 1;
+      const bHas = (b.participations ?? []).some((pp) => pp.year === CURRENT_YEAR && pp.package) ? 0 : 1;
+      if (aHas !== bHas) return aHas - bHas;
+      return (a.display_order ?? 0) - (b.display_order ?? 0);
+    });
 
   // Single flat group per category — package is now per-year (participations)
   const groupedByPackage = [{ pkg: null as any, label: CATEGORY_LABELS[activeTab], partners: filtered }];
@@ -272,7 +280,7 @@ export default function PartnersManager() {
                                   const cur = (partner.participations ?? []).find((pp) => pp.year === CURRENT_YEAR);
                                   const t = cur?.package ? pkgTypes.find((x) => x.key === cur.package) : null;
                                   if (!cur || !cur.package) {
-                                    return <span className="text-xs text-muted-foreground italic">— (uredi za dodjelu)</span>;
+                                    return <span className="text-sm text-muted-foreground/60">—</span>;
                                   }
                                   return <Badge variant="outline" className={t?.color_class || FALLBACK_PKG_COLOR}>{t?.label || cur.package}</Badge>;
                                 })()}
