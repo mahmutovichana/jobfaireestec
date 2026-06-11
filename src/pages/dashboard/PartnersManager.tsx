@@ -348,11 +348,11 @@ export default function PartnersManager() {
             <DialogTitle>{editingPartner ? "Uredi partnera" : "Dodaj partnera"}</DialogTitle>
           </DialogHeader>
 
-          {editingPartner ? (
+          {currentEditing ? (
             <InnerTabs defaultValue="info" className="flex-1 overflow-hidden flex flex-col">
               <InnerTabsList className="self-start">
                 <InnerTabsTrigger value="info">Osnovni podaci</InnerTabsTrigger>
-                <InnerTabsTrigger value="years">Godine učešća ({(editingPartner.participations ?? []).length})</InnerTabsTrigger>
+                <InnerTabsTrigger value="years">Godine učešća ({(currentEditing.participations ?? []).length})</InnerTabsTrigger>
               </InnerTabsList>
               <InnerTabsContent value="info" className="flex-1 overflow-y-auto mt-4">
                 <PartnerInfoFields
@@ -365,12 +365,12 @@ export default function PartnersManager() {
               <InnerTabsContent value="years" className="flex-1 overflow-y-auto mt-4">
                 <div className="space-y-5">
                   <p className="text-xs text-muted-foreground">
-                    Svaka godina ima svoj paket — prihod se automatski računa u <strong>Finansije</strong>. Za <em>custom</em> paket unesi i cijenu.
+                    Promjene paketa i godina se spremaju <strong>automatski</strong>. Za <em>custom</em> paket unesi i cijenu.
                   </p>
 
                   {/* Existing participations */}
                   <div className="space-y-2">
-                    {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => {
+                    {(currentEditing.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => {
                       const t = pp.package ? pkgTypes.find((x) => x.key === pp.package) : null;
                       const isCustom = !!t?.is_custom;
                       return (
@@ -409,7 +409,7 @@ export default function PartnersManager() {
                         </div>
                       );
                     })}
-                    {(editingPartner.participations ?? []).length === 0 && (
+                    {(currentEditing.participations ?? []).length === 0 && (
                       <p className="text-xs text-muted-foreground italic">Još nema učešća.</p>
                     )}
                   </div>
@@ -447,7 +447,7 @@ export default function PartnersManager() {
                           return alert("Unesi custom cijenu");
                         }
                         addParticipation.mutate({
-                          partner_id: editingPartner.id,
+                          partner_id: currentEditing.id,
                           year: newYear,
                           package: newPkg,
                           custom_price: isCustom ? parseFloat(newCustomPrice) : null,
@@ -498,7 +498,7 @@ export default function PartnersManager() {
                           if (isCustom && (price == null || isNaN(price))) return alert("Unesi custom cijenu");
                           const rows = [];
                           for (let y = lo; y <= hi; y++) {
-                            rows.push({ partner_id: editingPartner.id, year: y, package: batchPkg, custom_price: price });
+                            rows.push({ partner_id: currentEditing.id, year: y, package: batchPkg, custom_price: price });
                           }
                           batchUpsertParticipations.mutate(rows);
                           setBatchCustomPrice("");
