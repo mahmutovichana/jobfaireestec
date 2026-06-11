@@ -55,7 +55,12 @@ export function useDeleteCV() {
 
 export async function uploadCV(file: File): Promise<string> {
   const ext = file.name.split(".").pop();
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  // Scope each upload to its own UUID folder so anonymous submitters cannot
+  // overwrite another visitor's CV by reusing a file name.
+  const uuid = (globalThis.crypto?.randomUUID?.() ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const path = `submissions/${uuid}/${safeName || `cv.${ext}`}`;
   const { error } = await supabase.storage
     .from("cv-uploads")
     .upload(path, file, { cacheControl: "3600", upsert: false });
