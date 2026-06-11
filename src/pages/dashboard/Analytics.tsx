@@ -1,4 +1,4 @@
-import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase, Globe } from "lucide-react";
+import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase, Globe, Wallet } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -7,6 +7,8 @@ import { useRegistrationStats } from "@/hooks/useRegistrations";
 import { usePartners } from "@/hooks/usePartners";
 import { useEvents } from "@/hooks/useEvents";
 import { usePageViews } from "@/hooks/usePageViews";
+import { useTreasury } from "@/hooks/useTreasury";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import { TeamAnalytics } from "@/components/dashboard/TeamAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo } from "react";
@@ -26,6 +28,8 @@ const Analytics = () => {
   const { data: partners = [], isLoading: partnersLoading } = usePartners();
   const { data: events = [], isLoading: eventsLoading } = useEvents();
   const { data: pageViews = [], isLoading: pvLoading } = usePageViews(30);
+  const { isAdmin } = useIsAdmin();
+  const treasury = useTreasury();
 
   const isLoading = statsLoading || partnersLoading || eventsLoading || pvLoading;
 
@@ -174,6 +178,11 @@ const Analytics = () => {
           <TabsTrigger value="partners" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Partneri</TabsTrigger>
           <TabsTrigger value="traffic" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Promet</TabsTrigger>
           <TabsTrigger value="team" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Tim</TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="finance" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5">
+              <Wallet className="w-3.5 h-3.5" /> Finansije
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="events" className="mt-6 space-y-5">
@@ -357,9 +366,185 @@ const Analytics = () => {
         <TabsContent value="team" className="mt-6">
           <TeamAnalytics />
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="finance" className="mt-6 space-y-5">
+            <FinanceAnalytics treasury={treasury} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
 };
 
 export default Analytics;
+
+// ---------- Finance analytics (admin only) ----------
+function FinanceAnalytics({ treasury }: { treasury: ReturnType<typeof useTreasury> }) {
+  const { breakdown, grandTotal, partners, pkgTypes, prices, isLoading } = treasury;
+  const currency = breakdown[0]?.currency || "BAM";
+  const fmt = (n: number) => `${Math.round(n).toLocaleString("bs-BA")} ${currency}`;
+
+  // Revenue per year (asc for trend)
+  const revenueByYear = [...breakdown].sort((a, b) => a.year - b.year).map((b) => ({
+    year: String(b.year),
+    revenue: Math.round(b.total),
+    partners: b.partnerCount,
+  }));
+
+  // Stacked by package per year
+  const packageKeys = pkgTypes.map((t) => t.key);
+  const stacked = [...breakdown].sort((a, b) => a.year - b.year).map((b) => {
+    const row: Record<string, number | string> = { year: String(b.year) };
+    packageKeys.forEach((k) => { row[k] = Math.round(b.byPackage[k]?.revenue || 0); });
+    return row;
+  });
+
+  // Top partners by lifetime contribution
+  const topPartners = partners
+    .map((p) => {
+      const total = (p.participations ?? []).reduce((s, pp) => {
+        if (!pp.package) return s;
+        const t = pkgTypes.find((x) => x.key === pp.package);
+        const useCustom = t?.is_custom || pp.custom_price != null;
+        const price = prices.find((pr) => pr.year === pp.year && pr.package === pp.package);
+        const amt = useCustom ? Number(pp.custom_price ?? 0) : price ? Number(price.price) : 0;
+        return s + amt;
+      }, 0);
+      const years = (p.participations ?? []).filter((pp) => pp.package).length;
+      return { name: p.name, total: Math.round(total), years };
+    })
+    .filter((p) => p.total > 0)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  // Total revenue by package (across all years)
+  const revByPackage = packageKeys
+    .map((k, i) => {
+      const t = pkgTypes.find((x) => x.key === k);
+      const total = breakdown.reduce((s, b) => s + (b.byPackage[k]?.revenue || 0), 0);
+      return { name: t?.label || k, value: Math.round(total), color: COLORS[i % COLORS.length] };
+    })
+    .filter((d) => d.value > 0);
+
+  const avgPerPartner = partners.length > 0 ? grandTotal / partners.length : 0;
+  const bestYear = [...breakdown].sort((a, b) => b.total - a.total)[0];
+
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-5">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Ukupni prihod (svi mandati)", value: fmt(grandTotal) },
+          { label: "Aktivnih godina", value: String(breakdown.length) },
+          { label: "Prosjek po partneru", value: fmt(avgPerPartner) },
+          { label: "Najbolja godina", value: bestYear ? `${bestYear.year} · ${fmt(bestYear.total)}` : "—" },
+        ].map((s) => (
+          <div key={s.label} className="bg-card rounded-xl p-4">
+            <p className="text-xs text-muted-foreground mb-1.5">{s.label}</p>
+            <p className="text-xl font-display font-bold truncate">{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-1">Prihod po godini</h3>
+          <p className="text-xs text-muted-foreground mb-4">Ukupno {currency} sakupljeno po mandatu</p>
+          {revenueByYear.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueByYear} margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="year" className="text-xs" tick={{ fontSize: 11 }} />
+                  <YAxis className="text-xs" tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }}
+                    formatter={(v: number) => fmt(v)}
+                  />
+                  <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} barSize={36} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
+          )}
+        </div>
+
+        <div className="bg-card rounded-xl p-5 sm:p-6">
+          <h3 className="font-display font-semibold mb-1">Prihod po paketu (svi mandati)</h3>
+          <p className="text-xs text-muted-foreground mb-4">Koji paket donosi najviše</p>
+          {revByPackage.length > 0 ? (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={revByPackage} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={90} label={({ name, value }) => `${name}: ${fmt(value as number)}`}>
+                    {revByPackage.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }}
+                    formatter={(v: number) => fmt(v)}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-card rounded-xl p-5 sm:p-6">
+        <h3 className="font-display font-semibold mb-1">Struktura prihoda po godinama (paket vs. paket)</h3>
+        <p className="text-xs text-muted-foreground mb-4">Stacked: vidi se odnos paketa kroz mandate</p>
+        {stacked.length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stacked} margin={{ left: 0, right: 16, top: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="year" className="text-xs" tick={{ fontSize: 11 }} />
+                <YAxis className="text-xs" tick={{ fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 13 }} formatter={(v: number) => fmt(v)} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {packageKeys.map((k, i) => {
+                  const t = pkgTypes.find((x) => x.key === k);
+                  return <Bar key={k} dataKey={k} stackId="rev" name={t?.label || k} fill={COLORS[i % COLORS.length]} radius={i === packageKeys.length - 1 ? [6, 6, 0, 0] : 0} />;
+                })}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
+        )}
+      </div>
+
+      <div className="bg-card rounded-xl p-5 sm:p-6">
+        <h3 className="font-display font-semibold mb-1">Top 10 partnera po doprinosu</h3>
+        <p className="text-xs text-muted-foreground mb-4">Lifetime vrijednost partnerstva</p>
+        {topPartners.length > 0 ? (
+          <div className="space-y-2">
+            {topPartners.map((p, i) => {
+              const max = topPartners[0].total || 1;
+              const pct = (p.total / max) * 100;
+              return (
+                <div key={p.name} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium truncate">{i + 1}. {p.name}</span>
+                    <span className="text-muted-foreground shrink-0 ml-2">{fmt(p.total)} <span className="text-[11px]">· {p.years}g</span></span>
+                  </div>
+                  <div className="h-2 bg-muted/40 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
+        )}
+      </div>
+    </div>
+  );
+}
