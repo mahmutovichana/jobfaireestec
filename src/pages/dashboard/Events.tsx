@@ -46,7 +46,7 @@ const Events = () => {
       <AlertDialogTrigger asChild onClick={(e) => e.stopPropagation()}>
         {variant === "icon" ? (
           <button
-            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-card/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-card/95 backdrop-blur-sm shadow-md border border-border/50 flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
             aria-label="Obriši event"
           >
             <Trash2 className="w-3.5 h-3.5" />
