@@ -49,7 +49,7 @@ describe("useCreateTeamMember", () => {
     mockSupabase.from.mockReturnValue(chain);
 
     const { result } = renderHook(() => useCreateTeamMember(), { wrapper: createWrapper() });
-    result.current.mutate({ name: "John", role: "Dev", committee: "IT", display_order: 0, visible: true, photo_url: null, photo_crop: null, linkedin_url: null, email: null, phone: null, year: 2026 });
+    result.current.mutate({ name: "John", role: "Dev", committee: "IT", display_order: 0, visible: true, photo_url: null, photo_crop: null, linkedin_url: null, email: null, phone: null, year: 2026, gender: null, position_key: null });
 
     await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("team_members"));
   });
