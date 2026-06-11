@@ -189,9 +189,13 @@ export default function AuditLogs() {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  // Filtered view (for the list below)
   const { data: logs = [], isLoading } = useAuditLogs(
-    entityFilter !== "all" ? { entity_type: entityFilter } : undefined
+    entityFilter !== "all" ? { entity_type: entityFilter, limit: 500 } : { limit: 500 }
   );
+  // Always-on full feed for the top KPI cards — independent of active filters,
+  // so stats reflect the whole platform and refresh every 30s like the list.
+  const { data: allLogs = [] } = useAuditLogs({ limit: 1000 });
 
   const filteredLogs = useMemo(() => {
     return logs.filter(log => {
@@ -215,11 +219,11 @@ export default function AuditLogs() {
   const stats = useMemo(() => {
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
-    const last24h = filteredLogs.filter(l => now - new Date(l.created_at).getTime() < dayMs).length;
-    const last7d = filteredLogs.filter(l => now - new Date(l.created_at).getTime() < 7 * dayMs).length;
-    const uniqueActors = new Set(filteredLogs.map(l => l.actor_email).filter(Boolean)).size;
-    return { total: filteredLogs.length, last24h, last7d, uniqueActors };
-  }, [filteredLogs]);
+    const last24h = allLogs.filter(l => now - new Date(l.created_at).getTime() < dayMs).length;
+    const last7d = allLogs.filter(l => now - new Date(l.created_at).getTime() < 7 * dayMs).length;
+    const uniqueActors = new Set(allLogs.map(l => l.actor_email).filter(Boolean)).size;
+    return { total: allLogs.length, last24h, last7d, uniqueActors };
+  }, [allLogs]);
 
   const grouped = useMemo(() => {
     const groups: Record<string, AuditLog[]> = {};
