@@ -376,19 +376,28 @@ export default function TeamManager() {
                   <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Ime Prezime" />
                 </div>
                 <div>
-                  <Label>Pozicija / Uloga</Label>
-                  <Input value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} placeholder="npr. Koordinator marketinga" />
+                  <Label>Spol</Label>
+                  <Select value={form.gender || "__none"} onValueChange={(v) => setForm((f) => ({ ...f, gender: v === "__none" ? "" : (v as any) }))}>
+                    <SelectTrigger><SelectValue placeholder="Odaberi" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">—</SelectItem>
+                      {GENDER_OPTIONS.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label>Organizacioni odbor</Label>
-                  <Select value={form.committee} onValueChange={(v) => setForm((f) => ({ ...f, committee: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label>Pozicija</Label>
+                  <Select value={form.position_key || "__none"} onValueChange={(v) => setForm((f) => ({ ...f, position_key: v === "__none" ? "" : v }))}>
+                    <SelectTrigger><SelectValue placeholder="Odaberi poziciju" /></SelectTrigger>
                     <SelectContent>
-                      {committees.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem value="__none">— bez pozicije —</SelectItem>
+                      {TEAM_POSITIONS.map((p) => (
+                        <SelectItem key={p.key} value={p.key}>{p.short}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -397,6 +406,19 @@ export default function TeamManager() {
                   <Label>Godina mandata</Label>
                   <Input type="number" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: parseInt(e.target.value) || CURRENT_YEAR }))} />
                 </div>
+              </div>
+
+              <div>
+                <Label>Naziv prikaza</Label>
+                <Input
+                  value={form.position_key ? positionLabel(form.position_key, form.gender || "m") : form.role}
+                  onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+                  placeholder="Automatski iz pozicije i spola, ili upiši ručno"
+                  disabled={!!form.position_key}
+                />
+                {form.position_key && (
+                  <p className="text-[11px] text-muted-foreground mt-1">Automatski generisano iz pozicije i spola.</p>
+                )}
               </div>
 
               <div>
