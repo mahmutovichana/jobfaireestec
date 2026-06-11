@@ -28,7 +28,8 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
 import { useReorderItems } from "@/hooks/useReorder";
-import { useAddParticipation, useDeleteParticipation, useUpdateParticipation } from "@/hooks/usePartnerParticipations";
+import { useAddParticipation, useDeleteParticipation, useUpdateParticipation, useBatchUpsertParticipations } from "@/hooks/usePartnerParticipations";
+import { usePackageTypes } from "@/hooks/usePackageTypes";
 import {
   usePartners,
   useCreatePartner,
@@ -49,12 +50,8 @@ const CATEGORY_ICONS: Record<PartnerCategory, typeof Building2> = {
   sponsor: Heart,
 };
 
-const PACKAGE_COLORS: Record<PartnerPackage, string> = {
-  gold: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-  silver: "bg-gray-300/15 text-gray-300 border-gray-400/30",
-  standard: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  promo: "bg-purple-500/15 text-purple-400 border-purple-500/30",
-};
+// Package colors come from package_types (color_class). Fallback below.
+const FALLBACK_PKG_COLOR = "bg-muted text-foreground border-border";
 
 const emptyForm = {
   name: "",
@@ -76,9 +73,16 @@ export default function PartnersManager() {
   const addParticipation = useAddParticipation();
   const updateParticipation = useUpdateParticipation();
   const deleteParticipation = useDeleteParticipation();
+  const batchUpsertParticipations = useBatchUpsertParticipations();
+  const { data: pkgTypes = [] } = usePackageTypes();
   const CURRENT_YEAR = new Date().getFullYear();
   const [newYear, setNewYear] = useState<number>(CURRENT_YEAR);
   const [newPkg, setNewPkg] = useState<PartnerPackage>("standard");
+  const [newCustomPrice, setNewCustomPrice] = useState<string>("");
+  const [batchFrom, setBatchFrom] = useState<number>(CURRENT_YEAR - 2);
+  const [batchTo, setBatchTo] = useState<number>(CURRENT_YEAR);
+  const [batchPkg, setBatchPkg] = useState<PartnerPackage>("standard");
+  const [batchCustomPrice, setBatchCustomPrice] = useState<string>("");
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -95,14 +99,8 @@ export default function PartnersManager() {
     .filter((p) => p.category === activeTab)
     .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
-  // Group companies by package
-  const groupedByPackage = activeTab === "company"
-    ? PACKAGE_ORDER.map((pkg) => ({
-        pkg,
-        label: PACKAGE_LABELS[pkg],
-        partners: filtered.filter((p) => p.package === pkg),
-      })).filter((g) => g.partners.length > 0)
-    : [{ pkg: null as any, label: CATEGORY_LABELS[activeTab], partners: filtered }];
+  // Single flat group per category — package is now per-year (participations)
+  const groupedByPackage = [{ pkg: null as any, label: CATEGORY_LABELS[activeTab], partners: filtered }];
 
   const openCreate = () => {
     setEditingPartner(null);
@@ -153,9 +151,6 @@ export default function PartnersManager() {
     await deletePartner.mutateAsync(id);
   };
 
-  const handlePackageChange = async (partnerId: string, newPackage: PartnerPackage) => {
-    await updatePartner.mutateAsync({ id: partnerId, package: newPackage });
-  };
 
   const handleDragEnd = (event: DragEndEvent, groupPartners: Partner[]) => {
     const { active, over } = event;
@@ -224,14 +219,9 @@ export default function PartnersManager() {
             <div className="space-y-8">
               {groupedByPackage.map((group) => (
                 <div key={group.pkg ?? "all"}>
-                  {activeTab === "company" && (
-                    <div className="flex items-center gap-3 mb-4">
-                      <Badge className={`${PACKAGE_COLORS[group.pkg]} text-sm px-3 py-1`}>
-                        {group.label} paket
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{group.partners.length} kompanija</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-xs text-muted-foreground">{group.partners.length} {activeTab === "company" ? "kompanija" : "partnera"}</span>
+                  </div>
 
                   <div className="rounded-xl border border-border/50 overflow-hidden">
                     <Table>
@@ -240,7 +230,7 @@ export default function PartnersManager() {
                           <TableHead className="w-8"></TableHead>
                           <TableHead className="w-16">Logo</TableHead>
                           <TableHead>Naziv</TableHead>
-                          {activeTab === "company" && <TableHead>Paket</TableHead>}
+                          {activeTab === "company" && <TableHead>Paket ({CURRENT_YEAR})</TableHead>}
                           <TableHead>Website</TableHead>
                           <TableHead className="w-20">Vidljiv</TableHead>
                           <TableHead className="w-28">Akcije</TableHead>
@@ -278,19 +268,14 @@ export default function PartnersManager() {
                             </TableCell>
                             {activeTab === "company" && (
                               <TableCell>
-                                <Select
-                                  value={partner.package || "standard"}
-                                  onValueChange={(v) => handlePackageChange(partner.id, v as PartnerPackage)}
-                                >
-                                  <SelectTrigger className="w-32 h-8">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {PACKAGE_ORDER.map((pkg) => (
-                                      <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                {(() => {
+                                  const cur = (partner.participations ?? []).find((pp) => pp.year === CURRENT_YEAR);
+                                  const t = cur?.package ? pkgTypes.find((x) => x.key === cur.package) : null;
+                                  if (!cur || !cur.package) {
+                                    return <span className="text-xs text-muted-foreground italic">— (uredi za dodjelu)</span>;
+                                  }
+                                  return <Badge variant="outline" className={t?.color_class || FALLBACK_PKG_COLOR}>{t?.label || cur.package}</Badge>;
+                                })()}
                               </TableCell>
                             )}
                             <TableCell>
@@ -353,59 +338,151 @@ export default function PartnersManager() {
                 />
               </InnerTabsContent>
               <InnerTabsContent value="years" className="flex-1 overflow-y-auto mt-4">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    Dodaj svaku godinu i paket — prihod se automatski računa u Finansije.
+                <div className="space-y-5">
+                  <p className="text-xs text-muted-foreground">
+                    Svaka godina ima svoj paket — prihod se automatski računa u <strong>Finansije</strong>. Za <em>custom</em> paket unesi i cijenu.
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                    {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => (
-                      <div key={pp.id} className="flex items-center gap-2 bg-muted/30 rounded-lg p-2">
-                        <Badge variant="outline" className="font-mono">{pp.year}</Badge>
-                        <Select
-                          value={pp.package || "standard"}
-                          onValueChange={(v) => updateParticipation.mutate({ id: pp.id, package: v as PartnerPackage })}
-                        >
-                          <SelectTrigger className="h-8 flex-1"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {PACKAGE_ORDER.map((pkg) => (
-                              <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteParticipation.mutate(pp.id)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    ))}
+
+                  {/* Existing participations */}
+                  <div className="space-y-2">
+                    {(editingPartner.participations ?? []).slice().sort((a, b) => b.year - a.year).map((pp) => {
+                      const t = pp.package ? pkgTypes.find((x) => x.key === pp.package) : null;
+                      const isCustom = !!t?.is_custom;
+                      return (
+                        <div key={pp.id} className="flex flex-wrap items-center gap-2 bg-muted/30 rounded-lg p-2">
+                          <Badge variant="outline" className="font-mono">{pp.year}</Badge>
+                          <Select
+                            value={pp.package || "standard"}
+                            onValueChange={(v) => updateParticipation.mutate({ id: pp.id, package: v, custom_price: pkgTypes.find((x) => x.key === v)?.is_custom ? (pp.custom_price ?? 0) : null })}
+                          >
+                            <SelectTrigger className="h-8 flex-1 min-w-[140px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {pkgTypes.map((pkg) => (
+                                <SelectItem key={pkg.key} value={pkg.key}>{pkg.label}{pkg.is_custom ? " (custom)" : ""}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {isCustom && (
+                            <div className="flex items-center gap-1">
+                              <Input
+                                type="number"
+                                value={pp.custom_price ?? ""}
+                                onChange={(e) => updateParticipation.mutate({ id: pp.id, custom_price: e.target.value === "" ? null : parseFloat(e.target.value) })}
+                                placeholder="Cijena"
+                                className="h-8 w-28"
+                              />
+                              <Input
+                                value={pp.currency ?? "BAM"}
+                                onChange={(e) => updateParticipation.mutate({ id: pp.id, currency: e.target.value })}
+                                className="h-8 w-16 text-xs"
+                              />
+                            </div>
+                          )}
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteParticipation.mutate(pp.id)}>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      );
+                    })}
                     {(editingPartner.participations ?? []).length === 0 && (
-                      <p className="text-xs text-muted-foreground italic sm:col-span-2">Još nema učešća.</p>
+                      <p className="text-xs text-muted-foreground italic">Još nema učešća.</p>
                     )}
                   </div>
-                  <div className="flex items-end gap-2 border-t border-border/40 pt-3">
-                    <div className="flex-1">
+
+                  {/* Single year add */}
+                  <div className="flex flex-wrap items-end gap-2 border-t border-border/40 pt-3">
+                    <div className="flex-1 min-w-[110px]">
                       <Label className="text-xs">Godina</Label>
                       <Input type="number" value={newYear} onChange={(e) => setNewYear(parseInt(e.target.value) || CURRENT_YEAR)} className="h-9" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-[160px]">
                       <Label className="text-xs">Paket</Label>
-                      <Select value={newPkg} onValueChange={(v) => setNewPkg(v as PartnerPackage)}>
+                      <Select value={newPkg} onValueChange={(v) => setNewPkg(v)}>
                         <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {PACKAGE_ORDER.map((pkg) => (
-                            <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
+                          {pkgTypes.map((pkg) => (
+                            <SelectItem key={pkg.key} value={pkg.key}>{pkg.label}{pkg.is_custom ? " (custom)" : ""}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
+                    {pkgTypes.find((x) => x.key === newPkg)?.is_custom && (
+                      <div className="w-32">
+                        <Label className="text-xs">Custom cijena</Label>
+                        <Input type="number" value={newCustomPrice} onChange={(e) => setNewCustomPrice(e.target.value)} placeholder="0" className="h-9" />
+                      </div>
+                    )}
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      onClick={() => addParticipation.mutate({ partner_id: editingPartner.id, year: newYear, package: newPkg })}
+                      onClick={() => {
+                        const isCustom = pkgTypes.find((x) => x.key === newPkg)?.is_custom;
+                        if (isCustom && (!newCustomPrice || isNaN(parseFloat(newCustomPrice)))) {
+                          return alert("Unesi custom cijenu");
+                        }
+                        addParticipation.mutate({
+                          partner_id: editingPartner.id,
+                          year: newYear,
+                          package: newPkg,
+                          custom_price: isCustom ? parseFloat(newCustomPrice) : null,
+                        });
+                        setNewCustomPrice("");
+                      }}
                       disabled={addParticipation.isPending}
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" /> Dodaj
                     </Button>
+                  </div>
+
+                  {/* Batch range — assign same package to multiple years */}
+                  <div className="rounded-xl border border-dashed border-border/60 p-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">Batch dodjela (godina raspon)</Label>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide">korisno za arhivske podatke</span>
+                    </div>
+                    <div className="flex flex-wrap items-end gap-2">
+                      <div className="w-24"><Label className="text-xs">Od</Label><Input type="number" value={batchFrom} onChange={(e) => setBatchFrom(parseInt(e.target.value) || CURRENT_YEAR)} className="h-9" /></div>
+                      <div className="w-24"><Label className="text-xs">Do</Label><Input type="number" value={batchTo} onChange={(e) => setBatchTo(parseInt(e.target.value) || CURRENT_YEAR)} className="h-9" /></div>
+                      <div className="flex-1 min-w-[160px]">
+                        <Label className="text-xs">Paket</Label>
+                        <Select value={batchPkg} onValueChange={(v) => setBatchPkg(v)}>
+                          <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {pkgTypes.map((pkg) => (
+                              <SelectItem key={pkg.key} value={pkg.key}>{pkg.label}{pkg.is_custom ? " (custom)" : ""}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {pkgTypes.find((x) => x.key === batchPkg)?.is_custom && (
+                        <div className="w-32">
+                          <Label className="text-xs">Cijena (svaka godina)</Label>
+                          <Input type="number" value={batchCustomPrice} onChange={(e) => setBatchCustomPrice(e.target.value)} placeholder="0" className="h-9" />
+                        </div>
+                      )}
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          const lo = Math.min(batchFrom, batchTo);
+                          const hi = Math.max(batchFrom, batchTo);
+                          if (hi - lo > 30) return alert("Raspon prevelik (max 30 godina)");
+                          const isCustom = pkgTypes.find((x) => x.key === batchPkg)?.is_custom;
+                          const price = isCustom ? parseFloat(batchCustomPrice) : null;
+                          if (isCustom && (price == null || isNaN(price))) return alert("Unesi custom cijenu");
+                          const rows = [];
+                          for (let y = lo; y <= hi; y++) {
+                            rows.push({ partner_id: editingPartner.id, year: y, package: batchPkg, custom_price: price });
+                          }
+                          batchUpsertParticipations.mutate(rows);
+                          setBatchCustomPrice("");
+                        }}
+                        disabled={batchUpsertParticipations.isPending}
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Primijeni na {Math.abs(batchTo - batchFrom) + 1} g.
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </InnerTabsContent>
@@ -486,19 +563,6 @@ function PartnerInfoFields({
                     </SelectContent>
                   </Select>
                 </div>
-                {form.category === "company" && (
-                  <div>
-                    <Label>Paket (default)</Label>
-                    <Select value={form.package || "standard"} onValueChange={(v) => setForm((f) => ({ ...f, package: v as PartnerPackage }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {PACKAGE_ORDER.map((pkg) => (
-                          <SelectItem key={pkg} value={pkg}>{PACKAGE_LABELS[pkg]}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
               </div>
 
               <div>

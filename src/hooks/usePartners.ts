@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export type PartnerCategory = "company" | "media" | "sponsor";
-export type PartnerPackage = "standard" | "silver" | "gold" | "promo";
+export type PartnerPackage = string;
 
 export interface Partner {
   id: string;
@@ -27,16 +27,19 @@ export interface PartnerParticipation {
   partner_id: string;
   year: number;
   package: PartnerPackage | null;
+  custom_price?: number | null;
+  currency?: string;
 }
 
-export const PACKAGE_LABELS: Record<PartnerPackage, string> = {
+export const PACKAGE_LABELS: Record<string, string> = {
   gold: "Zlatni",
   silver: "Srebrni",
   standard: "Standardni",
   promo: "Promo",
+  custom: "Custom",
 };
 
-export const PACKAGE_ORDER: PartnerPackage[] = ["gold", "silver", "standard", "promo"];
+export const PACKAGE_ORDER: PartnerPackage[] = ["gold", "silver", "standard", "promo", "custom"];
 
 export const CATEGORY_LABELS: Record<PartnerCategory, string> = {
   company: "Kompanije",
@@ -50,7 +53,7 @@ export function usePartners(onlyVisible = false) {
     queryFn: async () => {
       let query = supabase
         .from("partners")
-        .select("*, participations:partner_participations(id, partner_id, year, package)")
+        .select("*, participations:partner_participations(id, partner_id, year, package, custom_price, currency)")
         .order("display_order", { ascending: true });
 
       if (onlyVisible) {

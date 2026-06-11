@@ -522,7 +522,7 @@ export type Database = {
           currency: string
           id: string
           notes: string | null
-          package: Database["public"]["Enums"]["partner_package"]
+          package: string
           price: number
           updated_at: string
           year: number
@@ -532,7 +532,7 @@ export type Database = {
           currency?: string
           id?: string
           notes?: string | null
-          package: Database["public"]["Enums"]["partner_package"]
+          package: string
           price?: number
           updated_at?: string
           year: number
@@ -542,10 +542,40 @@ export type Database = {
           currency?: string
           id?: string
           notes?: string | null
-          package?: Database["public"]["Enums"]["partner_package"]
+          package?: string
           price?: number
           updated_at?: string
           year?: number
+        }
+        Relationships: []
+      }
+      package_types: {
+        Row: {
+          color_class: string
+          created_at: string
+          is_custom: boolean
+          key: string
+          label: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color_class?: string
+          created_at?: string
+          is_custom?: boolean
+          key: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color_class?: string
+          created_at?: string
+          is_custom?: boolean
+          key?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -579,22 +609,28 @@ export type Database = {
       partner_participations: {
         Row: {
           created_at: string
+          currency: string
+          custom_price: number | null
           id: string
-          package: Database["public"]["Enums"]["partner_package"] | null
+          package: string | null
           partner_id: string
           year: number
         }
         Insert: {
           created_at?: string
+          currency?: string
+          custom_price?: number | null
           id?: string
-          package?: Database["public"]["Enums"]["partner_package"] | null
+          package?: string | null
           partner_id: string
           year: number
         }
         Update: {
           created_at?: string
+          currency?: string
+          custom_price?: number | null
           id?: string
-          package?: Database["public"]["Enums"]["partner_package"] | null
+          package?: string | null
           partner_id?: string
           year?: number
         }
@@ -617,7 +653,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
-          package: Database["public"]["Enums"]["partner_package"] | null
+          package: string | null
           updated_at: string
           user_id: string
           visible: boolean
@@ -631,7 +667,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
-          package?: Database["public"]["Enums"]["partner_package"] | null
+          package?: string | null
           updated_at?: string
           user_id: string
           visible?: boolean
@@ -645,7 +681,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
-          package?: Database["public"]["Enums"]["partner_package"] | null
+          package?: string | null
           updated_at?: string
           user_id?: string
           visible?: boolean

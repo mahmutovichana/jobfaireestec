@@ -5,30 +5,27 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { usePartners, PACKAGE_LABELS, type Partner, type PartnerPackage } from "@/hooks/usePartners";
+import { usePackageTypes } from "@/hooks/usePackageTypes";
 import { SEO } from "@/components/SEO";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 
-/* ── Package accent colors ── */
-const PACKAGE_ACCENT: Record<PartnerPackage, string> = {
+/* ── Package accent colors (fallbacks; dynamic colors come from package_types) ── */
+const PACKAGE_ACCENT: Record<string, string> = {
   gold: "from-yellow-500/20 via-yellow-600/10 to-transparent border-yellow-500/20",
   silver: "from-gray-300/20 via-gray-400/10 to-transparent border-gray-400/20",
   standard: "from-blue-500/15 via-blue-400/10 to-transparent border-blue-500/15",
   promo: "from-purple-500/15 via-purple-400/10 to-transparent border-purple-500/15",
+  custom: "from-emerald-500/15 via-emerald-400/10 to-transparent border-emerald-500/15",
 };
-
-const PACKAGE_BADGE: Record<PartnerPackage, string> = {
-  gold: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  silver: "bg-gray-300/20 text-gray-200 border-gray-400/30",
-  standard: "bg-blue-500/15 text-blue-300 border-blue-500/20",
-  promo: "bg-purple-500/15 text-purple-300 border-purple-500/20",
-};
+const DEFAULT_ACCENT = "from-muted/20 via-muted/10 to-transparent border-border";
+const DEFAULT_BADGE = "bg-muted text-foreground border-border";
 
 /* ── Partner card with description and year/package badges ── */
-function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: number; yearFilter: number | null }) {
+function PartnerCard({ partner, index, yearFilter, typeMap }: { partner: Partner; index: number; yearFilter: number | null; typeMap: Record<string, { label: string; color_class: string }> }) {
   const parts = (partner.participations ?? []).slice().sort((a, b) => b.year - a.year);
   const visibleParts = yearFilter ? parts.filter((p) => p.year === yearFilter) : parts;
-  const pkg = (visibleParts[0]?.package || partner.package || "standard") as PartnerPackage;
+  const pkg = (visibleParts[0]?.package || partner.package || "standard");
 
   return (
     <motion.a
@@ -39,7 +36,7 @@ function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`group relative bg-gradient-to-b ${PACKAGE_ACCENT[pkg]} backdrop-blur-xl border rounded-2xl p-6 text-center hover:scale-[1.02] transition-all duration-500`}
+      className={`group relative bg-gradient-to-b ${PACKAGE_ACCENT[pkg] || DEFAULT_ACCENT} backdrop-blur-xl border rounded-2xl p-6 text-center hover:scale-[1.02] transition-all duration-500`}
     >
       <div className="flex items-center justify-center mb-4">
         {partner.logo_url ? (
@@ -60,17 +57,18 @@ function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: 
       )}
       {visibleParts.length > 0 && (
         <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
-          {visibleParts.map((p) => (
-            <span
-              key={p.id}
-              title={p.package ? `${PACKAGE_LABELS[p.package as PartnerPackage]} paket` : undefined}
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                p.package ? PACKAGE_BADGE[p.package as PartnerPackage] : "bg-white/[0.05] text-muted-foreground border-white/[0.08]"
-              }`}
-            >
-              {p.year}
-            </span>
-          ))}
+          {visibleParts.map((p) => {
+            const t = p.package ? typeMap[p.package] : null;
+            return (
+              <span
+                key={p.id}
+                title={t ? `${t.label} paket` : (p.package ? `${p.package} paket` : undefined)}
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${t?.color_class || DEFAULT_BADGE}`}
+              >
+                {p.year}
+              </span>
+            );
+          })}
         </div>
       )}
       {partner.website && (
@@ -84,7 +82,7 @@ function PartnerCard({ partner, index, yearFilter }: { partner: Partner; index: 
 }
 
 /* ── Section for a category ── */
-function CategorySection({ title, subtitle, partners, yearFilter }: { title: string; subtitle?: string; partners: Partner[]; yearFilter: number | null }) {
+function CategorySection({ title, subtitle, partners, yearFilter, typeMap }: { title: string; subtitle?: string; partners: Partner[]; yearFilter: number | null; typeMap: Record<string, { label: string; color_class: string }> }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -108,7 +106,7 @@ function CategorySection({ title, subtitle, partners, yearFilter }: { title: str
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto px-6">
         {partners.map((partner, i) => (
-          <PartnerCard key={partner.id} partner={partner} index={i} yearFilter={yearFilter} />
+          <PartnerCard key={partner.id} partner={partner} index={i} yearFilter={yearFilter} typeMap={typeMap} />
         ))}
       </div>
     </section>
@@ -118,6 +116,12 @@ function CategorySection({ title, subtitle, partners, yearFilter }: { title: str
 /* ── Main Page ── */
 export default function Partneri() {
   const { data: partners = [], isLoading } = usePartners(true);
+  const { data: pkgTypes = [] } = usePackageTypes();
+  const typeMap = useMemo(() => {
+    const m: Record<string, { label: string; color_class: string }> = {};
+    pkgTypes.forEach((t) => (m[t.key] = { label: t.label, color_class: t.color_class }));
+    return m;
+  }, [pkgTypes]);
   const [yearFilter, setYearFilter] = useState<number | null>(null);
 
   const allYears = useMemo(() => {
@@ -192,9 +196,9 @@ export default function Partneri() {
             </div>
           )}
           <div className="max-w-7xl mx-auto">
-            <CategorySection title="Kompanije učesnice" subtitle="Učesnici" partners={companies} yearFilter={yearFilter} />
-            <CategorySection title="Mediji" subtitle="Medijska podrška" partners={media} yearFilter={yearFilter} />
-            <CategorySection title="Sponzori" subtitle="Podrška" partners={sponsors} yearFilter={yearFilter} />
+            <CategorySection title="Kompanije učesnice" subtitle="Učesnici" partners={companies} yearFilter={yearFilter} typeMap={typeMap} />
+            <CategorySection title="Mediji" subtitle="Medijska podrška" partners={media} yearFilter={yearFilter} typeMap={typeMap} />
+            <CategorySection title="Sponzori" subtitle="Podrška" partners={sponsors} yearFilter={yearFilter} typeMap={typeMap} />
           </div>
         </>
       )}
