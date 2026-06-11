@@ -547,7 +547,15 @@ export type Database = {
           updated_at?: string
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "package_prices_package_fkey"
+            columns: ["package"]
+            isOneToOne: false
+            referencedRelation: "package_types"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       package_types: {
         Row: {
@@ -636,6 +644,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "partner_participations_package_fkey"
+            columns: ["package"]
+            isOneToOne: false
+            referencedRelation: "package_types"
+            referencedColumns: ["key"]
+          },
+          {
             foreignKeyName: "partner_participations_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
@@ -687,7 +702,15 @@ export type Database = {
           visible?: boolean
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "partners_package_fkey"
+            columns: ["package"]
+            isOneToOne: false
+            referencedRelation: "package_types"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       profiles: {
         Row: {
