@@ -16,7 +16,7 @@ interface PdfPreviewProps {
  * Renders the first N pages of a PDF to canvas using pdf.js.
  * Bypasses Chrome's PDF iframe restrictions since we render manually.
  */
-export function PdfPreview({ url, pages = 1, scale = 1.1, className = "" }: PdfPreviewProps) {
+export function PdfPreview({ url, pages = 1, scale = 1.0, className = "" }: PdfPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,11 @@ export function PdfPreview({ url, pages = 1, scale = 1.1, className = "" }: PdfP
 
     (async () => {
       try {
-        const loadingTask = pdfjsLib.getDocument({ url });
+        const loadingTask = pdfjsLib.getDocument({
+          url,
+          disableAutoFetch: true,
+          disableStream: false,
+        });
         const pdf = await loadingTask.promise;
         if (cancelled) return;
 
@@ -40,15 +44,19 @@ export function PdfPreview({ url, pages = 1, scale = 1.1, className = "" }: PdfP
         for (let i = 1; i <= numPages; i++) {
           const page = await pdf.getPage(i);
           if (cancelled) return;
-          const viewport = page.getViewport({ scale });
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          const viewport = page.getViewport({ scale: scale * dpr });
           const canvas = document.createElement("canvas");
           canvas.width = viewport.width;
           canvas.height = viewport.height;
-          canvas.className = "w-full h-auto block";
+          canvas.style.width = "100%";
+          canvas.style.height = "auto";
+          canvas.className = "block";
           const ctx = canvas.getContext("2d");
           if (!ctx) continue;
           container.appendChild(canvas);
           await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+          if (i === 1) setLoading(false);
         }
         if (!cancelled) setLoading(false);
       } catch (e: any) {
