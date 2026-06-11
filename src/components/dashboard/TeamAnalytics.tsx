@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { Users, TrendingUp, History, Sparkles } from "lucide-react";
 import { useTeamMembers, type TeamMember } from "@/hooks/useTeam";
-import { TEAM_POSITIONS, positionShort } from "@/lib/teamPositions";
+import { TEAM_POSITIONS } from "@/lib/teamPositions";
 
 // Neutral palette — keep gender data informative but visually balanced (no pink/blue stereotypes).
 const C_F = "hsl(var(--primary))";
