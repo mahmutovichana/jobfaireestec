@@ -81,7 +81,7 @@ export default function Kontakt() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <SEO title="Kontakt — upit poslan" description="Upit je uspješno poslan timu JobFAIR-a." path="/kontakt" />
+        <SEO title="Kontakt — upit poslan" description="Hvala! Vaš upit za učešće na JobFAIR sajmu je uspješno poslan timu — javit ćemo vam se uskoro sa svim potrebnim detaljima." path="/kontakt" />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
