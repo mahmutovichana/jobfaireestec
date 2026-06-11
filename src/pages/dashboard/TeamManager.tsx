@@ -30,7 +30,7 @@ import {
   useUpdateTeamMember,
   useDeleteTeamMember,
   uploadTeamPhoto,
-  getPhotoPosition,
+  getPhotoStyle,
   type TeamMember,
 } from "@/hooks/useTeam";
 import { PhotoCropper } from "@/components/PhotoCropper";
@@ -45,7 +45,7 @@ const emptyForm = {
   role: "",
   committee: DEFAULT_COMMITTEE,
   photo_url: "",
-  photo_crop: null as { x: number; y: number } | null,
+  photo_crop: null as { x: number; y: number; zoom?: number } | null,
   linkedin_url: "",
   email: DEFAULT_EMAIL_DOMAIN,
   phone: "",
@@ -301,7 +301,7 @@ export default function TeamManager() {
                       >
                     <div className="aspect-square bg-muted/30 overflow-hidden">
                       {member.photo_url ? (
-                        <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" style={{ objectPosition: getPhotoPosition(member.photo_crop) }} />
+                        <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" style={getPhotoStyle(member.photo_crop)} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-muted-foreground/30">
                           {member.name.split(" ").map((n) => n[0]).join("")}

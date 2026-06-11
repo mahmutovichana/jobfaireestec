@@ -12,13 +12,21 @@ interface SortableItemProps {
 }
 
 export function SortableItem({ id, children, as = "div", className = "", handleClassName = "" }: SortableItemProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    transition: {
+      duration: 350,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    },
+  });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.85 : 1,
+    boxShadow: isDragging ? "0 20px 40px -10px hsl(var(--foreground) / 0.25)" : undefined,
+    scale: isDragging ? "1.03" : "1",
     position: "relative",
-    zIndex: isDragging ? 10 : "auto",
+    zIndex: isDragging ? 50 : "auto",
   };
 
   if (as === "tr") {
