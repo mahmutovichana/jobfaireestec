@@ -12,7 +12,11 @@ export function lazyWithRetry<T extends ComponentType<any>>(
   return lazy(async () => {
     const RELOAD_KEY = "__chunk_reload_attempted__";
     try {
-      return await factory();
+      const mod = await factory();
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem(RELOAD_KEY);
+      }
+      return mod;
     } catch (err) {
       if (typeof window !== "undefined") {
         const alreadyReloaded = window.sessionStorage.getItem(RELOAD_KEY);
@@ -24,10 +28,6 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         }
       }
       throw err;
-    } finally {
-      if (typeof window !== "undefined") {
-        window.sessionStorage.removeItem("__chunk_reload_attempted__");
-      }
     }
   });
 }
