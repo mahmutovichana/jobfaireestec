@@ -58,10 +58,10 @@ Deno.serve(async (req) => {
       .filter(Boolean);
     const { data: existing } = await supabase
       .from("news_posts")
-      .select("instagram_post_id")
+      .select("id, instagram_post_id, thumbnail_url, gallery_urls")
       .in("instagram_post_id", igIds);
 
-    const existingIds = new Set((existing || []).map((r: any) => r.instagram_post_id));
+    const existingByIgId = new Map((existing || []).map((r: any) => [r.instagram_post_id, r]));
 
     const { data: adminRole } = await supabase
       .from("user_roles")
@@ -94,10 +94,15 @@ Deno.serve(async (req) => {
     const persistImage = async (sourceUrl: string, postId: string, idx: number): Promise<string> => {
       try {
         if (!sourceUrl) return "";
-        const res = await fetch(sourceUrl);
+        const res = await fetch(sourceUrl, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (compatible; JobFAIRBot/1.0)",
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          },
+        });
         if (!res.ok) {
           console.warn(`Failed to fetch image ${sourceUrl}: ${res.status}`);
-          return sourceUrl; // fallback to original (may expire later)
+          return "";
         }
         const buf = new Uint8Array(await res.arrayBuffer());
         const contentType = res.headers.get("content-type") || "image/jpeg";
@@ -108,22 +113,23 @@ Deno.serve(async (req) => {
           .upload(path, buf, { contentType, upsert: true });
         if (uploadErr) {
           console.warn(`Upload failed for ${path}:`, uploadErr.message);
-          return sourceUrl;
+          return "";
         }
         const { data: pub } = supabase.storage.from("news-images").getPublicUrl(path);
-        return pub.publicUrl || sourceUrl;
+        return pub.publicUrl || "";
       } catch (e) {
         console.warn(`persistImage error:`, (e as Error).message);
-        return sourceUrl;
+        return "";
       }
     };
 
     let synced = 0;
+    let refreshed = 0;
 
     for (const post of posts) {
       const postId = post.code || post.id || (post.pk != null ? String(post.pk) : null);
-      if (!postId || existingIds.has(postId)) {
-        console.log(`Skipping already synced or invalid post: ${postId}`);
+      if (!postId) {
+        console.log(`Skipping invalid post: ${postId}`);
         continue;
       }
 
@@ -140,6 +146,7 @@ Deno.serve(async (req) => {
           const url = pickImage(carousel[i]);
           if (!url) continue;
           const stored = await persistImage(url, postId, i);
+          if (!stored) continue;
           if (i === 0) thumbnailUrl = stored;
           else galleryUrls.push(stored);
         }
@@ -150,6 +157,20 @@ Deno.serve(async (req) => {
 
       if (!thumbnailUrl) {
         console.log(`Skipping post without image: ${postId}`);
+        continue;
+      }
+
+      const existingPost = existingByIgId.get(postId);
+      if (existingPost) {
+        const { error: updateError } = await supabase
+          .from("news_posts")
+          .update({ thumbnail_url: thumbnailUrl, gallery_urls: galleryUrls })
+          .eq("id", existingPost.id);
+        if (updateError) console.error(`Failed to refresh media ${postId}:`, updateError.message);
+        else {
+          refreshed++;
+          console.log(`Refreshed Instagram media: ${postId}`);
+        }
         continue;
       }
 
@@ -190,9 +211,9 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Synced ${synced} new posts from Instagram`,
+          message: `Sync završen: ${synced} novih, ${refreshed} osvježenih Instagram novosti`,
         total_fetched: posts.length,
-        already_existed: posts.length - synced,
+          refreshed,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
