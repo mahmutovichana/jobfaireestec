@@ -60,7 +60,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => { mainRef.current?.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    // Defer scroll to the next frame so it doesn't force a synchronous layout
+    // during route transition (avoids forced reflow during render).
+    const id = requestAnimationFrame(() => mainRef.current?.scrollTo(0, 0));
+    return () => cancelAnimationFrame(id);
+  }, [pathname]);
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   const handleSignOut = async () => {
@@ -98,27 +103,28 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <Menu className="w-5 h-5" aria-hidden="true" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-0">
+          <SheetContent side="left" className="w-72 p-0" aria-label="Mobilna navigacija">
             <div className="p-4 border-b border-border/50">
               <Logo size="sm" />
             </div>
-            <nav className="p-2 space-y-1">
+            <nav className="p-2 space-y-1" aria-label="Glavna navigacija">
               {allItems.map((item) => (
                 <Link
                   key={item.url}
                   to={item.url}
                   onMouseEnter={() => prefetchRoute(item.url)}
                   onFocus={() => prefetchRoute(item.url)}
+                  aria-current={isActive(item.url) ? "page" : undefined}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive(item.url)
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className="w-4 h-4" aria-hidden="true" />
                   {item.title}
                   {item.url === "/dashboard/access-requests" && pendingCount > 0 && (
-                    <Badge variant="destructive" className="ml-auto rounded-full text-xs px-1.5 py-0">{pendingCount}</Badge>
+                    <Badge variant="destructive" className="ml-auto rounded-full text-xs px-1.5 py-0" aria-label={`${pendingCount} zahtjeva na čekanju`}>{pendingCount}</Badge>
                   )}
                 </Link>
               ))}
@@ -136,25 +142,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Logo size="sm" />
         </Link>
 
-        <div className="hidden lg:flex flex-1 items-center h-full overflow-x-auto">
-          <div className="flex items-center gap-1">
+        <nav aria-label="Glavna navigacija" className="hidden lg:flex flex-1 items-center h-full overflow-x-auto">
+          <ul className="flex items-center gap-1 list-none m-0 p-0">
             {allItems.map((item) => (
-              <NavLink
-                key={item.url}
-                to={item.url}
-                onMouseEnter={() => prefetchRoute(item.url)}
-                onFocus={() => prefetchRoute(item.url)}
-                className="relative px-3 py-1.5 text-sm font-medium text-muted-foreground rounded-full transition-colors hover:text-foreground hover:bg-muted whitespace-nowrap"
-                activeClassName="bg-foreground text-background hover:bg-foreground hover:text-background"
-              >
-                {item.title}
-                {item.url === "/dashboard/access-requests" && pendingCount > 0 && (
-                  <Badge variant="destructive" className="absolute -top-1.5 -right-1.5 rounded-full text-[10px] px-1 py-0 min-w-[18px] h-[18px] flex items-center justify-center">{pendingCount}</Badge>
-                )}
-              </NavLink>
+              <li key={item.url}>
+                <NavLink
+                  to={item.url}
+                  onMouseEnter={() => prefetchRoute(item.url)}
+                  onFocus={() => prefetchRoute(item.url)}
+                  className="relative px-3 py-1.5 text-sm font-medium text-foreground/70 rounded-full transition-colors hover:text-foreground hover:bg-muted whitespace-nowrap"
+                  activeClassName="bg-foreground text-background hover:bg-foreground hover:text-background"
+                >
+                  {item.title}
+                  {item.url === "/dashboard/access-requests" && pendingCount > 0 && (
+                    <Badge variant="destructive" className="absolute -top-1.5 -right-1.5 rounded-full text-[10px] px-1 py-0 min-w-[18px] h-[18px] flex items-center justify-center" aria-label={`${pendingCount} zahtjeva na čekanju`}>{pendingCount}</Badge>
+                  )}
+                </NavLink>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </nav>
 
         <div className="flex items-center gap-1.5 shrink-0 ml-auto">
           {user && <span className="text-xs text-muted-foreground hidden xl:block truncate max-w-[160px]">{user.email}</span>}
