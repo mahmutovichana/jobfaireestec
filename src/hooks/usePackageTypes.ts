@@ -10,17 +10,22 @@ export interface PackageType {
   is_custom: boolean;
 }
 
+export async function fetchPackageTypes() {
+  const { data, error } = await supabase
+    .from("package_types" as any)
+    .select("key, label, color_class, sort_order, is_custom")
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as unknown as PackageType[];
+}
+
 export function usePackageTypes() {
   return useQuery({
     queryKey: ["package-types"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("package_types" as any)
-        .select("*")
-        .order("sort_order", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as unknown as PackageType[];
-    },
+    queryFn: fetchPackageTypes,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
