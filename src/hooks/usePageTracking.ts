@@ -27,14 +27,29 @@ export function usePageTracking() {
     const referrer = initialReferrer.current;
     const referrerDomain = getReferrerDomain(referrer);
 
-    supabase.from("page_views").insert({
-      path: pathname,
-      referrer: referrer || null,
-      referrer_domain: referrerDomain,
-      user_agent: navigator.userAgent.slice(0, 500),
-    }).then(() => {
-      // Clear referrer after first hit so SPA navigations show as direct
-      initialReferrer.current = "";
-    });
+    // Defer the insert until the browser is idle — it must never compete
+    // with critical-path requests for LCP.
+    const send = () => {
+      supabase.from("page_views").insert({
+        path: pathname,
+        referrer: referrer || null,
+        referrer_domain: referrerDomain,
+        user_agent: navigator.userAgent.slice(0, 500),
+      }).then(() => {
+        initialReferrer.current = "";
+      });
+    };
+    const ric = (window as any).requestIdleCallback as
+      | undefined
+      | ((cb: () => void, o?: { timeout?: number }) => number);
+    const cancel = (window as any).cancelIdleCallback as
+      | undefined
+      | ((id: number) => void);
+    if (ric) {
+      const id = ric(send, { timeout: 4000 });
+      return () => cancel?.(id);
+    }
+    const t = window.setTimeout(send, 2000);
+    return () => window.clearTimeout(t);
   }, [pathname]);
 }

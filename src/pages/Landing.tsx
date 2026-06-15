@@ -44,11 +44,10 @@ import activityNetworking from "@/assets/activity-networking.jpg";
 import activityWorkshop from "@/assets/activity-workshop.jpg";
 
 import { LANDING_STATS, TIMELINE_YEARS, COUNTER_DURATION, COUNTER_STEP_TIME, NEXT_EVENT_DATE, NEXT_EVENT_YEAR_SHORT, HERO_SUBTITLE } from "@/lib/constants";
-import { useTeamMembers } from "@/hooks/useTeam";
-import { TeamSection } from "@/components/landing/TeamSection";
 import { GallerySection } from "@/components/landing/GallerySection";
 import { MapSection } from "@/components/landing/MapSection";
 import { PartnersStrip } from "@/components/landing/PartnersStrip";
+import { DeferredSection, DeferredTeamSection } from "@/components/landing/DeferredSection";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 
 const stats = LANDING_STATS.map((s, i) => ({
@@ -160,7 +159,6 @@ const Landing = () => {
   const [navVisible, setNavVisible] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const { data: teamMembers = [] } = useTeamMembers(true);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -586,17 +584,12 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ── Team Section (new component) ── */}
-      <TeamSection teamMembers={teamMembers} />
-
-      {/* ── Gallery Section ── */}
-      <GallerySection />
-
-      {/* ── Partners Strip (all partners, logos only) ── */}
-      <PartnersStrip />
-
-      {/* ── Map Section ── */}
-      <MapSection />
+      {/* Below-the-fold sections — mounted lazily via IntersectionObserver so
+          their Supabase queries don't fire during the initial LCP window. */}
+      <DeferredTeamSection />
+      <DeferredSection minHeight={500}><GallerySection /></DeferredSection>
+      <DeferredSection minHeight={300}><PartnersStrip /></DeferredSection>
+      <DeferredSection minHeight={400}><MapSection /></DeferredSection>
 
       {/* ── CTA ── */}
       <section className="py-16 lg:py-20">
