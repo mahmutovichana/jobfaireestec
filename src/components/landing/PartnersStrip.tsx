@@ -70,7 +70,8 @@ export function PartnersStrip() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="relative max-w-5xl mx-auto overflow-hidden pb-10"
         >
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-h-[236px] sm:max-h-[260px] overflow-hidden">
+          {/* Reserve vertical space (CLS): images are lazy + sizes can vary. */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 min-h-[236px] sm:min-h-[260px] max-h-[236px] sm:max-h-[260px] overflow-hidden content-start">
             {visiblePartners.map((partner) => (
               <LogoItem key={partner.id} partner={partner} />
             ))}
