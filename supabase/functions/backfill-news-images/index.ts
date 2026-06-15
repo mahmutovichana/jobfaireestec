@@ -24,8 +24,13 @@ Deno.serve(async (req) => {
 
     const persist = async (sourceUrl: string, postId: string, idx: number): Promise<string> => {
       try {
-        const res = await fetch(sourceUrl);
-        if (!res.ok) return sourceUrl;
+        const res = await fetch(sourceUrl, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (compatible; JobFAIRBot/1.0)",
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          },
+        });
+        if (!res.ok) return "";
         const buf = new Uint8Array(await res.arrayBuffer());
         const contentType = res.headers.get("content-type") || "image/jpeg";
         const ext = contentType.includes("png") ? "png" : "jpg";
@@ -33,11 +38,11 @@ Deno.serve(async (req) => {
         const { error } = await supabase.storage
           .from("news-images")
           .upload(path, buf, { contentType, upsert: true });
-        if (error) return sourceUrl;
+        if (error) return "";
         const { data } = supabase.storage.from("news-images").getPublicUrl(path);
-        return data.publicUrl || sourceUrl;
+        return data.publicUrl || "";
       } catch {
-        return sourceUrl;
+        return "";
       }
     };
 
@@ -69,7 +74,7 @@ Deno.serve(async (req) => {
         const url = gallery[i];
         if (isExternal(url)) {
           const persisted = await persist(url, post.id, i + 1);
-          newGallery.push(persisted);
+          if (persisted) newGallery.push(persisted);
           if (persisted !== url) imagesMigrated++;
         } else {
           newGallery.push(url);
