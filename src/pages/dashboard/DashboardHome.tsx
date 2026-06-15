@@ -47,15 +47,15 @@ export default function DashboardHome() {
   // pending-count queries on initial dashboard load.
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
-      {/* Greeting */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      {/* Greeting — rendered without opacity animation so it's the LCP candidate immediately */}
+      <div>
         <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">
           Zdravo, {firstName}! 👋
         </h1>
         <p className="text-muted-foreground mt-1">
-          {isAdmin ? "Evo pregleda tvog radnog prostora." : "Dobrodošli na JobFAIR platformu."}
+          {roleLoading ? "\u00A0" : isAdmin ? "Evo pregleda tvog radnog prostora." : "Dobrodošli na JobFAIR platformu."}
         </p>
-      </motion.div>
+      </div>
 
       {roleLoading ? null : isAdmin ? <AdminBody /> : <CompanyBody />}
     </div>
