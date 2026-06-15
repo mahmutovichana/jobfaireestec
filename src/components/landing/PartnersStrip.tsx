@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePartners, type Partner } from "@/hooks/usePartners";
 
@@ -30,6 +31,8 @@ function LogoItem({ partner }: { partner: Partner }) {
 
 export function PartnersStrip() {
   const { data: partners = [] } = usePartners(true);
+  const [showAllMobile, setShowAllMobile] = useState(false);
+  const MOBILE_LIMIT = 8;
 
   if (partners.length === 0) return null;
 
@@ -57,10 +60,28 @@ export function PartnersStrip() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto"
         >
-          {partners.map((partner) => (
-            <LogoItem key={partner.id} partner={partner} />
+          {partners.map((partner, idx) => (
+            <div
+              key={partner.id}
+              className={!showAllMobile && idx >= MOBILE_LIMIT ? "hidden sm:flex" : "flex"}
+            >
+              <LogoItem partner={partner} />
+            </div>
           ))}
         </motion.div>
+
+        {partners.length > MOBILE_LIMIT && !showAllMobile && (
+          <div className="mt-6 flex justify-center sm:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAllMobile(true)}
+              className="rounded-full text-xs"
+            >
+              Prikaži sve ({partners.length}) <ChevronDown className="ml-1 w-3.5 h-3.5" />
+            </Button>
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
