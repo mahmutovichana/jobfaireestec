@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Info, X } from "lucide-react";
 import { usePartners, PACKAGE_LABELS, type Partner, type PartnerPackage } from "@/hooks/usePartners";
 import { usePackageTypes } from "@/hooks/usePackageTypes";
 import { SEO } from "@/components/SEO";
@@ -204,6 +204,54 @@ export default function Partneri() {
       )}
 
       <PublicFooter />
+      <PackageLegend pkgTypes={pkgTypes} />
+    </div>
+  );
+}
+
+/* ── Floating package legend that follows scroll ── */
+function PackageLegend({ pkgTypes }: { pkgTypes: { key: string; label: string; color_class: string }[] }) {
+  const [open, setOpen] = useState(false);
+  if (pkgTypes.length === 0) return null;
+  return (
+    <div className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6">
+      {open ? (
+        <motion.div
+          initial={{ opacity: 0, y: 12, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 12, scale: 0.95 }}
+          className="w-64 rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl p-4"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Legenda paketa</p>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Zatvori legendu"
+              className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <ul className="space-y-1.5">
+            {pkgTypes.map((t) => (
+              <li key={t.key} className="flex items-center gap-2 text-xs">
+                <span className={`inline-block w-3 h-3 rounded-full border ${t.color_class}`} />
+                <span className="text-foreground font-medium">{t.label}</span>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      ) : (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          onClick={() => setOpen(true)}
+          aria-label="Otvori legendu paketa"
+          className="w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform flex items-center justify-center"
+        >
+          <Info className="w-5 h-5" />
+        </motion.button>
+      )}
     </div>
   );
 }

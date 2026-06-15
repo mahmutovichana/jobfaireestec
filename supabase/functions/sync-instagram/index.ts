@@ -89,6 +89,35 @@ Deno.serve(async (req) => {
       );
     };
 
+    // Download an Instagram CDN image and re-upload it to our public storage bucket
+    // so the URL doesn't expire when Instagram's signed CDN tokens rotate.
+    const persistImage = async (sourceUrl: string, postId: string, idx: number): Promise<string> => {
+      try {
+        if (!sourceUrl) return "";
+        const res = await fetch(sourceUrl);
+        if (!res.ok) {
+          console.warn(`Failed to fetch image ${sourceUrl}: ${res.status}`);
+          return sourceUrl; // fallback to original (may expire later)
+        }
+        const buf = new Uint8Array(await res.arrayBuffer());
+        const contentType = res.headers.get("content-type") || "image/jpeg";
+        const ext = contentType.includes("png") ? "png" : "jpg";
+        const path = `instagram/${postId}-${idx}-${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from("news-images")
+          .upload(path, buf, { contentType, upsert: true });
+        if (uploadErr) {
+          console.warn(`Upload failed for ${path}:`, uploadErr.message);
+          return sourceUrl;
+        }
+        const { data: pub } = supabase.storage.from("news-images").getPublicUrl(path);
+        return pub.publicUrl || sourceUrl;
+      } catch (e) {
+        console.warn(`persistImage error:`, (e as Error).message);
+        return sourceUrl;
+      }
+    };
+
     let synced = 0;
 
     for (const post of posts) {
@@ -107,13 +136,16 @@ Deno.serve(async (req) => {
         null;
 
       if (Array.isArray(carousel) && carousel.length > 0) {
-        carousel.forEach((media: any, i: number) => {
-          const url = pickImage(media);
-          if (i === 0) thumbnailUrl = url;
-          else if (url) galleryUrls.push(url);
-        });
+        for (let i = 0; i < carousel.length; i++) {
+          const url = pickImage(carousel[i]);
+          if (!url) continue;
+          const stored = await persistImage(url, postId, i);
+          if (i === 0) thumbnailUrl = stored;
+          else galleryUrls.push(stored);
+        }
       } else {
-        thumbnailUrl = pickImage(post);
+        const url = pickImage(post);
+        thumbnailUrl = url ? await persistImage(url, postId, 0) : "";
       }
 
       if (!thumbnailUrl) {

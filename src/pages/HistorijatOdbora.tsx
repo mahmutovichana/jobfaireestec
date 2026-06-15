@@ -6,6 +6,7 @@ import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 import { SEO } from "@/components/SEO";
 import { useTeamMembers, getPhotoStyle, type TeamMember } from "@/hooks/useTeam";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function initialsOf(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase();
@@ -13,6 +14,9 @@ function initialsOf(name: string) {
 
 function MemberTile({ member, idx }: { member: TeamMember; idx: number }) {
   return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -53,6 +57,13 @@ function MemberTile({ member, idx }: { member: TeamMember; idx: number }) {
         )}
       </div>
     </motion.div>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[240px]">
+          <p className="font-semibold text-sm">{member.name}</p>
+          <p className="text-xs text-muted-foreground">{member.role}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

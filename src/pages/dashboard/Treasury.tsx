@@ -122,7 +122,7 @@ export default function Treasury() {
             <Wallet className="w-6 h-6 text-primary" /> Finansije
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Pregled prihoda od paketa partnera · pristup samo administratori
+            Pregled prihoda od paketa partnera
           </p>
         </div>
         <Badge variant="outline" className="gap-1.5">

@@ -28,14 +28,13 @@ const defaultItems: NavItem[] = [
 ];
 
 export function PublicNavbar({ items = defaultItems, showRegister = true }: PublicNavbarProps) {
-  const [navVisible, setNavVisible] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    const handleScroll = () => setNavVisible(window.scrollY > NAV_SCROLL_THRESHOLD);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Navbar is always visible across public pages for clearer navigation.
+    setNavVisible(true);
   }, []);
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");

@@ -196,8 +196,8 @@ const NewsManager = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-display font-bold text-foreground">
             Novosti
           </h1>
@@ -205,8 +205,8 @@ const NewsManager = () => {
             Upravljajte vijestima i obavještenjima
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleInstagramSync} disabled={syncing}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleInstagramSync} disabled={syncing} className="flex-1 sm:flex-none">
             {syncing ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
@@ -214,7 +214,7 @@ const NewsManager = () => {
             )}
             Sync Instagram
           </Button>
-          <Button onClick={openCreate}>
+          <Button onClick={openCreate} size="sm" className="flex-1 sm:flex-none">
             <Plus className="w-4 h-4 mr-2" /> Nova novost
           </Button>
         </div>
