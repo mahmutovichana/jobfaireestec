@@ -55,7 +55,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: profile } = useProfile();
   const { isAdmin } = useIsAdmin();
   // (board access no longer drives nav — finances are admin-only)
-  const { data: pendingCount = 0 } = usePendingRequestCount();
+  // Only admins see the access-request badge, so don't fire the count query for everyone else.
+  const { data: pendingCount = 0 } = usePendingRequestCount(isAdmin);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -93,8 +94,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <header className="h-14 flex items-center px-4 lg:px-6 gap-2 border-b border-border/50">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
-              <Menu className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="lg:hidden shrink-0" aria-label="Otvori navigaciju">
+              <Menu className="w-5 h-5" aria-hidden="true" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-72 p-0">
@@ -131,7 +132,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
 
-        <Link to="/dashboard/home" className="mr-4 shrink-0">
+        <Link to="/dashboard/home" className="mr-4 shrink-0" aria-label="JobFAIR početna">
           <Logo size="sm" />
         </Link>
 
@@ -161,11 +162,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             to="/dashboard/settings"
             className="p-2 text-muted-foreground rounded-full transition-colors hover:text-foreground hover:bg-muted"
             activeClassName="bg-foreground text-background hover:bg-foreground hover:text-background"
+            aria-label="Postavke"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4" aria-hidden="true" />
           </NavLink>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-full" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-full" onClick={handleSignOut} aria-label="Odjavi se">
+            <LogOut className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </header>
