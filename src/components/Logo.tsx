@@ -16,7 +16,7 @@ export function Logo({ size = "md", className = "" }: LogoProps) {
       <span className={`font-display tracking-tight ${s.text}`}>
         <span className="text-primary font-bold italic">{`X`}</span>
         <span className="text-foreground font-bold">job</span>
-        <span className="text-[hsl(4_80%_35%)] dark:text-primary font-extrabold">FAIR</span>
+        <span className="text-[hsl(4_85%_28%)] dark:text-primary font-extrabold">FAIR</span>
       </span>
     </span>
   );
