@@ -211,6 +211,15 @@ export default function Partneri() {
 }
 
 /* ── Floating package legend that follows scroll ── */
+const LEGEND_SWATCH: Record<string, { bg: string; ring: string }> = {
+  gold:     { bg: "#eab308", ring: "rgba(234,179,8,0.35)" },
+  silver:   { bg: "#9ca3af", ring: "rgba(156,163,175,0.35)" },
+  standard: { bg: "#3b82f6", ring: "rgba(59,130,246,0.35)" },
+  promo:    { bg: "#a855f7", ring: "rgba(168,85,247,0.35)" },
+  custom:   { bg: "#10b981", ring: "rgba(16,185,129,0.35)" },
+};
+const FALLBACK_SWATCH = { bg: "hsl(var(--primary))", ring: "hsl(var(--primary) / 0.35)" };
+
 function PackageLegend({ pkgTypes }: { pkgTypes: { key: string; label: string; color_class: string }[] }) {
   const [open, setOpen] = useState(false);
   if (pkgTypes.length === 0) return null;
@@ -221,7 +230,7 @@ function PackageLegend({ pkgTypes }: { pkgTypes: { key: string; label: string; c
           initial={{ opacity: 0, y: 12, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.95 }}
-          className="w-64 rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl p-4"
+          className="w-64 rounded-2xl border border-border bg-card shadow-2xl p-4"
         >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Legenda paketa</p>
@@ -233,13 +242,20 @@ function PackageLegend({ pkgTypes }: { pkgTypes: { key: string; label: string; c
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-          <ul className="space-y-1.5">
-            {pkgTypes.map((t) => (
-              <li key={t.key} className="flex items-center gap-2 text-xs">
-                <span className={`inline-block w-3 h-3 rounded-full border ${t.color_class}`} />
-                <span className="text-foreground font-medium">{t.label}</span>
-              </li>
-            ))}
+          <ul className="space-y-2">
+            {pkgTypes.map((t) => {
+              const sw = LEGEND_SWATCH[t.key] ?? FALLBACK_SWATCH;
+              return (
+                <li key={t.key} className="flex items-center gap-2.5 text-sm">
+                  <span
+                    className="inline-block w-4 h-4 rounded-full shrink-0"
+                    style={{ backgroundColor: sw.bg, boxShadow: `0 0 0 3px ${sw.ring}` }}
+                    aria-hidden="true"
+                  />
+                  <span className="text-foreground font-medium">{t.label}</span>
+                </li>
+              );
+            })}
           </ul>
         </motion.div>
       ) : (
