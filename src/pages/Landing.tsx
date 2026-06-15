@@ -239,7 +239,8 @@ const Landing = () => {
       </motion.nav>
 
       {/* ── Hero with animated beams ── */}
-      <section ref={heroRef} className="relative min-h-[110vh] flex items-center overflow-hidden">
+      {/* `svh` keeps the section height stable on mobile (avoids CLS from URL-bar collapse). */}
+      <section ref={heroRef} className="relative min-h-[100svh] flex items-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-background" />
         <BackgroundBeams />
@@ -273,11 +274,18 @@ const Landing = () => {
               <span className="text-sm font-medium text-foreground/80">{NEXT_EVENT_DATE}</span>
             </motion.div>
 
+            {/*
+              LCP candidate — render fully opaque on first paint instead of
+              fading in. The opacity transition was delaying LCP by ~1.1s
+              because Chrome only counts the element once it reaches >=0.5
+              opacity. We still keep a subtle slide via transform, which
+              doesn't affect LCP timing.
+            */}
             <motion.h1
               className="text-5xl sm:text-6xl lg:text-8xl font-display font-bold text-foreground tracking-tight leading-[1.05] mb-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
               Iskoristi svoju{" "}
               <span className="text-primary relative inline-block">
