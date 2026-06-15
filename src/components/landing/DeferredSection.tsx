@@ -46,22 +46,21 @@ export function DeferredSection({
 }
 
 /**
- * Lightweight wrapper that fetches team members lazily so the query only
- * fires when the section is about to be visible.
+ * Lightweight wrapper that fetches team members lazily so the Supabase query
+ * only fires when the section is about to enter the viewport.
  */
+import { useTeamMembers } from "@/hooks/useTeam";
+import { TeamSection } from "./TeamSection";
+
+function TeamSectionWithData() {
+  const { data: teamMembers = [] } = useTeamMembers(true);
+  return <TeamSection teamMembers={teamMembers} />;
+}
+
 export function DeferredTeamSection() {
   return (
     <DeferredSection minHeight={600}>
       <TeamSectionWithData />
     </DeferredSection>
   );
-}
-
-function TeamSectionWithData() {
-  // Dynamic require to keep these hooks out of the initial bundle path used by
-  // the hero. They're tiny but every byte saved off the LCP path helps.
-  const { useTeamMembers } = require("@/hooks/useTeam") as typeof import("@/hooks/useTeam");
-  const { TeamSection } = require("./TeamSection") as typeof import("./TeamSection");
-  const { data: teamMembers = [] } = useTeamMembers(true);
-  return <TeamSection teamMembers={teamMembers} />;
 }
