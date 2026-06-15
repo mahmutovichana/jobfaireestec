@@ -15,7 +15,7 @@ export function useAccessRequests() {
   });
 }
 
-export function usePendingRequestCount() {
+export function usePendingRequestCount(enabled: boolean = true) {
   return useQuery({
     queryKey: ["access-requests-pending-count"],
     queryFn: async () => {
@@ -26,6 +26,8 @@ export function usePendingRequestCount() {
       if (error) throw error;
       return count ?? 0;
     },
+    enabled,
+    staleTime: 60 * 1000,
   });
 }
 
