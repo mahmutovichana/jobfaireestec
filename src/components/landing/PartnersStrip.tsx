@@ -1,25 +1,37 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePartners, type Partner } from "@/hooks/usePartners";
 
-function LogoItem({ partner }: { partner: Partner }) {
+function LogoItem({ partner, highlighted }: { partner: Partner; highlighted?: boolean }) {
   return (
     <a
       href={partner.website || "#"}
       target="_blank"
       rel="noopener noreferrer"
       className="group flex items-center justify-center"
-      title={partner.name}
+      title={highlighted ? `${partner.name} — top učesnik` : partner.name}
     >
-      <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5 transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.12]">
+      <div
+        className={
+          highlighted
+            ? "w-20 h-20 sm:w-24 sm:h-24 relative flex items-center justify-center rounded-xl bg-white/[0.06] border border-primary/30 p-3 transition-all duration-300 hover:bg-white/[0.12] hover:border-primary/50 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]"
+            : "w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5 transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.12]"
+        }
+      >
         {partner.logo_url ? (
           <img
             src={partner.logo_url}
             alt={partner.name}
-            className="w-full h-full object-contain opacity-60 hover:opacity-100 transition-opacity duration-300"
+            loading="lazy"
+            decoding="async"
+            className={
+              highlighted
+                ? "w-full h-full object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
+                : "w-full h-full object-contain opacity-60 hover:opacity-100 transition-opacity duration-300"
+            }
           />
         ) : (
           <span className="text-sm font-bold text-muted-foreground/50">{partner.name.slice(0, 2)}</span>
@@ -31,10 +43,19 @@ function LogoItem({ partner }: { partner: Partner }) {
 
 export function PartnersStrip() {
   const { data: partners = [] } = usePartners(true);
-  const [showAllMobile, setShowAllMobile] = useState(false);
-  const MOBILE_LIMIT = 8;
 
-  if (partners.length === 0) return null;
+  // Rank by total number of participations (fair: most active → most prominent)
+  const ranked = useMemo(() => {
+    return partners
+      .slice()
+      .sort((a, b) => (b.participations?.length ?? 0) - (a.participations?.length ?? 0));
+  }, [partners]);
+
+  const HIGHLIGHT_COUNT = 6;
+  const topPartners = ranked.slice(0, HIGHLIGHT_COUNT);
+  const restPartners = ranked.slice(HIGHLIGHT_COUNT);
+
+  if (ranked.length === 0) return null;
 
   return (
     <section className="py-16 lg:py-20">
@@ -52,7 +73,22 @@ export function PartnersStrip() {
           </h2>
         </motion.div>
 
-        {/* Logo grid - all partners, no descriptions */}
+        {/* Top participants — visually emphasized */}
+        {topPartners.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto mb-6"
+          >
+            {topPartners.map((partner) => (
+              <LogoItem key={partner.id} partner={partner} highlighted />
+            ))}
+          </motion.div>
+        )}
+
+        {/* Remaining partners */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -60,28 +96,10 @@ export function PartnersStrip() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto"
         >
-          {partners.map((partner, idx) => (
-            <div
-              key={partner.id}
-              className={!showAllMobile && idx >= MOBILE_LIMIT ? "hidden sm:flex" : "flex"}
-            >
-              <LogoItem partner={partner} />
-            </div>
+          {restPartners.map((partner) => (
+            <LogoItem key={partner.id} partner={partner} />
           ))}
         </motion.div>
-
-        {partners.length > MOBILE_LIMIT && !showAllMobile && (
-          <div className="mt-6 flex justify-center sm:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAllMobile(true)}
-              className="rounded-full text-xs"
-            >
-              Prikaži sve ({partners.length}) <ChevronDown className="ml-1 w-3.5 h-3.5" />
-            </Button>
-          </div>
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}

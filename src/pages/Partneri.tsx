@@ -1,24 +1,21 @@
 import { useMemo, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
 import { ExternalLink, Info, X } from "lucide-react";
-import { usePartners, PACKAGE_LABELS, type Partner, type PartnerPackage } from "@/hooks/usePartners";
+import { usePartners, type Partner } from "@/hooks/usePartners";
 import { usePackageTypes } from "@/hooks/usePackageTypes";
 import { SEO } from "@/components/SEO";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 
-/* ── Package accent colors (fallbacks; dynamic colors come from package_types) ── */
-const PACKAGE_ACCENT: Record<string, string> = {
-  gold: "from-yellow-500/20 via-yellow-600/10 to-transparent border-yellow-500/20",
-  silver: "from-gray-300/20 via-gray-400/10 to-transparent border-gray-400/20",
-  standard: "from-blue-500/15 via-blue-400/10 to-transparent border-blue-500/15",
-  promo: "from-purple-500/15 via-purple-400/10 to-transparent border-purple-500/15",
-  custom: "from-emerald-500/15 via-emerald-400/10 to-transparent border-emerald-500/15",
+/* Strong per-package visuals so the package is immediately recognizable */
+const PACKAGE_VISUAL: Record<string, { ring: string; glow: string; stripe: string }> = {
+  gold:     { ring: "ring-yellow-400/60 border-yellow-400/50",  glow: "shadow-[0_0_0_1px_rgba(250,204,21,0.35),0_8px_30px_-12px_rgba(250,204,21,0.45)]", stripe: "bg-gradient-to-r from-yellow-400 to-amber-500" },
+  silver:   { ring: "ring-gray-300/60 border-gray-300/50",      glow: "shadow-[0_0_0_1px_rgba(209,213,219,0.35),0_8px_30px_-12px_rgba(156,163,175,0.45)]", stripe: "bg-gradient-to-r from-gray-300 to-gray-400" },
+  standard: { ring: "ring-blue-400/60 border-blue-400/50",      glow: "shadow-[0_0_0_1px_rgba(59,130,246,0.35),0_8px_30px_-12px_rgba(59,130,246,0.45)]",  stripe: "bg-gradient-to-r from-blue-400 to-blue-500" },
+  promo:    { ring: "ring-purple-400/60 border-purple-400/50",  glow: "shadow-[0_0_0_1px_rgba(168,85,247,0.35),0_8px_30px_-12px_rgba(168,85,247,0.45)]", stripe: "bg-gradient-to-r from-purple-400 to-purple-500" },
+  custom:   { ring: "ring-emerald-400/60 border-emerald-400/50",glow: "shadow-[0_0_0_1px_rgba(16,185,129,0.35),0_8px_30px_-12px_rgba(16,185,129,0.45)]", stripe: "bg-gradient-to-r from-emerald-400 to-emerald-500" },
 };
-const DEFAULT_ACCENT = "from-muted/20 via-muted/10 to-transparent border-border";
+const DEFAULT_VISUAL = { ring: "border-border", glow: "", stripe: "bg-muted" };
 const DEFAULT_BADGE = "bg-muted text-foreground border-border";
 
 /* ── Partner card with description and year/package badges ── */
@@ -26,23 +23,27 @@ function PartnerCard({ partner, index, yearFilter, typeMap }: { partner: Partner
   const parts = (partner.participations ?? []).slice().sort((a, b) => b.year - a.year);
   const visibleParts = yearFilter ? parts.filter((p) => p.year === yearFilter) : parts;
   const pkg = (visibleParts[0]?.package || partner.package || "standard");
+  const visual = PACKAGE_VISUAL[pkg] || DEFAULT_VISUAL;
 
   return (
     <motion.a
       href={partner.website || "#"}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`group relative bg-gradient-to-b ${PACKAGE_ACCENT[pkg] || DEFAULT_ACCENT} backdrop-blur-xl border rounded-2xl p-6 text-center hover:scale-[1.02] transition-all duration-500`}
+      viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+      transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.02 }}
+      className={`group relative overflow-hidden bg-card/40 backdrop-blur-xl border ${visual.ring} ${visual.glow} rounded-2xl p-6 text-center hover:scale-[1.02] transition-transform duration-300`}
     >
+      <div className={`absolute inset-x-0 top-0 h-1 ${visual.stripe}`} />
       <div className="flex items-center justify-center mb-4">
         {partner.logo_url ? (
           <img
             src={partner.logo_url}
             alt={partner.name}
+            loading="lazy"
+            decoding="async"
             className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-500"
           />
         ) : (
