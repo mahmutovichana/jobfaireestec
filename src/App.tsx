@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,47 +14,55 @@ import { usePerformanceMonitoring } from "@/hooks/usePerformanceMonitoring";
 import { fetchPartners } from "@/hooks/usePartners";
 import { fetchNewsPosts } from "@/hooks/useNews";
 import { fetchPackageTypes } from "@/hooks/usePackageTypes";
+import { QUERY_CONFIG } from "@/lib/queryConfig";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
+// Landing is the most common first paint — keep it eager to avoid a flash of skeleton.
 import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
-import Register from "./pages/Register";
-import CompanyPage from "./pages/CompanyPage";
-import Novosti from "./pages/Novosti";
-import NovostDetail from "./pages/NovostDetail";
-import Oglasi from "./pages/Oglasi";
-import Partneri from "./pages/Partneri";
-import OstaviCV from "./pages/OstaviCV";
-import Kontakt from "./pages/Kontakt";
-import Unsubscribe from "./pages/Unsubscribe";
-import Aktivnosti from "./pages/Aktivnosti";
-import HistorijatOdbora from "./pages/HistorijatOdbora";
-import Events from "./pages/dashboard/Events";
-import CreateEvent from "./pages/dashboard/CreateEvent";
-import EventDetail from "./pages/dashboard/EventDetail";
-import Attendees from "./pages/dashboard/Attendees";
-import Analytics from "./pages/dashboard/Analytics";
-import Integrations from "./pages/dashboard/Integrations";
-import SettingsPage from "./pages/dashboard/SettingsPage";
-import NewsManager from "./pages/dashboard/NewsManager";
-import JobAdsManager from "./pages/dashboard/JobAdsManager";
-import PartnersManager from "./pages/dashboard/PartnersManager";
-import TeamManager from "./pages/dashboard/TeamManager";
-import CVDatabase from "./pages/dashboard/CVDatabase";
-import CompanyInquiries from "./pages/dashboard/CompanyInquiries";
-import DashboardHome from "./pages/dashboard/DashboardHome";
-import AccessRequests from "./pages/dashboard/AccessRequests";
-import CompanyProfile from "./pages/dashboard/CompanyProfile";
-import AuditLogs from "./pages/dashboard/AuditLogs";
-import Treasury from "./pages/dashboard/Treasury";
-import NotFound from "./pages/NotFound";
+
+// Public routes
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const Register = lazyWithRetry(() => import("./pages/Register"));
+const CompanyPage = lazyWithRetry(() => import("./pages/CompanyPage"));
+const Novosti = lazyWithRetry(() => import("./pages/Novosti"));
+const NovostDetail = lazyWithRetry(() => import("./pages/NovostDetail"));
+const Oglasi = lazyWithRetry(() => import("./pages/Oglasi"));
+const Partneri = lazyWithRetry(() => import("./pages/Partneri"));
+const OstaviCV = lazyWithRetry(() => import("./pages/OstaviCV"));
+const Kontakt = lazyWithRetry(() => import("./pages/Kontakt"));
+const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
+const Aktivnosti = lazyWithRetry(() => import("./pages/Aktivnosti"));
+const HistorijatOdbora = lazyWithRetry(() => import("./pages/HistorijatOdbora"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+
+// Dashboard routes (admin-heavy, perfect candidates for code-splitting)
+const Events = lazyWithRetry(() => import("./pages/dashboard/Events"));
+const CreateEvent = lazyWithRetry(() => import("./pages/dashboard/CreateEvent"));
+const EventDetail = lazyWithRetry(() => import("./pages/dashboard/EventDetail"));
+const Attendees = lazyWithRetry(() => import("./pages/dashboard/Attendees"));
+const Analytics = lazyWithRetry(() => import("./pages/dashboard/Analytics"));
+const Integrations = lazyWithRetry(() => import("./pages/dashboard/Integrations"));
+const SettingsPage = lazyWithRetry(() => import("./pages/dashboard/SettingsPage"));
+const NewsManager = lazyWithRetry(() => import("./pages/dashboard/NewsManager"));
+const JobAdsManager = lazyWithRetry(() => import("./pages/dashboard/JobAdsManager"));
+const PartnersManager = lazyWithRetry(() => import("./pages/dashboard/PartnersManager"));
+const TeamManager = lazyWithRetry(() => import("./pages/dashboard/TeamManager"));
+const CVDatabase = lazyWithRetry(() => import("./pages/dashboard/CVDatabase"));
+const CompanyInquiries = lazyWithRetry(() => import("./pages/dashboard/CompanyInquiries"));
+const DashboardHome = lazyWithRetry(() => import("./pages/dashboard/DashboardHome"));
+const AccessRequests = lazyWithRetry(() => import("./pages/dashboard/AccessRequests"));
+const CompanyProfile = lazyWithRetry(() => import("./pages/dashboard/CompanyProfile"));
+const AuditLogs = lazyWithRetry(() => import("./pages/dashboard/AuditLogs"));
+const Treasury = lazyWithRetry(() => import("./pages/dashboard/Treasury"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000,
-      gcTime: 15 * 60 * 1000,
+      staleTime: QUERY_CONFIG.staleTime,
+      gcTime: QUERY_CONFIG.gcTime,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: QUERY_CONFIG.retry,
     },
   },
 });
@@ -80,11 +88,11 @@ function AppPrefetcher() {
   const qc = useQueryClient();
   useEffect(() => {
     const run = () => {
-      qc.prefetchQuery({ queryKey: ["partners", true], queryFn: () => fetchPartners(true), staleTime: 5 * 60 * 1000 });
-      qc.prefetchQuery({ queryKey: ["package-types"], queryFn: fetchPackageTypes, staleTime: 10 * 60 * 1000 });
-      qc.prefetchQuery({ queryKey: ["news-posts", true, undefined], queryFn: () => fetchNewsPosts(true), staleTime: 5 * 60 * 1000 });
+      qc.prefetchQuery({ queryKey: ["partners", true], queryFn: () => fetchPartners(true), staleTime: QUERY_CONFIG.publicStaleTime });
+      qc.prefetchQuery({ queryKey: ["package-types"], queryFn: fetchPackageTypes, staleTime: QUERY_CONFIG.referenceStaleTime });
+      qc.prefetchQuery({ queryKey: ["news-posts", true, undefined], queryFn: () => fetchNewsPosts(true), staleTime: QUERY_CONFIG.publicStaleTime });
     };
-    const id = window.setTimeout(run, 1200);
+    const id = window.setTimeout(run, QUERY_CONFIG.prefetchDelayMs);
     return () => window.clearTimeout(id);
   }, [qc]);
   return null;
@@ -101,6 +109,7 @@ const App = () => (
             <ScrollToTop />
             <AnalyticsTracker />
             <AppPrefetcher />
+            <Suspense fallback={<PageSkeleton />}>
             <Routes>
               {/* Public */}
               <Route path="/" element={<Landing />} />
@@ -150,6 +159,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

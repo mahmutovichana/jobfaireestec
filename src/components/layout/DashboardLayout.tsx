@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { NavLink } from "@/components/NavLink";
+import { prefetchRoute } from "@/lib/routePrefetch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useIsAdmin } from "@/hooks/useUserRole";
@@ -105,6 +106,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.url}
                   to={item.url}
+                  onMouseEnter={() => prefetchRoute(item.url)}
+                  onFocus={() => prefetchRoute(item.url)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                     isActive(item.url)
                       ? "bg-primary text-primary-foreground"
@@ -138,6 +141,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <NavLink
                 key={item.url}
                 to={item.url}
+                onMouseEnter={() => prefetchRoute(item.url)}
+                onFocus={() => prefetchRoute(item.url)}
                 className="relative px-3 py-1.5 text-sm font-medium text-muted-foreground rounded-full transition-colors hover:text-foreground hover:bg-muted whitespace-nowrap"
                 activeClassName="bg-foreground text-background hover:bg-foreground hover:text-background"
               >

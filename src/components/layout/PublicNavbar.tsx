@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { prefetchRoute } from "@/lib/routePrefetch";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ export function PublicNavbar({ items = defaultItems, showRegister = true }: Publ
         <div className="hidden md:flex items-center gap-1">
           {items.map((item) => (
             <Button key={item.to} variant="ghost" className="text-sm font-medium rounded-full" asChild>
-              <Link to={item.to}>{item.label}</Link>
+              <Link to={item.to} onMouseEnter={() => prefetchRoute(item.to)} onFocus={() => prefetchRoute(item.to)}>{item.label}</Link>
             </Button>
           ))}
           <Button
@@ -69,7 +70,7 @@ export function PublicNavbar({ items = defaultItems, showRegister = true }: Publ
           </Button>
           {showRegister && (
             <Button className="text-sm font-semibold rounded-full ml-1" asChild>
-              <Link to="/ostavi-cv">Ostavi CV</Link>
+              <Link to="/ostavi-cv" onMouseEnter={() => prefetchRoute("/ostavi-cv")} onFocus={() => prefetchRoute("/ostavi-cv")}>Ostavi CV</Link>
             </Button>
           )}
         </div>
