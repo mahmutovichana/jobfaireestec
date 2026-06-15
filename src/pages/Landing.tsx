@@ -136,8 +136,19 @@ const AnimatedCounter = ({ value, label }: { value: string; label: string }) => 
 
   return (
     <div ref={ref} className="text-center">
-      <div className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-primary mb-1">
-        {isInView ? `${count}${suffix}` : "0"}
+      {/*
+        CLS fix: reserve final width using an invisible placeholder of the
+        full `value` string with `tabular-nums`, so the counter animation
+        does not cause horizontal layout shift as digits grow.
+      */}
+      <div
+        className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-primary mb-1 relative inline-grid tabular-nums"
+        aria-label={value}
+      >
+        <span aria-hidden className="invisible col-start-1 row-start-1">{value}</span>
+        <span className="col-start-1 row-start-1 text-center">
+          {isInView ? `${count}${suffix}` : `0${suffix}`}
+        </span>
       </div>
       <p className="text-sm sm:text-base text-muted-foreground font-medium">{label}</p>
     </div>
