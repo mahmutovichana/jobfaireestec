@@ -79,7 +79,15 @@ function AnalyticsTracker() {
   usePerformanceMonitoring();
   usePageTracking();
   useEffect(() => {
-    initClarity();
+    // Defer Clarity until the browser is idle to keep it off the LCP/TBT path.
+    const ric = (window as any).requestIdleCallback as undefined | ((cb: () => void, o?: any) => number);
+    const cancel = (window as any).cancelIdleCallback as undefined | ((id: number) => void);
+    if (ric) {
+      const id = ric(() => initClarity(), { timeout: 4000 });
+      return () => cancel?.(id);
+    }
+    const t = window.setTimeout(initClarity, 3000);
+    return () => window.clearTimeout(t);
   }, []);
   return null;
 }
