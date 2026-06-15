@@ -203,15 +203,15 @@ export default function PartnersManager() {
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PartnerCategory)}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <TabsList>
+          <TabsList className="flex flex-wrap h-auto w-full sm:w-auto justify-start gap-1">
             {(Object.keys(CATEGORY_LABELS) as PartnerCategory[]).map((cat) => {
               const Icon = CATEGORY_ICONS[cat];
               const count = partners.filter((p) => p.category === cat).length;
               return (
-                <TabsTrigger key={cat} value={cat} className="gap-2">
-                  <Icon className="w-4 h-4" />
-                  {CATEGORY_LABELS[cat]}
-                  <Badge variant="secondary" className="ml-1 text-xs">{count}</Badge>
+                <TabsTrigger key={cat} value={cat} className="gap-1.5 px-2.5 text-xs sm:text-sm sm:px-3">
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>{CATEGORY_LABELS[cat]}</span>
+                  <Badge variant="secondary" className="ml-0.5 text-[10px] px-1.5 py-0">{count}</Badge>
                 </TabsTrigger>
               );
             })}
