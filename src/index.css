@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-
 /*
   CLS fix: define metric-adjusted fallback fonts so the swap from system
   fonts to Inter / Space Grotesk does not change line-height/glyph width
