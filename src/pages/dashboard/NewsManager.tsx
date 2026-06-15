@@ -214,6 +214,31 @@ const NewsManager = () => {
             )}
             Sync Instagram
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              setSyncing(true);
+              try {
+                const { data, error } = await supabase.functions.invoke("backfill-news-images");
+                if (error) throw error;
+                if (data?.success) {
+                  toast.success(`Migrirano ${data.images_migrated} slika u ${data.posts_updated} novosti`);
+                } else {
+                  toast.error(data?.error || "Backfill nije uspio");
+                }
+              } catch (err: any) {
+                toast.error("Greška: " + err.message);
+              }
+              setSyncing(false);
+            }}
+            disabled={syncing}
+            className="flex-1 sm:flex-none"
+            title="Spasi sve Instagram slike u trajno skladište"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Spasi IG slike
+          </Button>
           <Button onClick={openCreate} size="sm" className="flex-1 sm:flex-none">
             <Plus className="w-4 h-4 mr-2" /> Nova novost
           </Button>
