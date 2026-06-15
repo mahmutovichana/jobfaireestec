@@ -47,23 +47,30 @@ export const CATEGORY_LABELS: Record<PartnerCategory, string> = {
   sponsor: "Sponzori",
 };
 
+export async function fetchPartners(onlyVisible = false) {
+  const publicColumns = `
+    id, name, logo_url, website, description, category, package, display_order, visible, user_id, created_at, updated_at,
+    participations:partner_participations(id, partner_id, year, package, custom_price, currency)
+  `;
+
+  let query = supabase
+    .from("partners")
+    .select(onlyVisible ? publicColumns : "*, participations:partner_participations(id, partner_id, year, package, custom_price, currency)")
+    .order("display_order", { ascending: true });
+
+  if (onlyVisible) {
+    query = query.eq("visible", true);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as Partner[];
+}
+
 export function usePartners(onlyVisible = false) {
   return useQuery({
     queryKey: ["partners", onlyVisible],
-    queryFn: async () => {
-      let query = supabase
-        .from("partners")
-        .select("*, participations:partner_participations(id, partner_id, year, package, custom_price, currency)")
-        .order("display_order", { ascending: true });
-
-      if (onlyVisible) {
-        query = query.eq("visible", true);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data ?? []) as Partner[];
-    },
+    queryFn: () => fetchPartners(onlyVisible),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
