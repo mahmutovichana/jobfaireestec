@@ -17,28 +17,46 @@ export interface NewsPost {
   updated_at: string;
 }
 
+export const isExpiringInstagramUrl = (url: string | null | undefined) =>
+  !!url && /cdninstagram\.com|fbcdn\.net/i.test(url);
+
+export const NEWS_POST_COLUMNS =
+  "id, user_id, title, summary, content, thumbnail_url, gallery_urls, published, published_at, created_at, updated_at, instagram_post_id";
+
+export const NEWS_LIST_COLUMNS =
+  "id, user_id, title, summary, thumbnail_url, gallery_urls, published, published_at, created_at, updated_at, instagram_post_id";
+
+function normalizeNewsPost(d: any): NewsPost {
+  return {
+    ...d,
+    gallery_urls: Array.isArray(d.gallery_urls) ? d.gallery_urls : [],
+  } as NewsPost;
+}
+
+export async function fetchNewsPosts(onlyPublished = false, full = false) {
+  let query = supabase
+    .from("news_posts")
+    .select(full ? NEWS_POST_COLUMNS : NEWS_LIST_COLUMNS)
+    .order(onlyPublished ? "published_at" : "created_at", { ascending: false, nullsFirst: false });
+
+  if (onlyPublished) {
+    query = query.eq("published", true);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []).map(normalizeNewsPost);
+}
+
 export function useNewsPosts(onlyPublished = false) {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ["news-posts", onlyPublished, user?.id],
-    queryFn: async () => {
-      let query = supabase
-        .from("news_posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (onlyPublished) {
-        query = query.eq("published", true);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data ?? []).map((d: any) => ({
-        ...d,
-        gallery_urls: Array.isArray(d.gallery_urls) ? d.gallery_urls : [],
-      })) as NewsPost[];
-    },
+    queryFn: () => fetchNewsPosts(onlyPublished, !onlyPublished),
+    staleTime: onlyPublished ? 5 * 60 * 1000 : 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -53,12 +71,11 @@ export function useNewsPost(id: string | undefined) {
         .eq("id", id)
         .single();
       if (error) throw error;
-      return {
-        ...data,
-        gallery_urls: Array.isArray(data.gallery_urls) ? data.gallery_urls : [],
-      } as NewsPost;
+      return normalizeNewsPost(data);
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }
 
