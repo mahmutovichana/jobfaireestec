@@ -217,17 +217,17 @@ export default function PartnersManager() {
             })}
           </TabsList>
 
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 min-w-[180px] sm:flex-none">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Pretraži..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 w-56"
+                className="pl-9 w-full sm:w-56"
               />
             </div>
-            <Button onClick={openCreate} className="rounded-full gap-2">
+            <Button onClick={openCreate} className="rounded-full gap-2 flex-1 sm:flex-none">
               <Plus className="w-4 h-4" />
               Dodaj
             </Button>
@@ -235,10 +235,11 @@ export default function PartnersManager() {
               <Button
                 onClick={() => setBulkOpen(true)}
                 variant="outline"
-                className="rounded-full gap-2"
+                className="rounded-full gap-2 flex-1 sm:flex-none"
               >
                 <Zap className="w-4 h-4" />
-                Brza dodjela paketa
+                <span className="hidden sm:inline">Brza dodjela paketa</span>
+                <span className="sm:hidden">Brza dodjela</span>
               </Button>
             )}
           </div>
