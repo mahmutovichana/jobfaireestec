@@ -48,7 +48,10 @@ export const CATEGORY_LABELS: Record<PartnerCategory, string> = {
 };
 
 export async function fetchPartners(onlyVisible = false) {
-  const publicColumns = "id, name, logo_url, website, description, category, package, display_order, visible, user_id, created_at, updated_at, participations:partner_participations(id, partner_id, year, package, custom_price, currency)";
+  // Anon visitors do NOT have column-level SELECT on `custom_price` / `currency`
+  // (commercially sensitive — see migration). Request only the publicly safe
+  // columns on the public path so PostgREST doesn't reject the embedded query.
+  const publicColumns = "id, name, logo_url, website, description, category, package, display_order, visible, user_id, created_at, updated_at, participations:partner_participations(id, partner_id, year, package)";
 
   let query = supabase
     .from("partners")
