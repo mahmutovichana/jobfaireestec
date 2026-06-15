@@ -64,6 +64,9 @@ export function useTeamMembers(onlyVisible = false) {
       if (error) throw error;
       return (data ?? []) as unknown as TeamMember[];
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 

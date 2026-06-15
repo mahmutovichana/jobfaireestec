@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,6 +65,7 @@ const NewsManager = () => {
   const updatePost = useUpdateNewsPost();
   const deletePost = useDeleteNewsPost();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -110,6 +112,7 @@ const NewsManager = () => {
       if (error) throw error;
       if (data?.success) {
         toast.success(data.message || "Instagram sync završen!");
+        queryClient.invalidateQueries({ queryKey: ["news-posts"] });
       } else {
         toast.error(data?.error || "Sync nije uspio");
       }
@@ -224,6 +227,7 @@ const NewsManager = () => {
                 if (error) throw error;
                 if (data?.success) {
                   toast.success(`Migrirano ${data.images_migrated} slika u ${data.posts_updated} novosti`);
+                  queryClient.invalidateQueries({ queryKey: ["news-posts"] });
                 } else {
                   toast.error(data?.error || "Backfill nije uspio");
                 }

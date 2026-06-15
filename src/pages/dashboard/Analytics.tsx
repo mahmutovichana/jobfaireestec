@@ -1,4 +1,4 @@
-import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase, Globe, Wallet } from "lucide-react";
+import { Users, TrendingUp, CalendarDays, Loader2, Building2, Radio, FileText, Briefcase, Globe, Wallet, Gauge } from "lucide-react";
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -8,6 +8,7 @@ import { usePartners } from "@/hooks/usePartners";
 import { useEvents } from "@/hooks/useEvents";
 import { usePageViews } from "@/hooks/usePageViews";
 import { useTreasury } from "@/hooks/useTreasury";
+import { usePerformanceMetrics, usePerformanceSummary } from "@/hooks/usePerformanceMonitoring";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { TeamAnalytics } from "@/components/dashboard/TeamAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,10 +29,12 @@ const Analytics = () => {
   const { data: partners = [], isLoading: partnersLoading } = usePartners();
   const { data: events = [], isLoading: eventsLoading } = useEvents();
   const { data: pageViews = [], isLoading: pvLoading } = usePageViews(30);
+  const { data: perfMetrics = [], isLoading: perfLoading } = usePerformanceMetrics(7);
   const { isAdmin } = useIsAdmin();
   const treasury = useTreasury();
+  const perfSummary = usePerformanceSummary(perfMetrics);
 
-  const isLoading = statsLoading || partnersLoading || eventsLoading || pvLoading;
+  const isLoading = statsLoading || partnersLoading || eventsLoading || pvLoading || perfLoading;
 
   // Top traffic sources (last 30 days, all pages)
   const topSources = useMemo(() => {
@@ -177,6 +180,7 @@ const Analytics = () => {
           <TabsTrigger value="events" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Eventi & registracije</TabsTrigger>
           <TabsTrigger value="partners" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Partneri</TabsTrigger>
           <TabsTrigger value="traffic" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Promet</TabsTrigger>
+          <TabsTrigger value="performance" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5"><Gauge className="w-3.5 h-3.5" /> Performanse</TabsTrigger>
           <TabsTrigger value="team" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm">Tim</TabsTrigger>
           {isAdmin && (
             <TabsTrigger value="finance" className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm text-sm gap-1.5">
@@ -360,6 +364,22 @@ const Analytics = () => {
             <p className="text-muted-foreground text-center py-12 text-sm">Još nema podataka.</p>
           )}
         </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="performance" className="mt-6 space-y-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {perfSummary.map((metric) => (
+              <div key={metric.name} className="bg-card rounded-xl p-4">
+                <p className="text-xs text-muted-foreground mb-1.5">{metric.name}</p>
+                <p className="text-2xl font-display font-bold">
+                  {metric.count ? (metric.name === "CLS" ? metric.avg.toFixed(3) : `${Math.round(metric.avg)}ms`) : "—"}
+                </p>
+                <p className={`text-xs mt-2 ${metric.rating === "good" ? "text-success" : metric.rating === "poor" ? "text-destructive" : "text-warning"}`}>
+                  {metric.count ? metric.rating : "nema mjerenja"}
+                </p>
+              </div>
+            ))}
           </div>
         </TabsContent>
 

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -10,6 +10,10 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { initClarity } from "@/lib/clarity";
 import { usePageTracking } from "@/hooks/usePageTracking";
+import { usePerformanceMonitoring } from "@/hooks/usePerformanceMonitoring";
+import { fetchPartners } from "@/hooks/usePartners";
+import { fetchNewsPosts } from "@/hooks/useNews";
+import { fetchPackageTypes } from "@/hooks/usePackageTypes";
 
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -44,7 +48,16 @@ import AuditLogs from "./pages/dashboard/AuditLogs";
 import Treasury from "./pages/dashboard/Treasury";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      gcTime: 15 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -55,10 +68,25 @@ function ScrollToTop() {
 }
 
 function AnalyticsTracker() {
+  usePerformanceMonitoring();
   usePageTracking();
   useEffect(() => {
     initClarity();
   }, []);
+  return null;
+}
+
+function AppPrefetcher() {
+  const qc = useQueryClient();
+  useEffect(() => {
+    const run = () => {
+      qc.prefetchQuery({ queryKey: ["partners", true], queryFn: () => fetchPartners(true), staleTime: 5 * 60 * 1000 });
+      qc.prefetchQuery({ queryKey: ["package-types"], queryFn: fetchPackageTypes, staleTime: 10 * 60 * 1000 });
+      qc.prefetchQuery({ queryKey: ["news-posts", true, undefined], queryFn: () => fetchNewsPosts(true), staleTime: 5 * 60 * 1000 });
+    };
+    const id = window.setTimeout(run, 1200);
+    return () => window.clearTimeout(id);
+  }, [qc]);
   return null;
 }
 
@@ -72,6 +100,7 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <AnalyticsTracker />
+            <AppPrefetcher />
             <Routes>
               {/* Public */}
               <Route path="/" element={<Landing />} />

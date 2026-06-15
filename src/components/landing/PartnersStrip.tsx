@@ -1,37 +1,27 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePartners, type Partner } from "@/hooks/usePartners";
 
-function LogoItem({ partner, highlighted }: { partner: Partner; highlighted?: boolean }) {
+function LogoItem({ partner }: { partner: Partner }) {
   return (
     <a
       href={partner.website || "#"}
       target="_blank"
       rel="noopener noreferrer"
       className="group flex items-center justify-center"
-      title={highlighted ? `${partner.name} — top učesnik` : partner.name}
+      title={partner.name}
     >
-      <div
-        className={
-          highlighted
-            ? "w-20 h-20 sm:w-24 sm:h-24 relative flex items-center justify-center rounded-xl bg-white/[0.06] border border-primary/30 p-3 transition-all duration-300 hover:bg-white/[0.12] hover:border-primary/50 shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]"
-            : "w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5 transition-all duration-300 hover:bg-white/[0.1] hover:border-white/[0.12]"
-        }
-      >
+      <div className="w-16 h-16 sm:w-20 sm:h-20 relative flex items-center justify-center rounded-xl bg-card/50 border border-border/60 p-2.5 transition-all duration-300 hover:bg-card hover:border-primary/30 hover:-translate-y-0.5">
         {partner.logo_url ? (
           <img
             src={partner.logo_url}
             alt={partner.name}
             loading="lazy"
             decoding="async"
-            className={
-              highlighted
-                ? "w-full h-full object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
-                : "w-full h-full object-contain opacity-60 hover:opacity-100 transition-opacity duration-300"
-            }
+            className="w-full h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300"
           />
         ) : (
           <span className="text-sm font-bold text-muted-foreground/50">{partner.name.slice(0, 2)}</span>
@@ -51,9 +41,9 @@ export function PartnersStrip() {
       .sort((a, b) => (b.participations?.length ?? 0) - (a.participations?.length ?? 0));
   }, [partners]);
 
-  const HIGHLIGHT_COUNT = 6;
-  const topPartners = ranked.slice(0, HIGHLIGHT_COUNT);
-  const restPartners = ranked.slice(HIGHLIGHT_COUNT);
+  const VISIBLE_COUNT = 20;
+  const visiblePartners = ranked.slice(0, VISIBLE_COUNT);
+  const hiddenCount = Math.max(ranked.length - VISIBLE_COUNT, 0);
 
   if (ranked.length === 0) return null;
 
@@ -73,32 +63,27 @@ export function PartnersStrip() {
           </h2>
         </motion.div>
 
-        {/* Top participants — visually emphasized */}
-        {topPartners.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto mb-6"
-          >
-            {topPartners.map((partner) => (
-              <LogoItem key={partner.id} partner={partner} highlighted />
-            ))}
-          </motion.div>
-        )}
-
-        {/* Remaining partners */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-5xl mx-auto"
+          className="relative max-w-5xl mx-auto overflow-hidden pb-10"
         >
-          {restPartners.map((partner) => (
-            <LogoItem key={partner.id} partner={partner} />
-          ))}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-h-[236px] sm:max-h-[260px] overflow-hidden">
+            {visiblePartners.map((partner) => (
+              <LogoItem key={partner.id} partner={partner} />
+            ))}
+          </div>
+          {hiddenCount > 0 && (
+            <div className="absolute inset-x-0 bottom-0 h-28 flex items-end justify-center bg-gradient-to-t from-background via-background/90 to-background/0">
+              <Button className="rounded-full shadow-xl shadow-primary/15" asChild>
+                <Link to="/partneri">
+                  <Sparkles className="mr-2 w-4 h-4" /> Još {hiddenCount}+ partnera <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+          )}
         </motion.div>
 
         <motion.div
