@@ -48,10 +48,7 @@ export const CATEGORY_LABELS: Record<PartnerCategory, string> = {
 };
 
 export async function fetchPartners(onlyVisible = false) {
-  const publicColumns = `
-    id, name, logo_url, website, description, category, package, display_order, visible, user_id, created_at, updated_at,
-    participations:partner_participations(id, partner_id, year, package, custom_price, currency)
-  `;
+  const publicColumns = "id, name, logo_url, website, description, category, package, display_order, visible, user_id, created_at, updated_at, participations:partner_participations(id, partner_id, year, package, custom_price, currency)";
 
   let query = supabase
     .from("partners")
@@ -64,7 +61,7 @@ export async function fetchPartners(onlyVisible = false) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []) as Partner[];
+  return (data ?? []) as unknown as Partner[];
 }
 
 export function usePartners(onlyVisible = false) {
