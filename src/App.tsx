@@ -94,7 +94,11 @@ function AnalyticsTracker() {
 
 function AppPrefetcher() {
   const qc = useQueryClient();
+  const { pathname } = useLocation();
   useEffect(() => {
+    // Skip background prefetch of landing-page data on dashboard routes —
+    // those queries otherwise compete with critical dashboard fetches and inflate LCP.
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/auth")) return;
     const run = () => {
       qc.prefetchQuery({ queryKey: ["partners", true], queryFn: () => fetchPartners(true), staleTime: QUERY_CONFIG.publicStaleTime });
       qc.prefetchQuery({ queryKey: ["package-types"], queryFn: fetchPackageTypes, staleTime: QUERY_CONFIG.referenceStaleTime });
@@ -102,7 +106,7 @@ function AppPrefetcher() {
     };
     const id = window.setTimeout(run, QUERY_CONFIG.prefetchDelayMs);
     return () => window.clearTimeout(id);
-  }, [qc]);
+  }, [qc, pathname]);
   return null;
 }
 
