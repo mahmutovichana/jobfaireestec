@@ -11,7 +11,7 @@ import { useFormFields } from "@/hooks/useFormFields";
 import { useCreateRegistration } from "@/hooks/useRegistrations";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables } from "@/lib/database.types";
 
 type FormField = Tables<"form_fields">;
 

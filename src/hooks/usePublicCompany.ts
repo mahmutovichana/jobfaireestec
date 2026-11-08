@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 
 export function useCompanyBySlug(slug: string | undefined) {
   return useQuery({
     queryKey: ["public-company", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("public_company_profiles" as any)
         .select("id, company, company_description, website, avatar_url, social_links, company_slug")
         .eq("company_slug", slug!)
@@ -30,7 +30,7 @@ export function usePublicEventsByUser(userId: string | undefined) {
   return useQuery({
     queryKey: ["public-events", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("events")
         .select("*")
         .eq("user_id", userId!)
@@ -49,7 +49,7 @@ export function usePublicRegistrationCounts(eventIds: string[]) {
     queryFn: async () => {
       const counts: Record<string, number> = {};
       for (const id of eventIds) {
-        const { data, error } = await supabase.rpc("get_registration_count", { p_event_id: id });
+        const { data, error } = await api.rpc("get_registration_count", { p_event_id: id });
         if (!error) counts[id] = data ?? 0;
       }
       return counts;

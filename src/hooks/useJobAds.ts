@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -23,7 +23,7 @@ export function useJobAds(onlyPublished = false) {
   return useQuery({
     queryKey: ["job-ads", onlyPublished, user?.id],
     queryFn: async () => {
-      let query = supabase
+      let query = api
         .from("job_ads")
         .select("*")
         .order("created_at", { ascending: false });
@@ -53,7 +53,7 @@ export function useCreateJobAd() {
       external_link?: string;
       published?: boolean;
     }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("job_ads")
         .insert({ ...ad, user_id: user!.id } as any);
       if (error) throw error;
@@ -71,7 +71,7 @@ export function useUpdateJobAd() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<Omit<JobAd, "id" | "user_id" | "created_at" | "updated_at">>) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("job_ads")
         .update(updates as any)
         .eq("id", id);
@@ -90,7 +90,7 @@ export function useDeleteJobAd() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("job_ads").delete().eq("id", id);
+      const { error } = await api.from("job_ads").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -102,18 +102,18 @@ export function useDeleteJobAd() {
 }
 
 export async function uploadJobAdImage(file: File): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await api.auth.getUser();
   if (!user) throw new Error("Not authenticated");
   const ext = file.name.split(".").pop();
   const path = `${user.id}/job-ads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { error } = await supabase.storage.from("news-images").upload(path, file, {
+  const { error } = await api.storage.from("news-images").upload(path, file, {
     cacheControl: "3600",
     upsert: false,
   });
 
   if (error) throw error;
 
-  const { data } = supabase.storage.from("news-images").getPublicUrl(path);
+  const { data } = api.storage.from("news-images").getPublicUrl(path);
   return data.publicUrl;
 }

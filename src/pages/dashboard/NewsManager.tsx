@@ -29,7 +29,7 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -78,7 +78,7 @@ const NewsManager = () => {
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "title">("newest");
 
   const availableYears = useMemo(() => {
-    const years = new Set((posts ?? []).map(p => new Date(p.created_at).getFullYear().toString()));
+    const years = new Set<string>((posts ?? []).map(p => new Date(p.created_at).getFullYear().toString()));
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [posts]);
 
@@ -108,7 +108,7 @@ const NewsManager = () => {
   const handleInstagramSync = async () => {
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-instagram");
+      const { data, error } = await api.functions.invoke("sync-instagram");
       if (error) throw error;
       if (data?.success) {
         toast.success(data.message || "Instagram sync završen!");
@@ -223,7 +223,7 @@ const NewsManager = () => {
             onClick={async () => {
               setSyncing(true);
               try {
-                const { data, error } = await supabase.functions.invoke("backfill-news-images");
+                const { data, error } = await api.functions.invoke("backfill-news-images");
                 if (error) throw error;
                 if (data?.success) {
                   toast.success(`Migrirano ${data.images_migrated} slika u ${data.posts_updated} novosti`);

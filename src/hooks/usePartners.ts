@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -53,7 +53,7 @@ export async function fetchPartners(onlyVisible = false) {
   // columns on the public path so PostgREST doesn't reject the embedded query.
   const publicColumns = "id, name, logo_url, website, description, category, package, display_order, visible, user_id, created_at, updated_at, participations:partner_participations(id, partner_id, year, package)";
 
-  let query = supabase
+  let query = api
     .from("partners")
     .select(onlyVisible ? publicColumns : "*, participations:partner_participations(id, partner_id, year, package, custom_price, currency)")
     .order("display_order", { ascending: true });
@@ -83,7 +83,7 @@ export function useCreatePartner() {
 
   return useMutation({
     mutationFn: async (partner: Omit<Partner, "id" | "user_id" | "created_at" | "updated_at">) => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("partners")
         .insert({ ...partner, user_id: user!.id } as any)
         .select()
@@ -104,7 +104,7 @@ export function useUpdatePartner() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Partner> & { id: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("partners")
         .update(updates as any)
         .eq("id", id)
@@ -126,7 +126,7 @@ export function useDeletePartner() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("partners").delete().eq("id", id);
+      const { error } = await api.from("partners").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -141,13 +141,13 @@ export async function uploadPartnerLogo(file: File): Promise<string> {
   const ext = file.name.split(".").pop();
   const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { error } = await supabase.storage.from("partner-logos").upload(path, file, {
+  const { error } = await api.storage.from("partner-logos").upload(path, file, {
     cacheControl: "3600",
     upsert: false,
   });
 
   if (error) throw error;
 
-  const { data } = supabase.storage.from("partner-logos").getPublicUrl(path);
+  const { data } = api.storage.from("partner-logos").getPublicUrl(path);
   return data.publicUrl;
 }

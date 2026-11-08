@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ export function useGalleryImages(onlyVisible = false) {
   return useQuery({
     queryKey: ["gallery-images", onlyVisible],
     queryFn: async () => {
-      let query = supabase
+      let query = api
         .from("gallery_images" as any)
         .select("*")
         .order("display_order", { ascending: true });
@@ -37,7 +37,7 @@ export function useCreateGalleryImage() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (img: Omit<GalleryImage, "id" | "user_id" | "created_at">) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("gallery_images" as any)
         .insert({ ...img, user_id: user!.id } as any);
       if (error) throw error;
@@ -51,7 +51,7 @@ export function useDeleteGalleryImage() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("gallery_images" as any).delete().eq("id", id);
+      const { error } = await api.from("gallery_images" as any).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["gallery-images"] }); toast.success("Slika obrisana!"); },
@@ -62,8 +62,8 @@ export function useDeleteGalleryImage() {
 export async function uploadGalleryImage(file: File): Promise<string> {
   const ext = file.name.split(".").pop();
   const path = `images/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage.from("gallery").upload(path, file, { cacheControl: "3600", upsert: false });
+  const { error } = await api.storage.from("gallery").upload(path, file, { cacheControl: "3600", upsert: false });
   if (error) throw error;
-  const { data } = supabase.storage.from("gallery").getPublicUrl(path);
+  const { data } = api.storage.from("gallery").getPublicUrl(path);
   return data.publicUrl;
 }

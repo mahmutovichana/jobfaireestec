@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 
 type MetricName = "FCP" | "LCP" | "CLS" | "INP";
 
@@ -57,7 +57,7 @@ export function usePerformanceMonitoring() {
         user_agent: navigator.userAgent.slice(0, 500),
       }));
       pending.clear();
-      supabase.from("performance_metrics" as any).insert(payload as any).then(() => undefined);
+      api.from("performance_metrics" as any).insert(payload as any).then(() => undefined);
     };
 
     try {
@@ -116,7 +116,7 @@ export function usePerformanceMetrics(days = 7) {
     queryKey: ["performance-metrics", days],
     queryFn: async () => {
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("performance_metrics" as any)
         .select("*")
         .gte("created_at", since)

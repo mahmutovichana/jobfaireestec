@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { api } from "@/lib/api";
+import { oauth } from "@/lib/oauth";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
@@ -35,7 +35,7 @@ const Auth = () => {
   const checkUserApproval = async (email: string) => {
     setCheckingApproval(true);
     
-    const { data: roles } = await supabase
+    const { data: roles } = await api
       .from("user_roles")
       .select("role")
       .eq("user_id", user!.id);
@@ -47,19 +47,19 @@ const Auth = () => {
       return;
     }
 
-    const { data: approved } = await supabase.rpc("is_email_approved", { check_email: email });
+    const { data: approved } = await api.rpc("is_email_approved", { check_email: email });
     
     if (approved) {
       navigate("/dashboard/home", { replace: true });
     } else {
-      await supabase.auth.signOut();
+      await api.auth.signOut();
       toast.error("Vaš zahtjev za pristup još nije odobren. Molimo pošaljite zahtjev ili sačekajte odobrenje.", { duration: 6000 });
     }
     setCheckingApproval(false);
   };
 
   const handleGoogleSignIn = async () => {
-    const { error } = await lovable.auth.signInWithOAuth("google", { 
+    const { error } = await oauth.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/auth`
     });
     if (error) toast.error(error.message || "Google prijava nije uspjela");
@@ -69,7 +69,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.from("access_requests").insert({
+      const { error } = await api.from("access_requests").insert({
         full_name: reqName.trim(),
         email: reqEmail.trim(),
         company_name: reqCompanyName || null,

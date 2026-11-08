@@ -9,6 +9,7 @@ import { vi } from "vitest";
 // ── Supabase Mock ──
 export const mockSupabase = {
   auth: {
+    getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'test-user-id' } }, error: null }),
     getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
     signOut: vi.fn().mockResolvedValue({}),
@@ -42,9 +43,9 @@ export const mockSupabase = {
   },
 };
 
-vi.mock("@/integrations/supabase/client", () => ({ supabase: mockSupabase }));
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: {
+vi.mock("@/lib/api", () => ({ api: mockSupabase }));
+vi.mock("@/lib/oauth", () => ({
+  oauth: {
     auth: {
       signInWithOAuth: vi.fn().mockResolvedValue({ error: null }),
     },

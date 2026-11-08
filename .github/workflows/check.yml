@@ -1,0 +1,41 @@
+name: Verify standalone JobFAIR
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: jobfair_test
+          POSTGRES_PASSWORD: test-only-password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:test-only-password@localhost:5432/jobfair_test
+      SESSION_SECRET: continuous-integration-only-session-secret-000000
+      NODE_ENV: test
+      APP_ORIGIN: http://localhost:8081
+      MAIL_TRANSPORT: file
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+      - run: npm ci
+      - run: npm --prefix server ci
+      - run: npm --prefix server run migrate
+      - run: npm --prefix server test
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:independence

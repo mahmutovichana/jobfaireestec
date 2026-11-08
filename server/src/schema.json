@@ -1,0 +1,262 @@
+{
+  "access_requests": [
+    "id",
+    "email",
+    "full_name",
+    "company_name",
+    "company_domain",
+    "message",
+    "status",
+    "reviewed_by",
+    "created_at",
+    "updated_at",
+    "approved_at"
+  ],
+  "audit_logs": [
+    "id",
+    "actor_id",
+    "actor_email",
+    "action",
+    "entity_type",
+    "entity_id",
+    "metadata",
+    "created_at"
+  ],
+  "company_inquiries": [
+    "id",
+    "company_name",
+    "contact_person",
+    "email",
+    "phone",
+    "message",
+    "interest_type",
+    "status",
+    "created_at"
+  ],
+  "cv_submissions": [
+    "id",
+    "full_name",
+    "email",
+    "phone",
+    "faculty",
+    "year_of_study",
+    "cv_url",
+    "created_at"
+  ],
+  "email_send_log": [
+    "id",
+    "message_id",
+    "template_name",
+    "recipient_email",
+    "status",
+    "error_message",
+    "metadata",
+    "created_at"
+  ],
+  "email_send_state": [
+    "id",
+    "retry_after_until",
+    "batch_size",
+    "send_delay_ms",
+    "auth_email_ttl_minutes",
+    "transactional_email_ttl_minutes",
+    "updated_at"
+  ],
+  "email_templates": [
+    "id",
+    "event_id",
+    "template_type",
+    "subject",
+    "body",
+    "enabled"
+  ],
+  "email_unsubscribe_tokens": [
+    "id",
+    "token",
+    "email",
+    "created_at",
+    "used_at"
+  ],
+  "events": [
+    "id",
+    "user_id",
+    "name",
+    "slug",
+    "description",
+    "event_date",
+    "event_type",
+    "status",
+    "template",
+    "primary_color",
+    "logo_url",
+    "background_image_url",
+    "registration_limit",
+    "registration_deadline",
+    "created_at",
+    "updated_at",
+    "event_end_date",
+    "timezone",
+    "location_type",
+    "location_value",
+    "ticket_price",
+    "requires_approval",
+    "capacity",
+    "color_mode"
+  ],
+  "form_fields": [
+    "id",
+    "event_id",
+    "label",
+    "field_type",
+    "placeholder",
+    "required",
+    "position"
+  ],
+  "gallery_images": [
+    "id",
+    "title",
+    "image_url",
+    "display_order",
+    "visible",
+    "user_id",
+    "created_at"
+  ],
+  "job_ads": [
+    "id",
+    "user_id",
+    "title",
+    "description",
+    "company_name",
+    "deadline",
+    "image_url",
+    "external_link",
+    "published",
+    "created_at",
+    "updated_at"
+  ],
+  "news_posts": [
+    "id",
+    "user_id",
+    "title",
+    "summary",
+    "content",
+    "thumbnail_url",
+    "gallery_urls",
+    "published",
+    "published_at",
+    "created_at",
+    "updated_at",
+    "instagram_post_id"
+  ],
+  "package_prices": [
+    "id",
+    "year",
+    "package",
+    "price",
+    "currency",
+    "notes",
+    "created_at",
+    "updated_at"
+  ],
+  "package_types": [
+    "key",
+    "label",
+    "color_class",
+    "sort_order",
+    "is_custom",
+    "created_at",
+    "updated_at"
+  ],
+  "page_views": [
+    "id",
+    "path",
+    "referrer",
+    "referrer_domain",
+    "user_agent",
+    "created_at"
+  ],
+  "partner_participations": [
+    "id",
+    "partner_id",
+    "year",
+    "package",
+    "created_at",
+    "custom_price",
+    "currency"
+  ],
+  "partners": [
+    "id",
+    "name",
+    "logo_url",
+    "website",
+    "description",
+    "category",
+    "package",
+    "display_order",
+    "visible",
+    "user_id",
+    "created_at",
+    "updated_at"
+  ],
+  "performance_metrics": [
+    "id",
+    "path",
+    "metric_name",
+    "metric_value",
+    "rating",
+    "session_id",
+    "user_agent",
+    "created_at"
+  ],
+  "profiles": [
+    "id",
+    "full_name",
+    "company",
+    "avatar_url",
+    "created_at",
+    "updated_at",
+    "website",
+    "company_description",
+    "social_links",
+    "company_slug",
+    "avatar_crop"
+  ],
+  "registrations": [
+    "id",
+    "event_id",
+    "data",
+    "status",
+    "created_at"
+  ],
+  "suppressed_emails": [
+    "id",
+    "email",
+    "reason",
+    "metadata",
+    "created_at"
+  ],
+  "team_members": [
+    "id",
+    "name",
+    "role",
+    "committee",
+    "photo_url",
+    "linkedin_url",
+    "display_order",
+    "visible",
+    "user_id",
+    "created_at",
+    "updated_at",
+    "email",
+    "phone",
+    "year",
+    "photo_crop",
+    "gender",
+    "position_key"
+  ],
+  "user_roles": [
+    "id",
+    "user_id",
+    "role"
+  ]
+}

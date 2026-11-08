@@ -11,7 +11,7 @@ import { ArrowLeft, CheckCircle2, Building2, Mail, Phone, User, LogOut } from "l
 import { useCreateInquiry } from "@/hooks/useInquiries";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { lovable } from "@/integrations/lovable/index";
+import { oauth } from "@/lib/oauth";
 import { SEO } from "@/components/SEO";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
@@ -54,7 +54,7 @@ export default function Kontakt() {
   }, [user]);
 
   const handleGoogleSignIn = async () => {
-    const { error } = await lovable.auth.signInWithOAuth("google", {
+    const { error } = await oauth.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/kontakt",
     });
     if (error) toast.error("Google prijava nije uspjela");

@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_URL = "https://jobfaireestec.lovable.app";
+const SITE_URL = (globalThis as any).__JOBFAIR_CONFIG__?.siteUrl ?? import.meta.env.VITE_SITE_URL ?? window.location.origin;
 const SITE_NAME = "JobFAIR";
 
 interface SEOProps {

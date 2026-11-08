@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables, Json } from "@/integrations/supabase/types";
+import { api } from "@/lib/api";
+import { Tables, Json } from "@/lib/database.types";
 
 export type Registration = Tables<"registrations"> & {
   events?: { name: string } | null;
@@ -10,7 +10,7 @@ export function useRegistrations() {
   return useQuery({
     queryKey: ["registrations"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("registrations")
         .select("*, events(name)")
         .order("created_at", { ascending: false });
@@ -24,7 +24,7 @@ export function useRegistrationsByEvent(eventId: string | undefined) {
   return useQuery({
     queryKey: ["registrations", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("registrations")
         .select("*")
         .eq("event_id", eventId!)
@@ -40,48 +40,13 @@ export function useCreateRegistration() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ event_id, data }: { event_id: string; data: Record<string, string> }) => {
-      const { data: result, error } = await supabase
+      const { data: result, error } = await api
         .rpc("register_for_event", {
           p_event_id: event_id,
           p_data: data as unknown as Json,
         });
       if (error) {
         throw error;
-      }
-
-      // Fire-and-forget confirmation email
-      const email =
-        data["Email Address"] || data["Email"] || data["Email adresa"] || data["E-mail"];
-      const fullName =
-        data["Full Name"] || data["Name"] || data["Ime i prezime"] || data["Ime"];
-      if (email) {
-        try {
-          // Fetch event for nice subject/body
-          const { data: ev } = await supabase
-            .from("events")
-            .select("name, event_date")
-            .eq("id", event_id)
-            .maybeSingle();
-          await supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "event-registration-confirmation",
-              recipientEmail: email,
-              idempotencyKey: `registration-${result}`,
-              templateData: {
-                full_name: fullName,
-                event_name: ev?.name,
-                event_date: ev?.event_date
-                  ? new Date(ev.event_date).toLocaleString("bs-BA", {
-                      dateStyle: "long",
-                      timeStyle: "short",
-                    })
-                  : undefined,
-              },
-            },
-          });
-        } catch (e) {
-          console.warn("Failed to enqueue registration confirmation email", e);
-        }
       }
 
       return result;
@@ -94,12 +59,12 @@ export function useRegistrationStats() {
   return useQuery({
     queryKey: ["registration-stats"],
     queryFn: async () => {
-      const { data: registrations, error } = await supabase
+      const { data: registrations, error } = await api
         .from("registrations")
         .select("created_at, event_id, status");
       if (error) throw error;
       
-      const { data: events, error: eventsError } = await supabase
+      const { data: events, error: eventsError } = await api
         .from("events")
         .select("id, name, status");
       if (eventsError) throw eventsError;

@@ -7,7 +7,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { PdfPreview } from "@/components/PdfPreview";
 import { Search, FileText, Download, Trash2, User, GraduationCap, Mail, Phone, Calendar, Eye } from "lucide-react";
 import { useCVSubmissions, useDeleteCV, type CVSubmission } from "@/hooks/useCV";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -18,7 +18,7 @@ async function getCachedSignedUrl(path: string): Promise<string | null> {
   const now = Date.now();
   const cached = signedUrlCache.get(path);
   if (cached && cached.expires > now) return cached.url;
-  const { data, error } = await supabase.storage
+  const { data, error } = await api.storage
     .from("cv-uploads")
     .createSignedUrl(path, 600);
   if (error || !data) return null;
@@ -68,7 +68,7 @@ export default function CVDatabase() {
 
   const handleDownload = async (cvUrl: string, name: string) => {
     try {
-      const { data, error } = await supabase.storage
+      const { data, error } = await api.storage
         .from("cv-uploads")
         .createSignedUrl(cvUrl, 60);
       if (error) throw error;

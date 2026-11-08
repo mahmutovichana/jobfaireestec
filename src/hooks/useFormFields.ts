@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { api } from "@/lib/api";
+import { Tables, TablesInsert } from "@/lib/database.types";
 
 export type FormField = Tables<"form_fields">;
 
@@ -8,7 +8,7 @@ export function useFormFields(eventId: string | undefined) {
   return useQuery({
     queryKey: ["form_fields", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("form_fields")
         .select("*")
         .eq("event_id", eventId!)
@@ -24,7 +24,7 @@ export function useBulkInsertFormFields() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (fields: TablesInsert<"form_fields">[]) => {
-      const { data, error } = await supabase.from("form_fields").insert(fields).select();
+      const { data, error } = await api.from("form_fields").insert(fields).select();
       if (error) throw error;
       return data;
     },
@@ -40,7 +40,7 @@ export function useAddFormField() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (field: TablesInsert<"form_fields">) => {
-      const { data, error } = await supabase.from("form_fields").insert(field).select().single();
+      const { data, error } = await api.from("form_fields").insert(field).select().single();
       if (error) throw error;
       return data;
     },
@@ -52,7 +52,7 @@ export function useDeleteFormField() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, eventId }: { id: string; eventId: string }) => {
-      const { error } = await supabase.from("form_fields").delete().eq("id", id);
+      const { error } = await api.from("form_fields").delete().eq("id", id);
       if (error) throw error;
       return eventId;
     },

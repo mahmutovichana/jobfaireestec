@@ -5,8 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
+vi.mock("@/lib/api", () => ({
+  api: {
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
       onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
@@ -31,8 +31,8 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth: vi.fn().mockResolvedValue({ error: null }) } },
+vi.mock("@/lib/oauth", () => ({
+  oauth: { auth: { signInWithOAuth: vi.fn().mockResolvedValue({ error: null }) } },
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 
 export interface CVSubmission {
   id: string;
@@ -16,7 +16,7 @@ export function useCVSubmissions() {
   return useQuery({
     queryKey: ["cv-submissions"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("cv_submissions")
         .select("*")
         .order("created_at", { ascending: false });
@@ -30,7 +30,7 @@ export function useCreateCVSubmission() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (submission: Omit<CVSubmission, "id" | "created_at">) => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("cv_submissions")
         .insert(submission as any)
         .select()
@@ -46,7 +46,7 @@ export function useDeleteCV() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("cv_submissions").delete().eq("id", id);
+      const { error } = await api.from("cv_submissions").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["cv-submissions"] }),
@@ -61,7 +61,7 @@ export async function uploadCV(file: File): Promise<string> {
     `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = `submissions/${uuid}/${safeName || `cv.${ext}`}`;
-  const { error } = await supabase.storage
+  const { error } = await api.storage
     .from("cv-uploads")
     .upload(path, file, { cacheControl: "3600", upsert: false });
   if (error) throw error;

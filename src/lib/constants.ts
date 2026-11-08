@@ -1,13 +1,14 @@
 // ── App-wide constants ──
-// Centralized hardcoded values for easy maintenance
+// Site values come from the database-backed runtime configuration.
 
-export const APP_NAME = "JobFAIR";
-export const APP_YEAR = 2026;
+const site = (globalThis as any).__JOBFAIR_CONFIG__ ?? {};
+export const APP_NAME = site.name ?? "JobFAIR";
+export const APP_YEAR = site.year ?? new Date().getFullYear();
 export const COPYRIGHT_TEXT = `© ${APP_YEAR} ${APP_NAME}. Sva prava zadržana.`;
 
 // Event dates
-export const NEXT_EVENT_DATE = "03. i 04. novembar 2026.";
-export const NEXT_EVENT_YEAR_SHORT = "'26";
+export const NEXT_EVENT_DATE = site.eventDate ?? "Termin će biti objavljen";
+export const NEXT_EVENT_YEAR_SHORT = "'" + String(APP_YEAR).slice(-2);
 
 // Hero taglines
 export const HERO_TITLE = "Iskoristi svoju";
@@ -32,7 +33,7 @@ export const UPLOAD_FOLDER_JOB_ADS = "job-ads";
 
 // Default values
 export const DEFAULT_BRAND_COLOR = "#7C3AED";
-export const DEFAULT_TIMEZONE = "America/New_York";
+export const DEFAULT_TIMEZONE = site.timezone ?? "Europe/Sarajevo";
 export const DEFAULT_TEMPLATE = "split";
 export const DEFAULT_PRIMARY_COLOR = "#7C3AED";
 
@@ -48,7 +49,7 @@ export const SOCIAL_PLATFORMS = [
 ] as const;
 
 // Stats data
-export const LANDING_STATS = [
+export const LANDING_STATS = site.stats ?? [
   { value: "5000+", label: "Posjetitelja godišnje" },
   { value: "3000+", label: "Unosa u CV bazu" },
   { value: "100+", label: "Kompanija učesnica" },
@@ -66,7 +67,7 @@ export const EESTEC_WEBSITE = "https://www.eestec-sa.ba/";
 export const EESTEC_ORG_NAME = "EESTEC LC Sarajevo";
 
 // JobFAIR social links
-export const JOBFAIR_SOCIALS = {
+export const JOBFAIR_SOCIALS = site.socials ?? {
   instagram: "https://www.instagram.com/jobfair.sarajevo/",
   linkedin: "https://www.linkedin.com/company/jobfair-iskoristi-svoju-sansu",
   facebook: "https://www.facebook.com/JobfairIskoristiSvojuSansu",

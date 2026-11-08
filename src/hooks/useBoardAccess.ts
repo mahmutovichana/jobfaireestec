@@ -8,7 +8,6 @@ import { useIsAdmin } from "@/hooks/useUserRole";
 export function useBoardAccess() {
   const { user } = useAuth();
   const { isAdmin, isLoading } = useIsAdmin();
-  const email = user?.email?.toLowerCase() ?? "";
-  const isEestecBoard = email.endsWith("@eestec-sa.ba");
+  const isEestecBoard = user?.board === true;
   return { isBoard: isAdmin || isEestecBoard, isLoading };
 }

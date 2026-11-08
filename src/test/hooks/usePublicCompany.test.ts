@@ -25,7 +25,7 @@ describe("useCompanyBySlug", () => {
     mockSupabase.from.mockReturnValue(chain);
 
     renderHook(() => useCompanyBySlug("corp"), { wrapper: createWrapper() });
-    await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("profiles"));
+    await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("public_company_profiles"));
   });
 
   it("is disabled when slug undefined", () => {

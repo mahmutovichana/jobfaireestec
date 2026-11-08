@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 interface AuthContextType {
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = api.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setLoading(false);
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    api.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
@@ -45,18 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyApproval = async (user: User) => {
     try {
-      const { data: roles } = await supabase
+      const { data: roles } = await api
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id);
       const isAdmin = roles?.some((r: any) => r.role === "admin");
       if (isAdmin) return;
 
-      const { data: approved } = await supabase.rpc("is_email_approved", {
+      const { data: approved } = await api.rpc("is_email_approved", {
         check_email: user.email ?? "",
       });
       if (!approved) {
-        await supabase.auth.signOut();
+        await api.auth.signOut();
         toast.error(
           "Vaš nalog još nije odobren. Pošaljite zahtjev na stranici za prijavu ili sačekajte odobrenje administratora.",
           { duration: 7000 }
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await api.auth.signOut();
     setSession(null);
   };
 

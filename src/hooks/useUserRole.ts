@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useUserRole() {
@@ -8,7 +8,7 @@ export function useUserRole() {
   return useQuery({
     queryKey: ["user-role", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("user_roles")
         .select("role")
         .eq("user_id", user!.id);

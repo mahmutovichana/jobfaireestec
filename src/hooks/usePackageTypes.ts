@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 export interface PackageType {
@@ -11,7 +11,7 @@ export interface PackageType {
 }
 
 export async function fetchPackageTypes() {
-  const { data, error } = await supabase
+  const { data, error } = await api
     .from("package_types" as any)
     .select("key, label, color_class, sort_order, is_custom")
     .order("sort_order", { ascending: true });
@@ -33,7 +33,7 @@ export function useUpsertPackageType() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: PackageType) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("package_types" as any)
         .upsert(p as any, { onConflict: "key" });
       if (error) throw error;
@@ -52,7 +52,7 @@ export function useDeletePackageType() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (key: string) => {
-      const { error } = await supabase.from("package_types" as any).delete().eq("key", key);
+      const { error } = await api.from("package_types" as any).delete().eq("key", key);
       if (error) throw error;
     },
     onSuccess: () => {
