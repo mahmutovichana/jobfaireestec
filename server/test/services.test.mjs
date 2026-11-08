@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID, randomBytes, createHash, createHmac } from "node:crypto";
 import { once } from "node:events";
+import path from "node:path";
+import os from "node:os";
 import { pool } from "../src/db.mjs";
 import { createApp } from "../src/server.mjs";
 import { config } from "../src/config.mjs";
@@ -11,6 +13,9 @@ import { processMailBatch } from "../src/worker.mjs";
 import { OAuth2Client } from "google-auth-library";
 if (!new URL(config.DATABASE_URL).pathname.endsWith("_test"))
   throw Error("Tests require an isolated _test database");
+const testFiles = path.join(os.tmpdir(), "jobfair-test-" + randomUUID());
+config.STORAGE_ROOT = path.join(testFiles, "storage");
+config.OUTBOX_ROOT = path.join(testFiles, "outbox");
 const admin = {
   id: randomUUID(),
   email: `admin-${randomUUID()}@example.test`,
