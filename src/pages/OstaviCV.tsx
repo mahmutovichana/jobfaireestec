@@ -10,8 +10,8 @@ import { ArrowLeft, Upload, CheckCircle2, FileText, LogOut } from "lucide-react"
 import { useCreateCVSubmission, uploadCV } from "@/hooks/useCV";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { lovable } from "@/integrations/lovable/index";
-import { supabase } from "@/integrations/supabase/client";
+import { oauth } from "@/lib/oauth";
+import { api } from "@/lib/api";
 import { SEO } from "@/components/SEO";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { PublicFooter } from "@/components/layout/PublicFooter";
@@ -66,7 +66,7 @@ export default function OstaviCV() {
   }, [user]);
 
   const handleGoogleSignIn = async () => {
-    const { error } = await lovable.auth.signInWithOAuth("google", {
+    const { error } = await oauth.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/ostavi-cv",
     });
     if (error) toast.error("Google prijava nije uspjela");

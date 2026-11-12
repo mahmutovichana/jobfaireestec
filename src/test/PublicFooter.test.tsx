@@ -23,12 +23,12 @@ describe("PublicFooter", () => {
     expect(screen.getByText(EESTEC_ORG_NAME)).toBeInTheDocument();
   });
 
-  it("hides EESTEC link by default", () => {
+  it("shows the organizer link by default", () => {
     render(
       <MemoryRouter>
         <PublicFooter />
       </MemoryRouter>
     );
-    expect(screen.queryByText(EESTEC_ORG_NAME)).not.toBeInTheDocument();
+    expect(screen.getByText(EESTEC_ORG_NAME)).toBeInTheDocument();
   });
 });

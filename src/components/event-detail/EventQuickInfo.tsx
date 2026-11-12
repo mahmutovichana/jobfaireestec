@@ -4,9 +4,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables } from "@/lib/database.types";
 import { CalendarDays, ImageIcon, Upload, Trash2, MapPin, Type, FileText, Globe } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 interface Props {
@@ -21,7 +21,7 @@ export default function EventQuickInfo({ event, onUpdate }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await api.auth.getUser();
     if (!user) {
       toast.error("Not authenticated");
       return;
@@ -29,7 +29,7 @@ export default function EventQuickInfo({ event, onUpdate }: Props) {
     const ext = file.name.split(".").pop();
     const path = `${user.id}/event-images/${event.id}.${ext}`;
 
-    const { error } = await supabase.storage
+    const { error } = await api.storage
       .from("event-assets")
       .upload(path, file, { upsert: true });
 
@@ -38,7 +38,7 @@ export default function EventQuickInfo({ event, onUpdate }: Props) {
       return;
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = api.storage
       .from("event-assets")
       .getPublicUrl(path);
 

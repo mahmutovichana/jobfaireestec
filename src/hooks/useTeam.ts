@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -50,14 +50,14 @@ export function useTeamMembers(onlyVisible = false) {
     queryFn: async () => {
       // Public/visible-only path uses the email/phone-free view (safe for anon).
       if (onlyVisible) {
-        const { data, error } = await supabase
+        const { data, error } = await api
           .from("public_team_members" as any)
           .select("*")
           .order("display_order", { ascending: true });
         if (error) throw error;
         return (data ?? []) as unknown as TeamMember[];
       }
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("team_members")
         .select("*")
         .order("display_order", { ascending: true });
@@ -75,7 +75,7 @@ export function useCreateTeamMember() {
   const { user } = useAuth();
   return useMutation({
     mutationFn: async (m: Omit<TeamMember, "id" | "user_id" | "created_at" | "updated_at">) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("team_members")
         .insert({ ...m, user_id: user!.id } as any);
       if (error) throw error;
@@ -89,7 +89,7 @@ export function useUpdateTeamMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...u }: Partial<TeamMember> & { id: string }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("team_members")
         .update(u as any)
         .eq("id", id);
@@ -104,7 +104,7 @@ export function useDeleteTeamMember() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("team_members").delete().eq("id", id);
+      const { error } = await api.from("team_members").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["team-members"] }); toast.success("Član obrisan!"); },
@@ -115,8 +115,8 @@ export function useDeleteTeamMember() {
 export async function uploadTeamPhoto(file: File): Promise<string> {
   const ext = file.name.split(".").pop();
   const path = `photos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage.from("team-photos").upload(path, file, { cacheControl: "3600", upsert: false });
+  const { error } = await api.storage.from("team-photos").upload(path, file, { cacheControl: "3600", upsert: false });
   if (error) throw error;
-  const { data } = supabase.storage.from("team-photos").getPublicUrl(path);
+  const { data } = api.storage.from("team-photos").getPublicUrl(path);
   return data.publicUrl;
 }

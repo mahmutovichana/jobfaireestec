@@ -1,0 +1,32 @@
+{
+  "name": "jobfair-services",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "worker": "node src/worker.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "import": "node scripts/import.mjs",
+    "verify": "node scripts/verify.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "compression": "^1.8.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.0",
+    "google-auth-library": "^11.3.3",
+    "helmet": "^8.1.0",
+    "nodemailer": "^10.4.0",
+    "pg": "^8.16.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}

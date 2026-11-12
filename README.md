@@ -1,4 +1,20 @@
-# JobFAIR — Platforma za sajam zapošljavanja
+# JobFAIR — samostalna aplikacija za Opalstack
+
+Aktivna arhitektura je React frontend, vlastiti Node.js API u `server/`, PostgreSQL, lokalno skladište fajlova i SMTP worker. Za rad nisu potrebni Lovable, njihov auth broker, cloud funkcije niti hosted Supabase.
+
+Detaljne upute za instalaciju, sigurnost, import, provjere, Opalstack staging, puštanje u rad i povratak na prethodnu verziju su u [docs/OPALSTACK.md](docs/OPALSTACK.md). To je važeći vodič; stari opis ispod je historijska dokumentacija.
+
+Brzi početak: Node 22.12+, PostgreSQL 16+, `npm ci`, `npm --prefix server ci`, kopirati `server/.env.example` u privatni `server/.env`, kreirati praznu bazu, zatim iz `server/` pokrenuti `npm run migrate`. Razvoj: API na 3001 i `npm run dev` na 8081. Integrirano pokretanje: `npm run build`, zatim API servira i `dist/`.
+
+Izvorna kopija ima 24 aplikacijske tabele i 5.222 reda. U lokalnu samostalnu bazu preneseni su izvorni ID-jevi, veze, podaci i 457 fajlova. Četiri privatna CV fajla nisu bila dostupna u izvozu i ostaju prepreka za potpuno prebacivanje. Prije prebacivanja domene obavezan je svjež izvoz i staging provjera stvarnih Google/SMTP/AI/Instagram servisa.
+
+Testovi: `npm test` za frontend, `npm --prefix server test` uz zasebni `DATABASE_URL` koji završava `_test` za integracijske provjere. `npm run check:independence` provjerava izostanak starih cloud zavisnosti iz aktivnog koda i builda.
+
+Lični podaci, `.env`, baze, storage i backupi ne smiju u ovaj javni repozitorij.
+
+---
+
+## Arhivski opis prethodne cloud verzije (nije vodič za deployment)
 
 > Sajam zapošljavanja za studente i diplomce tehničko-tehnoloških fakulteta i ekonomije, organiziran od strane **EESTEC LC Sarajevo**.
 

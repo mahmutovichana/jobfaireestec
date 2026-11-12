@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 
 export function usePendingPartners() {
   return useQuery({
     queryKey: ["pending-partners"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("partners")
         .select("*")
         .eq("visible", false)
@@ -20,7 +20,7 @@ export function useApprovePartner() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("partners")
         .update({ visible: true })
         .eq("id", id);
@@ -37,7 +37,7 @@ export function useRejectPartner() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("partners")
         .delete()
         .eq("id", id);

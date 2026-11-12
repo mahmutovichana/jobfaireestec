@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 
 export interface PageView {
   id: string;
@@ -15,7 +15,7 @@ export function usePageViews(days = 30) {
     queryKey: ["page-views", days],
     queryFn: async () => {
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("page_views")
         .select("*")
         .gte("created_at", since)

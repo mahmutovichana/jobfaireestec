@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 
 function getReferrerDomain(referrer: string): string | null {
   if (!referrer) return null;
@@ -30,7 +30,7 @@ export function usePageTracking() {
     // Defer the insert until the browser is idle — it must never compete
     // with critical-path requests for LCP.
     const send = () => {
-      supabase.from("page_views").insert({
+      api.from("page_views").insert({
         path: pathname,
         referrer: referrer || null,
         referrer_domain: referrerDomain,

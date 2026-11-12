@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://jobfaireestec.lovable.app/sitemap.xml
+Sitemap: https://jobfair.ba/sitemap.xml

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 type Status = "loading" | "valid" | "already" | "invalid" | "success" | "error";
@@ -15,11 +15,8 @@ export default function Unsubscribe() {
 
   useEffect(() => {
     if (!token) { setStatus("invalid"); return; }
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    fetch(`${supabaseUrl}/functions/v1/handle-email-unsubscribe?token=${token}`, {
-      headers: { apikey: anonKey },
-    })
+    const apiUrl = import.meta.env.VITE_API_URL || "/api/v1";
+    fetch(`${apiUrl}/services/handle-email-unsubscribe?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.valid === false && d.reason === "already_unsubscribed") setStatus("already");
@@ -33,7 +30,7 @@ export default function Unsubscribe() {
     if (!token) return;
     setSubmitting(true);
     try {
-      const { data } = await supabase.functions.invoke("handle-email-unsubscribe", { body: { token } });
+      const { data } = await api.functions.invoke("handle-email-unsubscribe", { body: { token } });
       if (data?.success) setStatus("success");
       else if (data?.reason === "already_unsubscribed") setStatus("already");
       else setStatus("error");

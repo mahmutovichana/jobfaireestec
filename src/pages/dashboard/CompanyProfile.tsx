@@ -10,7 +10,7 @@ import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Building2, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { SOCIAL_PLATFORMS, SOCIAL_ICON_URLS } from "@/lib/constants";
 import { motion } from "framer-motion";
 
@@ -90,12 +90,12 @@ export default function CompanyProfile() {
       const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
       // Path must start with `logos/<user_id>/` to satisfy storage RLS
       const path = `logos/${user!.id}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await api.storage
         .from("partner-logos")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from("partner-logos").getPublicUrl(path);
+      const { data: { publicUrl } } = api.storage.from("partner-logos").getPublicUrl(path);
       setLogoUrl(publicUrl);
       setLogoCrop({ x: 50, y: 50, zoom: 1 });
       setTempCrop({ x: 50, y: 50, zoom: 1 });
@@ -145,14 +145,14 @@ export default function CompanyProfile() {
       if (!companySlug && slug) setCompanySlug(slug);
 
       // Also upsert a partner entry with visible=false for admin review
-      const { data: existingPartner } = await supabase
+      const { data: existingPartner } = await api
         .from("partners")
         .select("id")
         .eq("user_id", user!.id)
         .maybeSingle();
 
       if (existingPartner) {
-        await supabase.from("partners").update({
+        await api.from("partners").update({
           name: company,
           logo_url: logoUrl || null,
           website: website || null,
@@ -160,7 +160,7 @@ export default function CompanyProfile() {
           visible: false, // Reset to pending on any edit
         }).eq("id", existingPartner.id);
       } else {
-        await supabase.from("partners").insert({
+        await api.from("partners").insert({
           user_id: user!.id,
           name: company,
           logo_url: logoUrl || null,

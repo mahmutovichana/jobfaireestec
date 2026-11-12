@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 export type AuditLog = {
@@ -17,7 +17,7 @@ export function useAuditLogs(filters?: { entity_type?: string; limit?: number })
   return useQuery({
     queryKey: ["audit-logs", filters],
     queryFn: async () => {
-      let query = supabase
+      let query = api
         .from("audit_logs")
         .select("*")
         .order("created_at", { ascending: false })
@@ -49,7 +49,7 @@ export function useLogAction() {
       metadata?: Record<string, unknown>;
     }) => {
       if (!user) return;
-      const { error } = await supabase.from("audit_logs").insert({
+      const { error } = await api.from("audit_logs").insert({
         actor_id: user.id,
         actor_email: user.email ?? null,
         action: input.action,

@@ -31,7 +31,7 @@ describe("ProtectedRoute", () => {
     expect(screen.queryByText("Protected")).not.toBeInTheDocument();
   });
 
-  it("shows spinner while checking roles for authenticated user", () => {
+  it("shows spinner while checking roles for an admin route", () => {
     mockedUseAuth.mockReturnValue({
       user: { id: "1", email: "t@t.com" } as any, session: {} as any, loading: false, signOut: vi.fn(),
     });
@@ -39,7 +39,7 @@ describe("ProtectedRoute", () => {
 
     const { container } = render(
       <MemoryRouter>
-        <ProtectedRoute><div>Protected</div></ProtectedRoute>
+        <ProtectedRoute requireAdmin><div>Protected</div></ProtectedRoute>
       </MemoryRouter>
     );
     expect(container.querySelector(".animate-spin")).toBeInTheDocument();
@@ -97,5 +97,18 @@ describe("ProtectedRoute", () => {
       </MemoryRouter>
     );
     expect(screen.getByText("Admin")).toBeInTheDocument();
+  });
+
+  it.each([true, false])("uses the session CV permission (%s)", (canCv) => {
+    mockedUseAuth.mockReturnValue({
+      user: { id: "1", canCv }, session: null, loading: false, signOut: vi.fn(),
+    });
+    mockedUseIsAdmin.mockReturnValue({ isAdmin: false, isLoading: false });
+    render(
+      <MemoryRouter>
+        <ProtectedRoute requireCv><div>CV database</div></ProtectedRoute>
+      </MemoryRouter>
+    );
+    expect(Boolean(screen.queryByText("CV database"))).toBe(canCv);
   });
 });

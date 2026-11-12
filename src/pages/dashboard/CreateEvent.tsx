@@ -17,7 +17,7 @@ import TemplatePreview from "@/components/TemplatePreview";
 import { useBulkInsertFormFields, useFormFields } from "@/hooks/useFormFields";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 
 const steps = [
@@ -174,13 +174,13 @@ const CreateEvent = () => {
     if (!file) return;
     setUploading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await api.auth.getUser();
       if (!user) throw new Error("Not authenticated");
       const ext = file.name.split(".").pop();
       const path = `${user.id}/flyers/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("event-assets").upload(path, file);
+      const { error: uploadError } = await api.storage.from("event-assets").upload(path, file);
       if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from("event-assets").getPublicUrl(path);
+      const { data: urlData } = api.storage.from("event-assets").getPublicUrl(path);
       setFlyerUrl(urlData.publicUrl);
       toast.success("Image uploaded!");
     } catch (err: any) {
@@ -197,7 +197,7 @@ const CreateEvent = () => {
     }
     setEnhancing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("enhance-description", {
+      const { data, error } = await api.functions.invoke("enhance-description", {
         body: { description, event_name: name, event_type: eventType },
       });
       if (error) throw error;
@@ -252,9 +252,9 @@ const CreateEvent = () => {
 
       if (isEditMode && editId) {
         await updateEvent.mutateAsync({ id: editId, ...eventData } as any);
-        const { data: oldFields } = await supabase.from("form_fields").select("id").eq("event_id", editId);
+        const { data: oldFields } = await api.from("form_fields").select("id").eq("event_id", editId);
         if (oldFields && oldFields.length > 0) {
-          await supabase.from("form_fields").delete().eq("event_id", editId);
+          await api.from("form_fields").delete().eq("event_id", editId);
         }
         if (fields.length > 0) {
           await bulkInsertFields.mutateAsync(fields.map(f => ({ ...f, event_id: editId })));

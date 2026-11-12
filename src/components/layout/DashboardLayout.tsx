@@ -89,6 +89,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     allItems = companyNavItems;
   }
 
+  if (!user?.canCv) allItems = allItems.filter((item) => item.url !== "/dashboard/cv-database");
+
   const isActive = (url: string) => {
     if (url === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(url);

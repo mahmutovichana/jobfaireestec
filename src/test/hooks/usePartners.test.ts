@@ -112,11 +112,11 @@ describe("uploadPartnerLogo", () => {
 
 describe("Partner constants", () => {
   it("PACKAGE_ORDER has correct order", () => {
-    expect(PACKAGE_ORDER).toEqual(["gold", "silver", "standard", "promo"]);
+    expect(PACKAGE_ORDER).toEqual(["gold", "silver", "standard", "promo", "custom"]);
   });
 
   it("PACKAGE_LABELS has all keys", () => {
-    expect(Object.keys(PACKAGE_LABELS)).toEqual(["gold", "silver", "standard", "promo"]);
+    expect(Object.keys(PACKAGE_LABELS)).toEqual(["gold", "silver", "standard", "promo", "custom"]);
   });
 
   it("CATEGORY_LABELS has all keys", () => {

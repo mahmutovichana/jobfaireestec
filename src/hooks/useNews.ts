@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -34,7 +34,7 @@ function normalizeNewsPost(d: any): NewsPost {
 }
 
 export async function fetchNewsPosts(onlyPublished = false, full = false) {
-  let query = supabase
+  let query = api
     .from("news_posts")
     .select(full ? NEWS_POST_COLUMNS : NEWS_LIST_COLUMNS)
     .order(onlyPublished ? "published_at" : "created_at", { ascending: false, nullsFirst: false });
@@ -65,7 +65,7 @@ export function useNewsPost(id: string | undefined) {
     queryKey: ["news-post", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("news_posts")
         .select("*")
         .eq("id", id)
@@ -92,7 +92,7 @@ export function useCreateNewsPost() {
       gallery_urls?: string[];
       published?: boolean;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("news_posts")
         .insert({
           ...post,
@@ -133,7 +133,7 @@ export function useUpdateNewsPost() {
       if (updates.published !== undefined) {
         payload.published_at = updates.published ? new Date().toISOString() : null;
       }
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("news_posts")
         .update(payload)
         .eq("id", id)
@@ -156,7 +156,7 @@ export function useDeleteNewsPost() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("news_posts").delete().eq("id", id);
+      const { error } = await api.from("news_posts").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -168,18 +168,18 @@ export function useDeleteNewsPost() {
 }
 
 export async function uploadNewsImage(file: File, folder: string): Promise<string> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await api.auth.getUser();
   if (!user) throw new Error("Not authenticated");
   const ext = file.name.split(".").pop();
   const path = `${user.id}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-  const { error } = await supabase.storage.from("news-images").upload(path, file, {
+  const { error } = await api.storage.from("news-images").upload(path, file, {
     cacheControl: "3600",
     upsert: false,
   });
 
   if (error) throw error;
 
-  const { data } = supabase.storage.from("news-images").getPublicUrl(path);
+  const { data } = api.storage.from("news-images").getPublicUrl(path);
   return data.publicUrl;
 }

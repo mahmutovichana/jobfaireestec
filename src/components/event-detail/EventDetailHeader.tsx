@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ArrowLeft, ExternalLink, Copy, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables } from "@/lib/database.types";
 import { toast } from "sonner";
 
 interface Props {

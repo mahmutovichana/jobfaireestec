@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 import type { PartnerPackage } from "@/hooks/usePartners";
 
@@ -16,7 +16,7 @@ export function usePackagePrices() {
   return useQuery({
     queryKey: ["package-prices"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await api
         .from("package_prices" as any)
         .select("*")
         .order("year", { ascending: false })
@@ -31,7 +31,7 @@ export function useUpsertPackagePrice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (p: { year: number; package: PartnerPackage; price: number; currency?: string }) => {
-      const { error } = await supabase
+      const { error } = await api
         .from("package_prices" as any)
         .upsert(
           { year: p.year, package: p.package, price: p.price, currency: p.currency ?? "BAM" } as any,
@@ -52,7 +52,7 @@ export function useDeletePackagePrice() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("package_prices" as any).delete().eq("id", id);
+      const { error } = await api.from("package_prices" as any).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -13,8 +13,8 @@ vi.mock("react-router-dom", async (importOriginal) => {
   return { ...mod, useNavigate: () => mockNavigate };
 });
 
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
+vi.mock("@/lib/api", () => ({
+  api: {
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
       onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
@@ -31,8 +31,8 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-vi.mock("@/integrations/lovable/index", () => ({
-  lovable: { auth: { signInWithOAuth: vi.fn().mockResolvedValue({ error: null }) } },
+vi.mock("@/lib/oauth", () => ({
+  oauth: { auth: { signInWithOAuth: vi.fn().mockResolvedValue({ error: null }) } },
 }));
 
 import Auth from "@/pages/Auth";

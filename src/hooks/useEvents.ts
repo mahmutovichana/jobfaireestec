@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { api } from "@/lib/api";
+import { Tables, TablesInsert, TablesUpdate } from "@/lib/database.types";
 import { useAuth } from "@/contexts/AuthContext";
 
 export type Event = Tables<"events">;
@@ -10,7 +10,7 @@ export function useEvents(search?: string) {
   return useQuery({
     queryKey: ["events", user?.id, search],
     queryFn: async () => {
-      let query = supabase.from("events").select("*").order("created_at", { ascending: false });
+      let query = api.from("events").select("*").order("created_at", { ascending: false });
       if (search) {
         query = query.ilike("name", `%${search}%`);
       }
@@ -25,7 +25,7 @@ export function useEvent(id: string | undefined) {
   return useQuery({
     queryKey: ["event", id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select("*").eq("id", id!).single();
+      const { data, error } = await api.from("events").select("*").eq("id", id!).single();
       if (error) throw error;
       return data as Event;
     },
@@ -37,7 +37,7 @@ export function useEventBySlug(slug: string | undefined) {
   return useQuery({
     queryKey: ["event-slug", slug],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select("*").eq("slug", slug!).eq("status", "live").single();
+      const { data, error } = await api.from("events").select("*").eq("slug", slug!).eq("status", "live").single();
       if (error) throw error;
       return data as Event;
     },
@@ -68,7 +68,7 @@ export function useCreateEvent() {
       capacity?: number;
     }) => {
       const slug = generateSlug(input.name);
-      const { data, error } = await supabase.from("events").insert({
+      const { data, error } = await api.from("events").insert({
         ...input,
         slug,
         user_id: user!.id,
@@ -85,7 +85,7 @@ export function useUpdateEvent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: TablesUpdate<"events"> & { id: string }) => {
-      const { data, error } = await supabase.from("events").update(updates).eq("id", id).select().single();
+      const { data, error } = await api.from("events").update(updates).eq("id", id).select().single();
       if (error) throw error;
       return data as Event;
     },
@@ -100,7 +100,7 @@ export function useDeleteEvent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("events").delete().eq("id", id);
+      const { error } = await api.from("events").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["events"] }),

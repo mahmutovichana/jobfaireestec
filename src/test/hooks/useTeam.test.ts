@@ -36,7 +36,7 @@ describe("useTeamMembers", () => {
     chain.eq.mockReturnValue({ data: [], error: null, then: (fn: any) => fn({ data: [], error: null }) });
 
     renderHook(() => useTeamMembers(true), { wrapper: createWrapper() });
-    await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("team_members"));
+    await waitFor(() => expect(mockSupabase.from).toHaveBeenCalledWith("public_team_members"));
   });
 });
 

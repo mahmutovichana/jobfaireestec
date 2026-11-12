@@ -1,0 +1,2 @@
+-- Preserve the previous verified-email admin assignment policy as editable data.
+UPDATE identity.settings SET value='["chair@eestec-sa.ba", "cp@eestec-sa.ba", "cp@jobfair.ba", "design@jobfair.ba", "fr@eestec-sa.ba", "fr@jobfair.ba", "head@jobfair.ba", "hr@eestec-sa.ba", "hr@jobfair.ba", "it@eestec-sa.ba", "it@jobfair.ba", "pr@eestec-sa.ba", "pr@jobfair.ba", "treasurer@eestec-sa.ba"]'::jsonb WHERE key='admin_emails' AND value='[]'::jsonb;
