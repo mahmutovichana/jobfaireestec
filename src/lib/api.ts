@@ -6,6 +6,7 @@ export interface User {
   roles?: string[];
   board?: boolean;
   admin?: boolean;
+  canCv?: boolean;
 }
 export interface Session {
   user: User;

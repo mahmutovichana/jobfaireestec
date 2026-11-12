@@ -8,6 +8,7 @@ export function useUserRole() {
   return useQuery({
     queryKey: ["user-role", user?.id],
     queryFn: async () => {
+      if (user?.roles) return user.roles;
       const { data, error } = await api
         .from("user_roles")
         .select("role")

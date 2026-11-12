@@ -14,38 +14,31 @@ const options = {
 export async function loadUser(req, _res, next) {
   try {
     const token = req.cookies?.[cookie];
-    if (!token) return next();
+    if (typeof token !== "string" || !/^[A-Za-z0-9_-]{32,128}$/.test(token))
+      return next();
     const { rows } = await pool.query(
-      "SELECT u.* FROM identity.sessions s JOIN identity.users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now()",
+      `SELECT u.id, u.email, u.full_name, u.avatar_url,
+              ARRAY(SELECT role::text FROM public.user_roles WHERE user_id=u.id) AS roles,
+              COALESCE((SELECT value ? split_part(u.email, '@', 2)
+                        FROM identity.settings WHERE key='board_domains'), false) AS board_domain,
+              public.is_email_approved(u.email) AS approved,
+              public.can_view_cv_database(u.id) AS cv
+       FROM identity.sessions s JOIN identity.users u ON u.id=s.user_id
+       WHERE s.token_hash=$1 AND s.expires_at>now()`,
       [hash(token)],
     );
-    if (rows[0]) {
-      const u = rows[0];
-      const roles = (
-        await pool.query("SELECT role FROM user_roles WHERE user_id=$1", [u.id])
-      ).rows.map((r) => r.role);
-      const domains =
-        (
-          await pool.query(
-            "SELECT value FROM identity.settings WHERE key='board_domains'",
-          )
-        ).rows[0]?.value ?? [];
-      const a = (
-        await pool.query(
-          "SELECT is_email_approved($1) approved,can_view_cv_database($2) cv",
-          [u.email, u.id],
-        )
-      ).rows[0];
+    const [user] = rows;
+    if (user) {
+      const admin = user.roles.includes("admin");
       req.user = {
-        id: u.id,
-        email: u.email,
-        user_metadata: { full_name: u.full_name, avatar_url: u.avatar_url },
-        roles,
-        admin: roles.includes("admin"),
-        board:
-          roles.includes("admin") || domains.includes(u.email.split("@")[1]),
-        approved: roles.includes("admin") || a.approved,
-        canCv: a.cv,
+        id: user.id,
+        email: user.email,
+        user_metadata: { full_name: user.full_name, avatar_url: user.avatar_url },
+        roles: user.roles,
+        admin,
+        board: admin || user.board_domain,
+        approved: admin || user.approved,
+        canCv: user.cv,
       };
     }
     next();

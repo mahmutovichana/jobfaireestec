@@ -29,14 +29,14 @@ export function PdfPreview({ url, pages = 1, scale = 1.0, className = "" }: PdfP
 
     const container = containerRef.current;
     container.innerHTML = "";
+    const loadingTask = pdfjsLib.getDocument({
+      url,
+      disableAutoFetch: true,
+      disableStream: true,
+    });
 
     (async () => {
       try {
-        const loadingTask = pdfjsLib.getDocument({
-          url,
-          disableAutoFetch: true,
-          disableStream: false,
-        });
         const pdf = await loadingTask.promise;
         if (cancelled) return;
 
@@ -69,6 +69,7 @@ export function PdfPreview({ url, pages = 1, scale = 1.0, className = "" }: PdfP
 
     return () => {
       cancelled = true;
+      void loadingTask.destroy().catch(() => {});
     };
   }, [url, pages, scale]);
 

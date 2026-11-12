@@ -1,44 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { PdfPreview } from "@/components/PdfPreview";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Search, FileText, Download, Trash2, User, GraduationCap, Mail, Phone, Calendar, Eye } from "lucide-react";
 import { useCVSubmissions, useDeleteCV, type CVSubmission } from "@/hooks/useCV";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
-// Module-level cache so signed URLs are reused across renders/hover sessions
-const signedUrlCache = new Map<string, { url: string; expires: number }>();
+const PdfPreview = lazyWithRetry(() =>
+  import("@/components/PdfPreview").then(({ PdfPreview }) => ({ default: PdfPreview })),
+);
 
-async function getCachedSignedUrl(path: string): Promise<string | null> {
-  const now = Date.now();
-  const cached = signedUrlCache.get(path);
-  if (cached && cached.expires > now) return cached.url;
-  const { data, error } = await api.storage
-    .from("cv-uploads")
-    .createSignedUrl(path, 600);
-  if (error || !data) return null;
-  signedUrlCache.set(path, { url: data.signedUrl, expires: now + 9 * 60 * 1000 });
-  return data.signedUrl;
+function CVPreview({ cvUrl }: { cvUrl: string }) {
+  const [signed, setSigned] = useState<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.storage.from("cv-uploads").createSignedUrl(cvUrl, 600).then(({ data }) => {
+      if (!cancelled) setSigned(data?.signedUrl ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [cvUrl]);
+
+  const loading = <p className="p-4 text-sm text-muted-foreground">Učitavanje pregleda...</p>;
+  if (signed === undefined) return loading;
+  if (signed === null) return <p className="p-4 text-sm">Pregled CV-a nije dostupan.</p>;
+  return <Suspense fallback={loading}><PdfPreview url={signed} /></Suspense>;
 }
 
 function CVHoverPreview({ cvUrl, children }: { cvUrl: string; children: React.ReactNode }) {
-  const [signed, setSigned] = useState<string | null>(() => signedUrlCache.get(cvUrl)?.url ?? null);
-
-  // Prefetch the signed URL as soon as the card mounts so hover is instant.
-  useEffect(() => {
-    if (signed) return;
-    let cancelled = false;
-    getCachedSignedUrl(cvUrl).then((u) => {
-      if (!cancelled && u) setSigned(u);
-    });
-    return () => { cancelled = true; };
-  }, [cvUrl, signed]);
-
   return (
     <HoverCard openDelay={80} closeDelay={80}>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
@@ -47,7 +41,7 @@ function CVHoverPreview({ cvUrl, children }: { cvUrl: string; children: React.Re
         align="start"
         className="w-[440px] h-[580px] p-0 overflow-hidden rounded-2xl border-border/60 shadow-2xl"
       >
-        <PdfPreview url={signed} pages={1} scale={1.0} />
+        <CVPreview key={cvUrl} cvUrl={cvUrl} />
       </HoverCardContent>
     </HoverCard>
   );
@@ -72,7 +66,7 @@ export default function CVDatabase() {
         .from("cv-uploads")
         .createSignedUrl(cvUrl, 60);
       if (error) throw error;
-      window.open(data.signedUrl, "_blank");
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
     } catch (err: any) {
       toast.error("Greška pri preuzimanju CV-a");
     }

@@ -18,7 +18,7 @@ export function storagePath(bucket, key) {
     typeof key !== "string" ||
     !key ||
     key.length > 500 ||
-    key.includes("\\") ||
+    /[\\:\u0000-\u001f]/.test(key) ||
     key.split("/").some((x) => !x || x === "." || x === "..")
   )
     throw problem(400, "Invalid storage path");
@@ -96,9 +96,10 @@ router.put(
   },
 );
 router.post("/sign", async (req, res) => {
-  if (!req.user?.canCv && !req.user?.board)
+  if (!req.user?.canCv)
     throw problem(403, "Nemate pristup dokumentima");
-  const { bucket, path: key } = req.body;
+  const { bucket, path: key } = req.body ?? {};
+  if (bucket !== "cv-uploads") throw problem(400, "Invalid private bucket");
   storagePath(bucket, key);
   const expires =
     Date.now() +

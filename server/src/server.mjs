@@ -24,12 +24,8 @@ export function createApp() {
         directives: {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'"],
-          styleSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-          ],
-          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          fontSrc: ["'self'"],
           imgSrc: ["'self'", "data:", "blob:", "https:"],
           connectSrc: ["'self'"],
           frameSrc: ["'self'", "https://www.google.com"],
@@ -40,6 +36,10 @@ export function createApp() {
       crossOriginEmbedderPolicy: false,
     }),
   );
+  app.use("/api", (_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  });
   app.get("/api/v1/health", async (_req, res) => {
     await pool.query("SELECT 1");
     res.json({ status: "ok" });
@@ -60,9 +60,14 @@ export function createApp() {
       },
     }),
     cookieParser(config.SESSION_SECRET),
-    express.json({ limit: "1mb" }),
-    loadUser,
     csrf,
+    express.json({ limit: "1mb" }),
+    (req, res, next) => {
+      const publicRead =
+        (req.method === "GET" || req.method === "HEAD") &&
+        (req.path.startsWith("/storage/public/") || req.path === "/site-config.js");
+      return publicRead ? next() : loadUser(req, res, next);
+    },
   );
   app.use("/api/v1/auth", rateLimit({ windowMs: 60000, limit: 60 }), auth);
   app.use(
@@ -91,12 +96,16 @@ export function createApp() {
   app.use(
     express.static(dist, {
       maxAge: "1h",
+      index: false,
       setHeaders(res, file) {
-        if (file.includes(path.sep + "assets" + path.sep))
+        if (path.basename(file) === "index.html")
+          res.setHeader("Cache-Control", "no-cache");
+        else if (file.startsWith(path.join(dist, "assets") + path.sep))
           res.setHeader("Cache-Control", "public,max-age=31536000,immutable");
       },
     }),
   );
+  app.use("/assets", (_req, res) => res.status(404).end());
   app.get("/{*path}", (_req, res) =>
     res
       .set("Cache-Control", "no-cache")
@@ -107,7 +116,7 @@ export function createApp() {
       err.status ??
       (err.code === "23505"
         ? 409
-        : ["23503", "22P02", "23502", "23514", "P0001"].includes(err.code)
+        : err.name === "ZodError" || ["23503", "22P02", "23502", "23514", "P0001"].includes(err.code)
           ? 400
           : err.code === "ENOENT"
             ? 404
@@ -116,7 +125,8 @@ export function createApp() {
     res.status(status).json({
       data: null,
       error: {
-        message: status >= 500 ? "Servis trenutno nije dostupan" : err.message,
+        message: status >= 500 ? "Servis trenutno nije dostupan" :
+          err.name === "ZodError" ? "Neispravni podaci zahtjeva" : err.message,
       },
     });
   });

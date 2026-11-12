@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface CVSubmission {
   id: string;
@@ -13,8 +14,10 @@ export interface CVSubmission {
 }
 
 export function useCVSubmissions() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["cv-submissions"],
+    queryKey: ["cv-submissions", user?.id],
+    enabled: !!user?.canCv,
     queryFn: async () => {
       const { data, error } = await api
         .from("cv_submissions")

@@ -16,10 +16,29 @@ if ($LASTEXITCODE -ne 0) {
 $nodePath = (Get-Command node.exe).Source
 foreach ($service in @(@{Name='api'; File='src/server.mjs'}, @{Name='worker'; File='src/worker.mjs'})) {
   $pidPath = Join-Path $projectPath ('var\' + $service.Name + '.pid')
-  $existing = if (Test-Path -LiteralPath $pidPath) { Get-Process -Id (Get-Content -LiteralPath $pidPath) -ErrorAction SilentlyContinue } else { $null }
+  $existing = $null
+  if (Test-Path -LiteralPath $pidPath) {
+    $pidFile = Get-Item -LiteralPath $pidPath
+    $servicePid = 0
+    if ([int]::TryParse((Get-Content -LiteralPath $pidPath -Raw).Trim(), [ref]$servicePid) -and $servicePid -gt 0) {
+      $candidate = Get-Process -Id $servicePid -ErrorAction SilentlyContinue
+      if ($candidate -and $candidate.ProcessName -eq 'node' -and $candidate.StartTime.ToUniversalTime() -le $pidFile.LastWriteTimeUtc) {
+        $existing = $candidate
+      }
+    }
+  }
   if (!$existing) {
     $process = Start-Process -FilePath $nodePath -ArgumentList $service.File -WorkingDirectory (Join-Path $projectPath 'server') -WindowStyle Hidden -RedirectStandardOutput (Join-Path $projectPath ('var\' + $service.Name + '.log')) -RedirectStandardError (Join-Path $projectPath ('var\' + $service.Name + '-error.log')) -PassThru
     $process.Id | Set-Content -LiteralPath $pidPath
   }
 }
+for ($attempt = 0; $attempt -lt 15; $attempt++) {
+  try {
+    $health = Invoke-RestMethod -Uri 'http://127.0.0.1:8081/api/v1/health' -TimeoutSec 2
+    if ($health.status -eq 'ok') { break }
+  } catch {
+    Start-Sleep -Milliseconds 500
+  }
+}
+if ($health.status -ne 'ok') { throw 'JobFAIR did not start. Check var\api-error.log.' }
 Write-Output 'JobFAIR: http://localhost:8081'

@@ -5,7 +5,7 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ user: { id: "test-user-id", email: "test@example.com" }, loading: false, session: {}, signOut: vi.fn() }),
+  useAuth: () => ({ user: { id: "test-user-id", email: "test@example.com", canCv: true }, loading: false, session: {}, signOut: vi.fn() }),
 }));
 
 import { useCVSubmissions, useCreateCVSubmission, useDeleteCV, uploadCV } from "@/hooks/useCV";

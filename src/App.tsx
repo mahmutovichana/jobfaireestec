@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { initClarity } from "@/lib/clarity";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import { usePerformanceMonitoring } from "@/hooks/usePerformanceMonitoring";
@@ -37,6 +36,7 @@ const HistorijatOdbora = lazyWithRetry(() => import("./pages/HistorijatOdbora"))
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 // Dashboard routes (admin-heavy, perfect candidates for code-splitting)
+const DashboardLayout = lazyWithRetry(() => import("@/components/layout/DashboardLayout").then(({ DashboardLayout }) => ({ default: DashboardLayout })));
 const Events = lazyWithRetry(() => import("./pages/dashboard/Events"));
 const CreateEvent = lazyWithRetry(() => import("./pages/dashboard/CreateEvent"));
 const EventDetail = lazyWithRetry(() => import("./pages/dashboard/EventDetail"));
@@ -147,7 +147,7 @@ const App = () => (
                       <Route path="home" element={<DashboardHome />} />
                       <Route path="settings" element={<SettingsPage />} />
                       <Route path="company-profile" element={<CompanyProfile />} />
-                      <Route path="cv-database" element={<CVDatabase />} />
+                      <Route path="cv-database" element={<ProtectedRoute requireCv><CVDatabase /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="events" element={<ProtectedRoute requireAdmin><Events /></ProtectedRoute>} />
                       <Route path="events/create" element={<ProtectedRoute requireAdmin><CreateEvent /></ProtectedRoute>} />
@@ -163,7 +163,7 @@ const App = () => (
                       <Route path="company-inquiries" element={<ProtectedRoute requireAdmin><CompanyInquiries /></ProtectedRoute>} />
                       <Route path="access-requests" element={<ProtectedRoute requireAdmin><AccessRequests /></ProtectedRoute>} />
                       <Route path="audit-logs" element={<ProtectedRoute requireAdmin><AuditLogs /></ProtectedRoute>} />
-                      <Route path="treasury" element={<Treasury />} />
+                      <Route path="treasury" element={<ProtectedRoute requireAdmin><Treasury /></ProtectedRoute>} />
                     </Routes>
                   </DashboardLayout>
                 </ProtectedRoute>
